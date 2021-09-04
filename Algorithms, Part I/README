@@ -1,0 +1,10 @@
+ALGORITHMS, PART I by Robert Sedgewick and Kevin Wayne
+
+- Book: https://www.amazon.com/Algorithms-Part-I-Robert-Sedgewick-ebook/dp/B00I50LKYW
+- Course: https://www.coursera.org/learn/algorithms-part1
+- Web: https://algs4.cs.princeton.edu/home/
+- algs4 repo: https://github.com/kevin-wayne/algs4
+
+You'll need to install algs4 lib as follows.
+- Clone algs4 repo
+- `maven install`
