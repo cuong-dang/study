@@ -10,6 +10,12 @@ WHY
 
 RESOURCE ID
 ===========
+Here are the resource IDs used in commit messages. Each resource
+includes in parentheses which resource types' solutions are available
+as a resource could consist of multiple material types such as books,
+labs, or Coursera courses. For further supporting material links (e.g.,
+web, code repos), see individual resource page.
+
 - algsp1: Algorithms, Part I (book & Coursera)
   + book: https://www.amazon.com/Algorithms-Part-I-Robert-Sedgewick-ebook/dp/B00I50LKYW
   + Coursera: https://www.coursera.org/learn/algorithms-part1
