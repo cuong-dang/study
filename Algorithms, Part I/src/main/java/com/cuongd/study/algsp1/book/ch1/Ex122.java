@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Exercise122 {
+public class Ex122 {
     public static void main(String[] args) {
         int N = Integer.parseInt(args[0]);
         double[] input = StdIn.readAllDoubles();

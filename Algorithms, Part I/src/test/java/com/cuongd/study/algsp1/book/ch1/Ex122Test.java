@@ -8,10 +8,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.cuongd.study.algsp1.book.ch1.Exercise122.findIntersects;
+import static com.cuongd.study.algsp1.book.ch1.Ex122.findIntersects;
 import static org.junit.Assert.assertEquals;
 
-public class Exercise122Test {
+public class Ex122Test {
     private static final Interval1D I1 = new Interval1D(0, 1);
     private static final Interval1D I2 = new Interval1D(2, 3);
     private static final Interval1D I3 = new Interval1D(1, 1.5);

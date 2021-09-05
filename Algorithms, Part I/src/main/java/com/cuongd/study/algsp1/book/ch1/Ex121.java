@@ -5,7 +5,7 @@ import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
-public class Exercise121 {
+public class Ex121 {
     public static void main(String[] args) {
         int n = StdIn.readInt();
         Point2D[] points = new Point2D[n];

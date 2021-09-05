@@ -3,10 +3,10 @@ package com.cuongd.study.algsp1.book.ch1;
 import edu.princeton.cs.algs4.Point2D;
 import org.junit.Test;
 
-import static com.cuongd.study.algsp1.book.ch1.Exercise121.minDistance;
+import static com.cuongd.study.algsp1.book.ch1.Ex121.minDistance;
 import static org.junit.Assert.assertEquals;
 
-public class Exercise121Test {
+public class Ex121Test {
     private static final Point2D P1 = new Point2D(1, 2);
     private static final Point2D P2 = new Point2D(4, 6);
     private static final Point2D P3 = new Point2D(1, 3);
