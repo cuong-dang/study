@@ -7,6 +7,11 @@
 #define N_SMALL 8192
 #define N_MEDIUM 16384
 #define N_LARGE 32768
+#define TRANSPOSE0_NAME "original"
+#define TRANSPOSE1_NAME "1d4x4 unrolling"
+#define TRANSPOSE2_NAME "2d4x4 unrolling"
+#define TRANSPOSE3_NAME "32 byte blocking"
+#define TRANSPOSE4_NAME TRANSPOSE3_NAME " & " TRANSPOSE2_NAME
 
 /* The given transpose routine */
 void transpose0(int *dst, int *src, int dim) {
@@ -122,28 +127,28 @@ void test_perf(void transpose(int *, int *, int), char *fn_name, int dim) {
         start = clock();
         transpose(src, dst, dim);
         end = clock();
-        printf("%dx%d matrix, %s time: %.2f sec\n", dim, dim, fn_name,
-               ((double) (end - start)) / CLOCKS_PER_SEC);
+        printf("transpose %dx%d matrix, %s: %.2f sec\n",
+               dim, dim, fn_name, ((double) (end - start)) / CLOCKS_PER_SEC);
         free(src);
         free(dst);
 }
 
 int main() {
-        test_perf(transpose0, "transpose0", N_SMALL);
-        test_perf(transpose1, "transpose1", N_SMALL);
-        test_perf(transpose2, "transpose2", N_SMALL);
-        test_perf(transpose3, "transpose3", N_SMALL);
-        test_perf(transpose4, "transpose4", N_SMALL);
-
-        test_perf(transpose0, "transpose0", N_MEDIUM);
-        test_perf(transpose1, "transpose1", N_MEDIUM);
-        test_perf(transpose2, "transpose2", N_MEDIUM);
-        test_perf(transpose3, "transpose3", N_MEDIUM);
-        test_perf(transpose4, "transpose4", N_MEDIUM);
-
-        test_perf(transpose0, "transpose0", N_LARGE);
-        test_perf(transpose1, "transpose1", N_LARGE);
-        test_perf(transpose2, "transpose2", N_LARGE);
-        test_perf(transpose3, "transpose3", N_LARGE);
-        test_perf(transpose4, "transpose4", N_LARGE);
+        test_perf(transpose0, TRANSPOSE0_NAME, N_SMALL);
+        test_perf(transpose1, TRANSPOSE1_NAME, N_SMALL);
+        test_perf(transpose2, TRANSPOSE2_NAME, N_SMALL);
+        test_perf(transpose3, TRANSPOSE3_NAME, N_SMALL);
+        test_perf(transpose4, TRANSPOSE4_NAME, N_SMALL);
+        printf("\n");
+        test_perf(transpose0, TRANSPOSE0_NAME, N_MEDIUM);
+        test_perf(transpose1, TRANSPOSE1_NAME, N_MEDIUM);
+        test_perf(transpose2, TRANSPOSE2_NAME, N_MEDIUM);
+        test_perf(transpose3, TRANSPOSE3_NAME, N_MEDIUM);
+        test_perf(transpose4, TRANSPOSE4_NAME, N_MEDIUM);
+        printf("\n");
+        test_perf(transpose0, TRANSPOSE0_NAME, N_LARGE);
+        test_perf(transpose1, TRANSPOSE1_NAME, N_LARGE);
+        test_perf(transpose2, TRANSPOSE2_NAME, N_LARGE);
+        test_perf(transpose3, TRANSPOSE3_NAME, N_LARGE);
+        test_perf(transpose4, TRANSPOSE4_NAME, N_LARGE);
 }
