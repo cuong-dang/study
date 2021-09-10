@@ -3,6 +3,7 @@
 #include <time.h>
 
 #define UNROLL_N 4
+#define BLOCK_SIZE 8
 #define N_SMALL 8192
 #define N_MEDIUM 16384
 #define N_LARGE 32768
@@ -66,6 +67,53 @@ void transpose2(int *dst, int *src, int dim) {
         }
 }
 
+/* Blocking */
+void transpose3(int *dst, int *src, int dim) {
+        int ii, jj, i, j;
+
+        for (ii = 0; ii < dim; ii += BLOCK_SIZE)
+        for (jj = 0; jj < dim; jj += BLOCK_SIZE)
+                for (i = ii; i < ii + BLOCK_SIZE; i++)
+                for (j = jj; j < jj + BLOCK_SIZE; j++)
+                        dst[j*dim + i] = src[i*dim + j];
+}
+
+/* Blocking and loop unrolling */
+void transpose4(int *dst, int *src, int dim) {
+        int ii, jj, i, j;
+
+        for (ii = 0; ii < dim; ii += BLOCK_SIZE)
+        for (jj = 0; jj < dim; jj += BLOCK_SIZE)
+                for (i = ii; i < ii+BLOCK_SIZE-UNROLL_N+1; i += UNROLL_N) {
+                for (j = jj; j < jj+BLOCK_SIZE-UNROLL_N+1; j += UNROLL_N) {
+                        dst[j*dim + i] = src[i*dim + j];
+                        dst[(j+1)*dim + i] = src[i*dim + (j+1)];
+                        dst[(j+2)*dim + i] = src[i*dim + (j+2)];
+                        dst[(j+3)*dim + i] = src[i*dim + (j+3)];
+
+                        dst[j*dim + i+1] = src[(i+1)*dim + j];
+                        dst[(j+1)*dim + i+1] = src[(i+1)*dim + (j+1)];
+                        dst[(j+2)*dim + i+1] = src[(i+1)*dim + (j+2)];
+                        dst[(j+3)*dim + i+1] = src[(i+1)*dim + (j+3)];
+
+                        dst[j*dim + i+2] = src[(i+2)*dim + j];
+                        dst[(j+1)*dim + i+2] = src[(i+2)*dim + (j+1)];
+                        dst[(j+2)*dim + i+2] = src[(i+2)*dim + (j+2)];
+                        dst[(j+3)*dim + i+2] = src[(i+2)*dim + (j+3)];
+
+                        dst[j*dim + i+3] = src[(i+3)*dim + j];
+                        dst[(j+1)*dim + i+3] = src[(i+3)*dim + (j+1)];
+                        dst[(j+2)*dim + i+3] = src[(i+3)*dim + (j+2)];
+                        dst[(j+3)*dim + i+3] = src[(i+3)*dim + (j+3)];
+                }
+                for (; j < jj+BLOCK_SIZE; j++)
+                        dst[j*dim + i] = src[i*dim + j];
+                        dst[j*dim + i+1] = src[i*dim + j];
+                        dst[j*dim + i+2] = src[i*dim + j];
+                        dst[j*dim + i+3] = src[i*dim + j];
+        }
+}
+
 void test_perf(void transpose(int *, int *, int), char *fn_name, int dim) {
         clock_t start, end;
         int *src = malloc(dim*dim*sizeof(int));
@@ -74,7 +122,7 @@ void test_perf(void transpose(int *, int *, int), char *fn_name, int dim) {
         start = clock();
         transpose(src, dst, dim);
         end = clock();
-        printf("%dx%d matrix, %s time: %.2f secs\n", dim, dim, fn_name,
+        printf("%dx%d matrix, %s time: %.2f sec\n", dim, dim, fn_name,
                ((double) (end - start)) / CLOCKS_PER_SEC);
         free(src);
         free(dst);
@@ -84,12 +132,18 @@ int main() {
         test_perf(transpose0, "transpose0", N_SMALL);
         test_perf(transpose1, "transpose1", N_SMALL);
         test_perf(transpose2, "transpose2", N_SMALL);
+        test_perf(transpose3, "transpose3", N_SMALL);
+        test_perf(transpose4, "transpose4", N_SMALL);
 
         test_perf(transpose0, "transpose0", N_MEDIUM);
         test_perf(transpose1, "transpose1", N_MEDIUM);
         test_perf(transpose2, "transpose2", N_MEDIUM);
+        test_perf(transpose3, "transpose3", N_MEDIUM);
+        test_perf(transpose4, "transpose4", N_MEDIUM);
 
         test_perf(transpose0, "transpose0", N_LARGE);
         test_perf(transpose1, "transpose1", N_LARGE);
         test_perf(transpose2, "transpose2", N_LARGE);
+        test_perf(transpose3, "transpose3", N_LARGE);
+        test_perf(transpose4, "transpose4", N_LARGE);
 }
