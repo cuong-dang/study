@@ -36,6 +36,19 @@ public class MyStackTest {
         assertTrue(s.isEmpty());
     }
 
+    /* Regression tests */
+    @Test
+    public void testResizeToZero() {
+        /* The following sequence failed if internal array is resized to length
+         * 0. Following comments describe what happened before the fix.
+         */
+        s.push(1); // a.length == 2
+        s.pop(); // a.length resize to 1
+        s.push(1);
+        s.pop(); // a.length resize to 0
+        s.push(1); // ArrayIndexOutOfBoundsException thrown
+    }
+
     @Test
     public void testIterator() {
         int[] expected = new int[]{4, 3, 2, 1};
