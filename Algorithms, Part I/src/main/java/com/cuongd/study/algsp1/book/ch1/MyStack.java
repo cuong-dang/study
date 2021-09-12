@@ -34,6 +34,14 @@ public class MyStack<Item> implements Iterable<Item> {
         return N == 0;
     }
 
+    public void reverse() {
+        Item[] newA = (Item[]) new Object[a.length];
+        for (int i = N-1; i >= 0; i--) {
+            newA[(N-1)-i] = a[i];
+        }
+        a = newA;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

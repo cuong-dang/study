@@ -36,6 +36,18 @@ public class MyStackTest {
         assertTrue(s.isEmpty());
     }
 
+    @Test
+    public void testReverse() {
+        s.push(1);
+        s.reverse();
+        assertEquals(1, (int) s.pop());
+        s.push(1); s.push(2); s.push(3);
+        s.reverse();
+        assertEquals(1, (int) s.pop());
+        assertEquals(2, (int) s.pop());
+        assertEquals(3, (int) s.pop());
+    }
+
     /* Regression tests */
     @Test
     public void testResizeToZero() {
