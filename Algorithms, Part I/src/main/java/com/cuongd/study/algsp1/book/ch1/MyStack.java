@@ -35,6 +35,18 @@ public class MyStack<Item> implements Iterable<Item> {
     }
 
     @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<");
+        for (int i = 0; i < N; i++) {
+            sb.append(String.format("%s,", a[i]));
+        }
+        sb.deleteCharAt(sb.length()-1);
+        sb.append(">");
+        return sb.toString();
+    }
+
+    @Override
     public Iterator<Item> iterator() {
         return new MyStackIterator();
     }

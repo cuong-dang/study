@@ -58,4 +58,12 @@ public class MyStackTest {
         for (int e : s)
             assertEquals(expected[i++], e);
     }
+
+    @Test
+    public void testToString() {
+        s.push(1);
+        assertEquals("<1>", s.toString());
+        s.push(2);
+        assertEquals("<1,2>", s.toString());
+    }
 }
