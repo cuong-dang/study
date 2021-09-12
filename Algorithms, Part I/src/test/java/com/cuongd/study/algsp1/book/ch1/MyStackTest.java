@@ -3,8 +3,6 @@ package com.cuongd.study.algsp1.book.ch1;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Iterator;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -34,6 +32,13 @@ public class MyStackTest {
         assertEquals(2, (int) s.pop());
         assertEquals(1, (int) s.pop());
         assertTrue(s.isEmpty());
+    }
+
+    @Test
+    public void testPeek() {
+        s.push(1);
+        assertEquals(1, (int) s.peek());
+        assertEquals(1, s.size());
     }
 
     @Test

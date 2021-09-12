@@ -26,6 +26,10 @@ public class MyStack<Item> implements Iterable<Item> {
         return popped;
     }
 
+    public Item peek() {
+        return a[N-1];
+    }
+
     public int size() {
         return N;
     }
