@@ -21,7 +21,7 @@ public class MyStack<Item> implements Iterable<Item> {
 
     public Item pop() {
         Item popped = a[--N];
-        if (N> 0 && N == a.length / 4)
+        if (N > 0 && N == a.length / 4)
             resize(a.length / 2);
         return popped;
     }
