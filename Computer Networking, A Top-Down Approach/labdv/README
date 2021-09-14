@@ -1,0 +1,5 @@
+THE DISTANCE-VECTOR ROUTING ALGORITHM
+
+- link: https://media.pearsoncmg.com/aw/aw_kurose_network_3/labs/lab6/lab6.html
+- work files: node0.c
+- run: cc -Wno-implicit-function-declaration prog3.c node0.c node1.c node2.c node3.c && ./a.out
