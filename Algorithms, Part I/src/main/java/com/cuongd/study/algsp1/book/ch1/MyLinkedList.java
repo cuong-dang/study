@@ -36,6 +36,18 @@ public class MyLinkedList<Item> {
         curr.next = curr.next.next;
     }
 
+    public void removeAfter(Node node) {
+        if (node == null) {
+            return;
+        }
+        for (Node curr = first; curr != null; curr = curr.next) {
+            if (curr == node && curr.next != null) {
+                N--;
+                curr.next = curr.next.next;
+            }
+        }
+    }
+
     class Node {
         Item value;
         Node next;

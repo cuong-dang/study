@@ -34,7 +34,7 @@ public class MyLinkedListTest {
 
     @Test
     public void testDelete0() {
-        list.add(1); list.add(2); list.add(3); list.add(4);
+        addElems();
         list.delete(0);
         assertEquals(3, list.size());
         assertEquals(3, (int) list.first.value);
@@ -42,7 +42,7 @@ public class MyLinkedListTest {
 
     @Test
     public void testDelete1() {
-        list.add(1); list.add(2); list.add(3); list.add(4);
+        addElems();
         list.delete(1);
         assertEquals(3, list.size());
         assertEquals(4, (int) list.first.value);
@@ -51,11 +51,39 @@ public class MyLinkedListTest {
 
     @Test
     public void testDelete3() {
-        list.add(1); list.add(2); list.add(3); list.add(4);
+        addElems();
         list.delete(3);
         assertEquals(3, list.size());
         assertEquals(4, (int) list.first.value);
         assertEquals(3, (int) list.first.next.value);
         assertEquals(2, (int) list.first.next.next.value);
+    }
+
+    @Test
+    public void testRemoveAfter0() {
+        addElems();
+        list.removeAfter(list.first);
+        assertEquals(3, list.size());
+        assertEquals(4, (int) list.first.value);
+        assertEquals(2, (int) list.first.next.value);
+    }
+
+    @Test
+    public void testRemoveAfter2() {
+        addElems();
+        list.removeAfter(list.first.next);
+        assertEquals(3, list.size());
+        assertEquals(1, (int) list.first.next.next.value);
+    }
+
+    @Test
+    public void testRemoveAfterLast() {
+        addElems();
+        list.removeAfter(list.first.next.next.next);
+        assertEquals(4, list.size());
+    }
+
+    private void addElems() {
+        list.add(1); list.add(2); list.add(3); list.add(4);
     }
 }
