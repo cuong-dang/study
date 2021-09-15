@@ -28,13 +28,12 @@ public class MyLinkedList<Item> {
             return;
         }
 
-        Node prev = first, curr = first;
-        while (k > 0) {
+        Node curr = first;
+        while (k > 1) {
             k--;
-            prev = curr;
             curr = curr.next;
         }
-        prev.next = curr.next;
+        curr.next = curr.next.next;
     }
 
     class Node {
