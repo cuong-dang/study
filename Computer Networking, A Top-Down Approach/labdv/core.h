@@ -16,14 +16,15 @@ struct rtpkt
 
 /** Initialize node's distance table and broadcast to neighbor nodes. */
 void rinit(int nodeid, struct distance_table *dt,
-           int c0, int c1, int c2, int c3,
+           int c0, int c1, int c2, int c3, int *isconnected,
            void printdt(struct distance_table *dt));
 
 /** Broadcast node's distance table to neighbor nodes. */
-void broadcast(int nodeid, struct distance_table *dt);
+void broadcast(int nodeid, struct distance_table *dt, int *isconnected);
 
 /** Update node's state upon receiving rtpkt. */
 void rtupdate(int nodeid, struct distance_table *dt, struct rtpkt *rcvdpkt,
+              int *isconnected,
               void printdt(struct distance_table *dt));
 
 #endif

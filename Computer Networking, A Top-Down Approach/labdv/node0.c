@@ -11,17 +11,19 @@ struct distance_table dt0;
 /* students to write the following two routines, and maybe some others */
 void printdt0(struct distance_table *dt0);
 
+int isconnected0[4] = {0, 1, 1, 1};
+
 void rtinit0()
 
 {
-  rinit(0, &dt0, 0, 1, 3, 7, printdt0);
+  rinit(0, &dt0, 0, 1, 3, 7, isconnected0, printdt0);
 }
 
 void rtupdate0(rcvdpkt)
   struct rtpkt *rcvdpkt;
 
 {
-  rtupdate(0, &dt0, rcvdpkt, printdt0);
+  rtupdate(0, &dt0, rcvdpkt, isconnected0, printdt0);
 }
 
 void printdt0(dtptr)

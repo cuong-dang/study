@@ -7,9 +7,10 @@
 extern float clocktime;
 void tolayer2(struct rtpkt rtpkt);
 
-void rinit(nodeid, dt, c0, c1, c2, c3, printdt)
+void rinit(nodeid, dt, c0, c1, c2, c3, isconnected, printdt)
   int nodeid, c0, c1, c2, c3;
   struct distance_table *dt;
+  int *isconnected;
   void printdt(struct distance_table *dt);
 
 {
@@ -28,12 +29,13 @@ void rinit(nodeid, dt, c0, c1, c2, c3, printdt)
       }
   printf("time %.0f: node%d init\n", clocktime, nodeid);
   printdt(dt);
-  broadcast(nodeid, dt);
+  broadcast(nodeid, dt, isconnected);
 }
 
-void broadcast(nodeid, dt)
+void broadcast(nodeid, dt, isconnected)
   int nodeid;
   struct distance_table *dt;
+  int *isconnected;
 
 {
   struct rtpkt rtpkt;
@@ -43,16 +45,18 @@ void broadcast(nodeid, dt)
   for (i = 0; i < NUM_NODES; i++)
     rtpkt.mincost[i] = dt->costs[nodeid][i];
   for (i = 0; i < NUM_NODES; i++)
-    if (i != nodeid && dt->costs[nodeid][i] != NOT_CONNECTED) {
+    if (isconnected[i]) {
+      printf("broadcast %d->%d\n", nodeid, i);
       rtpkt.destid = i;
       tolayer2(rtpkt);
     }
 }
 
-void rtupdate(nodeid, dt, rcvdpkt, printdt)
+void rtupdate(nodeid, dt, rcvdpkt, isconnected, printdt)
   int nodeid;
   struct distance_table *dt;
   struct rtpkt *rcvdpkt;
+  int *isconnected;
   void printdt(struct distance_table *dt);
 
 {
@@ -68,7 +72,7 @@ void rtupdate(nodeid, dt, rcvdpkt, printdt)
              dt->costs[rcvdpkt->sourceid][i], rcvdpkt->mincost[i]);
       dt->costs[rcvdpkt->sourceid][i] = rcvdpkt->mincost[i];
       new_cost_via = dt->costs[nodeid][rcvdpkt->sourceid] +
-                       rcvdpkt->mincost[i];
+                     rcvdpkt->mincost[i];
       if (new_cost_via < dt->costs[nodeid][i]) {
         printf("  new mindv calc: %d->%d: %d->%d\n",
                nodeid, i, dt->costs[nodeid][i], new_cost_via);
@@ -78,5 +82,5 @@ void rtupdate(nodeid, dt, rcvdpkt, printdt)
       }
     }
   }
-  if (dtupdated) broadcast(nodeid, dt);
+  if (dtupdated) broadcast(nodeid, dt, isconnected);
 }

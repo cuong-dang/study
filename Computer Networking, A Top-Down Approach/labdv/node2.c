@@ -11,10 +11,12 @@ struct distance_table dt2;
 /* students to write the following two routines, and maybe some others */
 void printdt2(struct distance_table *dt2);
 
+int isconnected2[4] = {1, 1, 0, 1};
+
 void rtinit2()
 {
 
-  rinit(2, &dt2, 3, 1, 0, 2, printdt2);
+  rinit(2, &dt2, 3, 1, 0, 2, isconnected2, printdt2);
 }
 
 
@@ -22,7 +24,7 @@ void rtupdate2(rcvdpkt)
   struct rtpkt *rcvdpkt;
 
 {
-  rtupdate(2, &dt2, rcvdpkt, printdt2);
+  rtupdate(2, &dt2, rcvdpkt, isconnected2, printdt2);
 }
 
 
