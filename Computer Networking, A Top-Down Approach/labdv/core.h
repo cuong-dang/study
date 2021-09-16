@@ -23,6 +23,7 @@ void rinit(int nodeid, struct distance_table *dt,
 void broadcast(int nodeid, struct distance_table *dt);
 
 /** Update node's state upon receiving rtpkt. */
-void rtupdate(int nodeid, struct distance_table *dt, struct rtpkt *rcvdpkt);
+void rtupdate(int nodeid, struct distance_table *dt, struct rtpkt *rcvdpkt,
+              void printdt(struct distance_table *dt));
 
 #endif

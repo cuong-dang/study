@@ -2,6 +2,7 @@
 #include "core.h"
 
 #define NUM_NODES 4
+#define NOT_CONNECTED 999
 
 extern float clocktime;
 void tolayer2(struct rtpkt rtpkt);
@@ -42,16 +43,17 @@ void broadcast(nodeid, dt)
   for (i = 0; i < NUM_NODES; i++)
     rtpkt.mincost[i] = dt->costs[nodeid][i];
   for (i = 0; i < NUM_NODES; i++)
-    if (i != nodeid) {
+    if (i != nodeid && dt->costs[nodeid][i] != NOT_CONNECTED) {
       rtpkt.destid = i;
       tolayer2(rtpkt);
     }
 }
 
-void rtupdate(nodeid, dt, rcvdpkt)
+void rtupdate(nodeid, dt, rcvdpkt, printdt)
   int nodeid;
   struct distance_table *dt;
   struct rtpkt *rcvdpkt;
+  void printdt(struct distance_table *dt);
 
 {
   int dtupdated = 0;
@@ -68,10 +70,11 @@ void rtupdate(nodeid, dt, rcvdpkt)
       new_cost_via = dt->costs[nodeid][rcvdpkt->sourceid] +
                        rcvdpkt->mincost[i];
       if (new_cost_via < dt->costs[nodeid][i]) {
-        printf("  new mindv calc: 0->%d: %d->%d\n",
-               i, dt->costs[nodeid][i], new_cost_via);
+        printf("  new mindv calc: %d->%d: %d->%d\n",
+               nodeid, i, dt->costs[nodeid][i], new_cost_via);
         if (!dtupdated) dtupdated = 1;
         dt->costs[nodeid][i] = new_cost_via;
+        printdt(dt);
       }
     }
   }

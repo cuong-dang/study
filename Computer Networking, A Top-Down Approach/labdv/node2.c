@@ -1,26 +1,20 @@
 #include <stdio.h>
 
-extern struct rtpkt {
-  int sourceid;       /* id of sending router sending this pkt */
-  int destid;         /* id of router to which pkt being sent
-                         (must be an immediate neighbor) */
-  int mincost[4];    /* min cost to node 0 ... 3 */
-  };
+#include "core.h"
 
 extern int TRACE;
 extern int YES;
 extern int NO;
 
-struct distance_table
-{
-  int costs[4][4];
-} dt2;
-
+struct distance_table dt2;
 
 /* students to write the following two routines, and maybe some others */
+void printdt2(struct distance_table *dt2);
 
 void rtinit2()
 {
+
+  rinit(2, &dt2, 3, 1, 0, 2, printdt2);
 }
 
 
@@ -28,11 +22,11 @@ void rtupdate2(rcvdpkt)
   struct rtpkt *rcvdpkt;
 
 {
-
+  rtupdate(2, &dt2, rcvdpkt, printdt2);
 }
 
 
-printdt2(dtptr)
+void printdt2(dtptr)
   struct distance_table *dtptr;
 
 {

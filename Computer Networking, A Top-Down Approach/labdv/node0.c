@@ -21,7 +21,7 @@ void rtupdate0(rcvdpkt)
   struct rtpkt *rcvdpkt;
 
 {
-  rtupdate(0, &dt0, rcvdpkt);
+  rtupdate(0, &dt0, rcvdpkt, printdt0);
 }
 
 void printdt0(dtptr)
