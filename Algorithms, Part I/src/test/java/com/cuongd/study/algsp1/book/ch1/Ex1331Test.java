@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import static com.cuongd.study.algsp1.book.ch1.Ex1331.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class Ex1331Test {
     private Ex1331<Integer> list;
@@ -16,6 +17,7 @@ public class Ex1331Test {
 
     @Test
     public void testInsertFirst() {
+        assertTrue(list.isEmpty());
         list.insertFirst(3);
         list.insertFirst(2);
         list.insertFirst(1);

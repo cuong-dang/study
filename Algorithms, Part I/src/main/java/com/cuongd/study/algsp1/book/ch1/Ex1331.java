@@ -4,6 +4,10 @@ public class Ex1331<Item> {
     DoubleNode<Item> first;
     DoubleNode<Item> last;
 
+    public boolean isEmpty() {
+        return first == null;
+    }
+
     public Item peek() {
         return first.value;
     }
@@ -26,7 +30,7 @@ public class Ex1331<Item> {
         if (last == null) {
             return insertFirst(value);
         }
-        DoubleNode<Item> node = new DoubleNode<Item>();
+        DoubleNode<Item> node = new DoubleNode<>();
         node.value = value;
         last.next = node;
         node.prev = last;
