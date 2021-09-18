@@ -101,4 +101,20 @@ public class Ex1331Test {
         assertEquals("<1,4>", list.forwardString());
         assertEquals("<4,1>", list.backwardString());
     }
+
+    @Test
+    public void testPeekInsertFirst() {
+        list.insertFirst(1);
+        assertEquals(1, (int) list.peek());
+        list.insertFirst(2);
+        assertEquals(2, (int) list.peek());
+    }
+
+    @Test
+    public void testPeekInsertLast() {
+        list.insertLast(1);
+        assertEquals(1, (int) list.peek());
+        list.insertLast(2);
+        assertEquals(1, (int) list.peek());
+    }
 }

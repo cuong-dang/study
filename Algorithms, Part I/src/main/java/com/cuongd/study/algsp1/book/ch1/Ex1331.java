@@ -4,6 +4,10 @@ public class Ex1331<Item> {
     DoubleNode<Item> first;
     DoubleNode<Item> last;
 
+    public Item peek() {
+        return first.value;
+    }
+
     public DoubleNode<Item> insertFirst(Item value) {
         DoubleNode<Item> node = new DoubleNode<>();
         node.value = value;
