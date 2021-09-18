@@ -96,10 +96,10 @@ public class Ex1331Test {
         node = list.insertLast(2);
         node2 = list.insertLast(3);
         list.insertLast(4);
-        remove(node);
+        list.remove(node);
         assertEquals("<1,3,4>", list.forwardString());
         assertEquals("<4,3,1>", list.backwardString());
-        remove(node2);
+        list.remove(node2);
         assertEquals("<1,4>", list.forwardString());
         assertEquals("<4,1>", list.backwardString());
     }

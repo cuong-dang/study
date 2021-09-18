@@ -58,6 +58,17 @@ public class Ex1331<Item> {
         }
     }
 
+    public void remove(DoubleNode<Item> node) {
+        if (node.prev == null) {
+            this.removeFirst();
+        } else if (node.next == null) {
+            this.removeLast();
+        } else {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        }
+    }
+
     public String forwardString() {
         StringBuilder result = new StringBuilder();
         result.append("<");
@@ -101,13 +112,6 @@ public class Ex1331<Item> {
         newNode.next = node.next;
         node.next.prev = newNode;
         node.next = newNode;
-    }
-
-    static public <Item> void remove(DoubleNode<Item> node) {
-        assert(node.prev != null);
-        assert(node.next != null);
-        node.prev.next = node.next;
-        node.next.prev = node.prev;
     }
 
     static class DoubleNode<Item> {
