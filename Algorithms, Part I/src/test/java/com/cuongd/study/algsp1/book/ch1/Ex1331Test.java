@@ -7,11 +7,11 @@ import static com.cuongd.study.algsp1.book.ch1.Ex1331.*;
 import static org.junit.Assert.assertEquals;
 
 public class Ex1331Test {
-    private Ex1331 list;
+    private Ex1331<Integer> list;
 
     @Before
     public void setup() {
-        list = new Ex1331();
+        list = new Ex1331<>();
     }
 
     @Test
@@ -62,7 +62,7 @@ public class Ex1331Test {
 
     @Test
     public void testInsertBefore() {
-        DoubleNode node;
+        DoubleNode<Integer> node;
 
         list.insertLast(1);
         node = list.insertLast(3);
@@ -75,7 +75,7 @@ public class Ex1331Test {
 
     @Test
     public void testInsertAfter() {
-        DoubleNode node;
+        DoubleNode<Integer> node;
 
         list.insertLast(1);
         node = list.insertLast(2);
@@ -88,7 +88,7 @@ public class Ex1331Test {
 
     @Test
     public void testRemove() {
-        DoubleNode node, node2;
+        DoubleNode<Integer> node, node2;
 
         list.insertLast(1);
         node = list.insertLast(2);

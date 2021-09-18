@@ -1,11 +1,11 @@
 package com.cuongd.study.algsp1.book.ch1;
 
-public class Ex1331 {
-    DoubleNode first;
-    DoubleNode last;
+public class Ex1331<Item> {
+    DoubleNode<Item> first;
+    DoubleNode<Item> last;
 
-    public DoubleNode insertFirst(int value) {
-        DoubleNode node = new DoubleNode();
+    public DoubleNode<Item> insertFirst(Item value) {
+        DoubleNode<Item> node = new DoubleNode<>();
         node.value = value;
         if (first != null) {
             node.next = first;
@@ -18,11 +18,11 @@ public class Ex1331 {
         return node;
     }
 
-    public DoubleNode insertLast(int value) {
+    public DoubleNode<Item> insertLast(Item value) {
         if (last == null) {
             return insertFirst(value);
         }
-        DoubleNode node = new DoubleNode();
+        DoubleNode<Item> node = new DoubleNode<Item>();
         node.value = value;
         last.next = node;
         node.prev = last;
@@ -53,7 +53,7 @@ public class Ex1331 {
     public String forwardString() {
         StringBuilder result = new StringBuilder();
         result.append("<");
-        DoubleNode cur;
+        DoubleNode<Item> cur;
         for (cur = first; cur.next != null; cur = cur.next) {
             result.append(cur.value);
             result.append(",");
@@ -66,7 +66,7 @@ public class Ex1331 {
     public String backwardString() {
         StringBuilder result = new StringBuilder();
         result.append("<");
-        DoubleNode cur;
+        DoubleNode<Item> cur;
         for (cur = last; cur.prev != null; cur = cur.prev) {
             result.append(cur.value);
             result.append(",");
@@ -76,9 +76,9 @@ public class Ex1331 {
         return result.toString();
     }
 
-    static public void insertBefore(DoubleNode node, int value) {
+    static public <Item> void insertBefore(DoubleNode<Item> node, Item value) {
         assert(node.prev != null);
-        DoubleNode newNode = new DoubleNode(), prevNode = node.prev;
+        DoubleNode<Item> newNode = new DoubleNode<>(), prevNode = node.prev;
         newNode.value = value;
         newNode.next = node;
         node.prev = newNode;
@@ -86,8 +86,8 @@ public class Ex1331 {
         newNode.prev = prevNode;
     }
 
-    static public void insertAfter(DoubleNode node, int value) {
-        DoubleNode newNode = new DoubleNode();
+    static public <Item> void insertAfter(DoubleNode<Item> node, Item value) {
+        DoubleNode<Item> newNode = new DoubleNode<>();
         newNode.value = value;
         newNode.prev = node;
         newNode.next = node.next;
@@ -95,16 +95,16 @@ public class Ex1331 {
         node.next = newNode;
     }
 
-    static public void remove(DoubleNode node) {
+    static public <Item> void remove(DoubleNode<Item> node) {
         assert(node.prev != null);
         assert(node.next != null);
         node.prev.next = node.next;
         node.next.prev = node.prev;
     }
 
-    static class DoubleNode {
-        int value;
-        DoubleNode next;
-        DoubleNode prev;
+    static class DoubleNode<Item> {
+        Item value;
+        DoubleNode<Item> next;
+        DoubleNode<Item> prev;
     }
 }
