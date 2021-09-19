@@ -4,6 +4,7 @@
 
 struct distance_table
 {
+  int neighbors[4];
   int costs[4][4];
 };
 
@@ -26,5 +27,9 @@ void broadcast(int nodeid, struct distance_table *dt, int *isconnected);
 void rtupdate(int nodeid, struct distance_table *dt, struct rtpkt *rcvdpkt,
               int *isconnected,
               void printdt(struct distance_table *dt));
+
+/** Handle a change in link cost. */
+void linkhandler(int nodeid, struct distance_table *dt, int *isconnected,
+                 int linkid, int newcost);
 
 #endif

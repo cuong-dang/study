@@ -40,7 +40,7 @@ void printdt0(dtptr)
          dtptr->costs[3][2],dtptr->costs[3][3]);
 }
 
-linkhandler0(linkid, newcost)
+void linkhandler0(linkid, newcost)
   int linkid, newcost;
 
 /* called when cost from 0 to linkid changes from current value to newcost*/
@@ -49,4 +49,5 @@ linkhandler0(linkid, newcost)
 /* constant definition in prog3.c from 0 to 1 */
 
 {
+  linkhandler(0, &dt0, isconnected0, linkid, newcost);
 }

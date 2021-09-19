@@ -42,7 +42,7 @@ void printdt1(dtptr)
 
 }
 
-linkhandler1(linkid, newcost)
+void linkhandler1(linkid, newcost)
 int linkid, newcost;
 /* called when cost from 1 to linkid changes from current value to newcost*/
 /* You can leave this routine empty if you're an undergrad. If you want */
@@ -50,4 +50,5 @@ int linkid, newcost;
 /* constant definition in prog3.c from 0 to 1 */
 
 {
+  linkhandler(1, &dt1, isconnected1, linkid, newcost);
 }
