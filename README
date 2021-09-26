@@ -16,10 +16,12 @@ as a resource could consist of multiple material types such as books,
 labs, or Coursera courses. For further supporting material links (e.g.,
 web, code repos), see individual resource page.
 
-- algsp1: Algorithms, Part I (book & Coursera)
+- algsp1: Algorithms, Part I
   + book: https://www.amazon.com/Algorithms-Part-I-Robert-Sedgewick-ebook/dp/B00I50LKYW
   + Coursera: https://www.coursera.org/learn/algorithms-part1
-- csapp: Computer Systems, A Programmer's Perspective (book)
+- csapp: Computer Systems, A Programmer's Perspective
   + book: http://csapp.cs.cmu.edu/3e/home.html
-- natda: Computer Networking, A Top-Down Approach (book)
+- natda: Computer Networking, A Top-Down Approach
   + book: http://gaia.cs.umass.edu/kurose_ross/index.php
+- fpdis: Functional Program Design in Scala (Coursera)
+  + Coursera: https://www.coursera.org/learn/scala2-functional-program-design
