@@ -1,6 +1,7 @@
 package com.cuongd.study.lcpis
+package ch1
 
-import Ex15.permutations
+import ch1.Ex15.permutations
 
 import org.scalatest.flatspec.AnyFlatSpec
 
