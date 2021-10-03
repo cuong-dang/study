@@ -18,7 +18,6 @@
 #define MAXARGS       128   /* max args on a command line */
 #define MAXJOBS        16   /* max jobs at any point in time */
 #define MAXJID      1<<16   /* max job ID */
-#define NUMBUILTINS     4   /* number of builtin commands */
 
 /* Job states */
 #define UNDEF 0 /* undefined */
@@ -42,7 +41,6 @@ char prompt[] = "tsh> ";    /* command line prompt (DO NOT CHANGE) */
 int verbose = 0;            /* if true, print additional output */
 int nextjid = 1;            /* next job ID to allocate */
 char sbuf[MAXLINE];         /* for composing sprintf messages */
-char *builtins[] = {"quit", "jobs", "fg", "bg"};
 
 struct job_t {              /* The job struct */
     pid_t pid;              /* job PID */
@@ -164,6 +162,13 @@ int main(int argc, char **argv)
 */
 void eval(char *cmdline) 
 {
+    char *argv[MAXARGS];
+    int bg;
+    
+    bg = parseline(cmdline, argv);
+    if (builtin_cmd(argv)) {
+        return;
+    }
     return;
 }
 
@@ -230,6 +235,18 @@ int parseline(const char *cmdline, char **argv)
  */
 int builtin_cmd(char **argv) 
 {
+    if (!argv[0]) {
+        return 0;
+    }
+    if (!strcmp(argv[0], "quit")) {
+        exit(0);
+    } else if (!strcmp(argv[0], "jobs")) {
+        listjobs(jobs);
+        return 1;
+    } else if (!strcmp(argv[0], "bg") || !strcmp(argv[0], "fg")) {
+        do_bgfg(argv);
+        return 1;
+    }
     return 0; /* not a builtin command */
 }
 
@@ -292,17 +309,6 @@ void sigtstp_handler(int sig)
 /***************************
  * Student's helper routines
  ***************************/
-int is_builtin(char *cmd)
-{
-    int i;
-
-    for (i = 0; i < NUMBUILTINS; i++) {
-        if (strcmp(cmd, builtins[i])) {
-            return 1;
-        }
-    }
-    return 0;
-}
 
 /**********************************************
  * Helper routines that manipulate the job list
