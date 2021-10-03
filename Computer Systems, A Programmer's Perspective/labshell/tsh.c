@@ -314,16 +314,22 @@ void waitfg(pid_t pid)
  */
 void sigchld_handler(int sig)
 {
-    int olderrno = errno;
+    int olderrno = errno, status;
     sigset_t mask, prev;
     pid_t pid;
 
     sigfillset(&mask);
-    while ((pid = waitpid(-1, NULL, WNOHANG | WUNTRACED)) > 0) {
+    while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0) {
         sigprocmask(SIG_BLOCK, &mask, &prev);
         if (pid == fgpid(jobs))
             wait_fgpid = pid;
-        deletejob(jobs, pid);
+        if (WIFEXITED(status))
+            deletejob(jobs, pid);
+        else if (WIFSIGNALED(status)) {
+            printf("[%d] (%d) terminated due to receiving signal %d\n",
+                    getjobpid(jobs, pid)->jid, pid, sig);
+            deletejob(jobs, pid);
+        }
         sigprocmask(SIG_SETMASK, &prev, NULL);
     }
     if (pid < 0 && errno != ECHILD)
@@ -339,10 +345,17 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig)
 {
+    int jid;
     pid_t pid = fgpid(jobs);
 
-    if (!pid)
+    if (!pid) {
+        while ((jid = maxjid(jobs))) {
+            pid = getjobjid(jobs, jid)->pid;
+            kill(pid, SIGINT);
+            deletejob(jobs, pid);
+        }
         exit(0);
+    }
     if (kill(pid, SIGINT) < 0)
         unix_error("kill");
     return;
@@ -355,6 +368,14 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig)
 {
+    pid_t pid = fgpid(jobs);
+
+    if (!pid)
+        return;
+    if (kill(pid, SIGSTOP) < 0)
+        unix_error("kill");
+    getjobpid(jobs, pid)->state = ST;
+    wait_fgpid = pid; /* end sigsuspend */
     return;
 }
 
