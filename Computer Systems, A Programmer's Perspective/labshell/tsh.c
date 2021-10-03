@@ -281,7 +281,24 @@ int builtin_cmd(char **argv)
  */
 void do_bgfg(char **argv)
 {
-    return;
+    /* Assume input is well-formed. */
+    int pidorjid = atoi(argv[1]);
+    struct job_t *job = getjobpid(jobs, pidorjid);
+
+    if (!job && !(job = getjobjid(jobs, pidorjid))) {
+        printf("Invalid PID or JID\n");
+        return;
+    }
+    if (kill(job->pid, SIGCONT) < 0)
+        unix_error("kill");
+    if (!strcmp(argv[0], "bg"))
+        job->state = BG;
+    else {
+        job->state = FG;
+        wait_fgpid = 0;
+        waitfg(job->pid);
+    }
+
 }
 
 /*
