@@ -14,10 +14,11 @@
 #include <unistd.h>
 
 /* Misc manifest constants */
-#define MAXLINE    1024   /* max line size */
-#define MAXARGS     128   /* max args on a command line */
-#define MAXJOBS      16   /* max jobs at any point in time */
-#define MAXJID    1<<16   /* max job ID */
+#define MAXLINE      1024   /* max line size */
+#define MAXARGS       128   /* max args on a command line */
+#define MAXJOBS        16   /* max jobs at any point in time */
+#define MAXJID      1<<16   /* max job ID */
+#define NUMBUILTINS     4   /* number of builtin commands */
 
 /* Job states */
 #define UNDEF 0 /* undefined */
@@ -41,6 +42,7 @@ char prompt[] = "tsh> ";    /* command line prompt (DO NOT CHANGE) */
 int verbose = 0;            /* if true, print additional output */
 int nextjid = 1;            /* next job ID to allocate */
 char sbuf[MAXLINE];         /* for composing sprintf messages */
+char *builtins[] = {"quit", "jobs", "fg", "bg"};
 
 struct job_t {              /* The job struct */
     pid_t pid;              /* job PID */
@@ -50,7 +52,6 @@ struct job_t {              /* The job struct */
 };
 struct job_t jobs[MAXJOBS]; /* The job list */
 /* End global variables */
-
 
 /* Function prototypes */
 
@@ -288,7 +289,22 @@ void sigtstp_handler(int sig)
  * End signal handlers
  *********************/
 
-/***********************************************
+/***************************
+ * Student's helper routines
+ ***************************/
+int is_builtin(char *cmd)
+{
+    int i;
+
+    for (i = 0; i < NUMBUILTINS; i++) {
+        if (strcmp(cmd, builtins[i])) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/**********************************************
  * Helper routines that manipulate the job list
  **********************************************/
 
@@ -440,9 +456,8 @@ void listjobs(struct job_t *jobs)
     }
 }
 /******************************
- * end job list helper routines
+ * End job list helper routines
  ******************************/
-
 
 /***********************
  * Other helper routines
