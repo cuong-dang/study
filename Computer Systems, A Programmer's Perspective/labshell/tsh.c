@@ -194,7 +194,8 @@ void eval(char *cmdline)
     } else {
         if (!addjob(jobs, pid, BG, cmdline))
             app_error("addjob");
-        printf("[%d] (%d)\n", pid2jid(pid), pid);
+        printf("[%d] (%d) %s",
+                pid2jid(pid), pid), getjobpid(jobs, pid)->cmdline;
     }
     if (sigprocmask(SIG_SETMASK, &prev, NULL) < 0)
         unix_error("sigprocmask");
@@ -340,8 +341,8 @@ void sigchld_handler(int sig)
         if (WIFEXITED(status))
             deletejob(jobs, pid);
         else if (WIFSIGNALED(status)) {
-            printf("[%d] (%d) terminated due to receiving signal %d\n",
-                    getjobpid(jobs, pid)->jid, pid, sig);
+            printf("Job [%d] (%d) terminated by signal %d\n",
+                    getjobpid(jobs, pid)->jid, pid, WTERMSIG(status));
             deletejob(jobs, pid);
         }
         sigprocmask(SIG_SETMASK, &prev, NULL);
