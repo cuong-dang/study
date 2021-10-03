@@ -85,6 +85,10 @@ void app_error(char *msg);
 typedef void handler_t(int);
 handler_t *Signal(int signum, handler_t *handler);
 
+/* Here are student's helper routines */
+int count_argv(char **argv);
+struct job_t *getjob_bgfg(char *bgfg, char *s, int ispid);
+
 /*
  * main - The shell's main routine
  */
@@ -182,8 +186,10 @@ void eval(char *cmdline)
             unix_error("sigprocmask");
         if (setpgid(0, 0) < 0)
             unix_error("setpgid");
-        if (execve(argv[0], argv, environ) < 0)
-            unix_error("execve");
+        if (execve(argv[0], argv, environ) < 0) {
+            printf("%s: Command not found\n", argv[0]);
+            exit(1);
+        }
     }
     /* Wait fg job */
     if (!bg) {
@@ -195,7 +201,7 @@ void eval(char *cmdline)
         if (!addjob(jobs, pid, BG, cmdline))
             app_error("addjob");
         printf("[%d] (%d) %s",
-                pid2jid(pid), pid), getjobpid(jobs, pid)->cmdline;
+                pid2jid(pid), pid, getjobpid(jobs, pid)->cmdline);
     }
     if (sigprocmask(SIG_SETMASK, &prev, NULL) < 0)
         unix_error("sigprocmask");
@@ -284,12 +290,20 @@ void do_bgfg(char **argv)
 {
     /* Assume input is well-formed. */
     struct job_t *job;
-    char *buf = argv[1];
+    char *buf;
 
+    if (count_argv(argv) < 2) {
+        printf("%s command requires PID or %%jobid argument\n", argv[0]);
+        return;
+    }
+
+    buf = argv[1];
     if (*buf == '%')
-        job = getjobjid(jobs, atoi(++buf));
+        job = getjob_bgfg(argv[0], buf + 1, 0);
     else
-        job = getjobpid(jobs, atoi(buf));
+        job = getjob_bgfg(argv[0], buf, 1);
+    if (!job)
+        return;
     if (kill(-job->pid, SIGCONT) < 0)
         unix_error("kill");
     if (!strcmp(argv[0], "bg"))
@@ -299,7 +313,7 @@ void do_bgfg(char **argv)
         wait_fgpid = 0;
         waitfg(job->pid);
     }
-
+    return;
 }
 
 /*
@@ -407,6 +421,32 @@ void sigtstp_handler(int sig)
 /***************************
  * Student's helper routines
  ***************************/
+int count_argv(char **argv)
+{
+    int i = 0;
+
+    while (*argv++)
+        i++;
+    return i;
+}
+
+struct job_t *getjob_bgfg(char *bgfg, char *s, int ispid)
+{
+    int pjid;
+    char *endptr;
+    struct job_t *job;
+
+    pjid = strtol(s, &endptr, 10);
+    if (*endptr != '\0') {
+        printf("%s: argument must be a PID or %%jobid\n", bgfg);
+        return NULL;
+    }
+    if (ispid && !(job = getjobpid(jobs, pjid)))
+        printf("(%d): No such process\n", pjid);
+    else if (!(job = getjobjid(jobs, pjid)))
+        printf("%%%d: No such job\n", pjid);
+    return job;
+}
 
 /**********************************************
  * Helper routines that manipulate the job list
