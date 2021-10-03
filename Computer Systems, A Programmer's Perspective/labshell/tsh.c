@@ -41,6 +41,7 @@ char prompt[] = "tsh> ";    /* command line prompt (DO NOT CHANGE) */
 int verbose = 0;            /* if true, print additional output */
 int nextjid = 1;            /* next job ID to allocate */
 char sbuf[MAXLINE];         /* for composing sprintf messages */
+int wait_fgpid;             /* current fg pid to wait*/
 
 struct job_t {              /* The job struct */
     pid_t pid;              /* job PID */
@@ -163,12 +164,35 @@ int main(int argc, char **argv)
 void eval(char *cmdline) 
 {
     char *argv[MAXARGS];
-    int bg;
-    
+    int bg, pid;
+    sigset_t mask, prev;
+
     bg = parseline(cmdline, argv);
+    /* Handle builtins */
     if (builtin_cmd(argv)) {
         return;
     }
+    /* Execute job */
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGCHLD);
+    if (sigprocmask(SIG_BLOCK, &mask, &prev) < 0)
+        unix_error("sigprocmask");
+    if ((pid = fork()) == 0) {
+        if (sigprocmask(SIG_SETMASK, &prev, NULL) < 0)
+            unix_error("sigprocmask");
+        if (setpgid(0, 0) < 0)
+            unix_error("setpgid");
+        if (execve(argv[0], argv, environ) < 0)
+            unix_error("execve");
+    }
+    /* Wait fg job */
+    if (!bg) {
+        wait_fgpid = 0;
+        addjob(jobs, pid, FG, cmdline);
+        waitfg(pid);
+    }
+    if (sigprocmask(SIG_SETMASK, &prev, NULL) < 0)
+        unix_error("sigprocmask");
     return;
 }
 
@@ -263,6 +287,12 @@ void do_bgfg(char **argv)
  */
 void waitfg(pid_t pid)
 {
+    sigset_t mask;
+
+    sigemptyset(&mask);
+    while (!wait_fgpid)  {
+        sigsuspend(&mask);
+    }
     return;
 }
 
@@ -279,6 +309,21 @@ void waitfg(pid_t pid)
  */
 void sigchld_handler(int sig) 
 {
+    int olderrno = errno;
+    sigset_t mask, prev;
+    pid_t pid;
+
+    sigfillset(&mask);
+    while ((pid = waitpid(-1, NULL, 0)) > 0) {
+        sigprocmask(SIG_BLOCK, &mask, &prev);
+        if (pid == fgpid(jobs))
+            wait_fgpid = pid;
+        deletejob(jobs, pid);
+        sigprocmask(SIG_SETMASK, &prev, NULL);
+    }
+    if (errno != ECHILD)
+        unix_error("waitpid");
+    errno = olderrno;
     return;
 }
 
