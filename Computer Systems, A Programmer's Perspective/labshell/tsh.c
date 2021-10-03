@@ -103,16 +103,16 @@ int main(int argc, char **argv)
         switch (c) {
         case 'h':             /* print help message */
             usage();
-	    break;
+            break;
         case 'v':             /* emit additional diagnostic info */
             verbose = 1;
-	    break;
+            break;
         case 'p':             /* don't print a prompt */
             emit_prompt = 0;  /* handy for automatic testing */
-	    break;
-	    default:
+            break;
+            default:
             usage();
-	    }
+            }
     }
 
     /* Install the signal handlers */
@@ -220,7 +220,7 @@ int parseline(const char *cmdline, char **argv)
     strcpy(buf, cmdline);
     buf[strlen(buf)-1] = ' ';     /* replace trailing '\n' with space */
     while (*buf && (*buf == ' ')) /* ignore leading spaces */
-	    buf++;
+            buf++;
 
     /* Build the argv list */
     argc = 0;
@@ -229,15 +229,15 @@ int parseline(const char *cmdline, char **argv)
         delim = strchr(buf, '\'');
     }
     else {
-	    delim = strchr(buf, ' ');
+            delim = strchr(buf, ' ');
     }
 
     while (delim) {
         argv[argc++] = buf;
         *delim = '\0';
         buf = delim + 1;
-	    while (*buf && (*buf == ' ')) /* ignore spaces */
-	       buf++;
+            while (*buf && (*buf == ' ')) /* ignore spaces */
+               buf++;
 
         if (*buf == '\'') {
             buf++;
@@ -250,11 +250,11 @@ int parseline(const char *cmdline, char **argv)
     argv[argc] = NULL;
 
     if (argc == 0)  /* ignore blank line */
-	    return 1;
+            return 1;
 
     /* should the job run in the background? */
     if ((bg = (*argv[argc-1] == '&')) != 0) {
-	    argv[--argc] = NULL;
+            argv[--argc] = NULL;
     }
     return bg;
 }
@@ -332,17 +332,24 @@ void sigchld_handler(int sig)
     int olderrno = errno, status;
     sigset_t mask, prev;
     pid_t pid;
+    struct job_t *job;
 
     sigfillset(&mask);
     while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0) {
         sigprocmask(SIG_BLOCK, &mask, &prev);
+        job = getjobpid(jobs, pid);
         if (pid == fgpid(jobs))
             wait_fgpid = pid;
         if (WIFEXITED(status))
             deletejob(jobs, pid);
-        else if (WIFSIGNALED(status)) {
+        else if (WIFSTOPPED(status)) {
+                getjobpid(jobs, pid)->state = ST;
+                wait_fgpid = pid; /* end sigsuspend */
+                printf("Job [%d] (%d) stopped by signal %d\n",
+                       job->jid, pid, WSTOPSIG(status));
+        } else if (WIFSIGNALED(status)) {
             printf("Job [%d] (%d) terminated by signal %d\n",
-                    getjobpid(jobs, pid)->jid, pid, WTERMSIG(status));
+                   job->jid, pid, WTERMSIG(status));
             deletejob(jobs, pid);
         }
         sigprocmask(SIG_SETMASK, &prev, NULL);
@@ -389,8 +396,6 @@ void sigtstp_handler(int sig)
         return;
     if (kill(pid, SIGSTOP) < 0)
         unix_error("kill");
-    getjobpid(jobs, pid)->state = ST;
-    wait_fgpid = pid; /* end sigsuspend */
     return;
 }
 
@@ -419,7 +424,7 @@ void initjobs(struct job_t *jobs) {
     int i;
 
     for (i = 0; i < MAXJOBS; i++)
-	    clearjob(&jobs[i]);
+            clearjob(&jobs[i]);
 }
 
 /* maxjid - Returns largest allocated job ID */
@@ -439,7 +444,7 @@ int addjob(struct job_t *jobs, pid_t pid, int state, char *cmdline)
     int i;
 
     if (pid < 1)
-	    return 0;
+            return 0;
 
     for (i = 0; i < MAXJOBS; i++) {
         if (jobs[i].pid == 0) {
@@ -454,7 +459,7 @@ int addjob(struct job_t *jobs, pid_t pid, int state, char *cmdline)
                         jobs[i].jid, jobs[i].pid, jobs[i].cmdline);
             }
             return 1;
-	    }
+            }
     }
     printf("Tried to create too many jobs\n");
     return 0;
@@ -466,7 +471,7 @@ int deletejob(struct job_t *jobs, pid_t pid)
     int i;
 
     if (pid < 1)
-	    return 0;
+            return 0;
 
     for (i = 0; i < MAXJOBS; i++) {
         if (jobs[i].pid == pid) {
@@ -493,10 +498,10 @@ struct job_t *getjobpid(struct job_t *jobs, pid_t pid) {
     int i;
 
     if (pid < 1)
-	    return NULL;
+            return NULL;
     for (i = 0; i < MAXJOBS; i++)
-	    if (jobs[i].pid == pid)
-	        return &jobs[i];
+            if (jobs[i].pid == pid)
+                return &jobs[i];
     return NULL;
 }
 
@@ -506,10 +511,10 @@ struct job_t *getjobjid(struct job_t *jobs, int jid)
     int i;
 
     if (jid < 1)
-	    return NULL;
+            return NULL;
     for (i = 0; i < MAXJOBS; i++)
-	    if (jobs[i].jid == jid)
-	        return &jobs[i];
+            if (jobs[i].jid == jid)
+                return &jobs[i];
     return NULL;
 }
 
@@ -519,9 +524,9 @@ int pid2jid(pid_t pid)
     int i;
 
     if (pid < 1)
-	    return 0;
+            return 0;
     for (i = 0; i < MAXJOBS; i++)
-	    if (jobs[i].pid == pid) {
+            if (jobs[i].pid == pid) {
             return jobs[i].jid;
         }
     return 0;
@@ -603,7 +608,7 @@ handler_t *Signal(int signum, handler_t *handler)
     action.sa_flags = SA_RESTART; /* restart syscalls if possible */
 
     if (sigaction(signum, &action, &old_action) < 0)
-	    unix_error("Signal error");
+            unix_error("Signal error");
     return (old_action.sa_handler);
 }
 
