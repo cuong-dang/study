@@ -169,7 +169,7 @@ void eval(char *cmdline)
 
     bg = parseline(cmdline, argv);
     /* Handle builtins */
-    if (builtin_cmd(argv)) {
+    if (!argv[0] || builtin_cmd(argv)) {
         return;
     }
     /* Execute job */
@@ -264,9 +264,6 @@ int parseline(const char *cmdline, char **argv)
  */
 int builtin_cmd(char **argv)
 {
-    if (!argv[0]) {
-        return 0;
-    }
     if (!strcmp(argv[0], "quit")) {
         exit(0);
     } else if (!strcmp(argv[0], "jobs")) {
