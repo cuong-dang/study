@@ -188,8 +188,13 @@ void eval(char *cmdline)
     /* Wait fg job */
     if (!bg) {
         wait_fgpid = 0;
-        addjob(jobs, pid, FG, cmdline);
+        if (!addjob(jobs, pid, FG, cmdline))
+            app_error("addjob");
         waitfg(pid);
+    } else {
+        if (!addjob(jobs, pid, BG, cmdline))
+            app_error("addjob");
+        printf("[%d] (%d)\n", pid2jid(pid), pid);
     }
     if (sigprocmask(SIG_SETMASK, &prev, NULL) < 0)
         unix_error("sigprocmask");
@@ -314,14 +319,14 @@ void sigchld_handler(int sig)
     pid_t pid;
 
     sigfillset(&mask);
-    while ((pid = waitpid(-1, NULL, 0)) > 0) {
+    while ((pid = waitpid(-1, NULL, WNOHANG | WUNTRACED)) > 0) {
         sigprocmask(SIG_BLOCK, &mask, &prev);
         if (pid == fgpid(jobs))
             wait_fgpid = pid;
         deletejob(jobs, pid);
         sigprocmask(SIG_SETMASK, &prev, NULL);
     }
-    if (errno != ECHILD)
+    if (pid < 0 && errno != ECHILD)
         unix_error("waitpid");
     errno = olderrno;
     return;
