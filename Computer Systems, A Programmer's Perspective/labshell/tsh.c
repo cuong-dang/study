@@ -290,7 +290,7 @@ void do_bgfg(char **argv)
         job = getjobjid(jobs, atoi(++buf));
     else
         job = getjobpid(jobs, atoi(buf));
-    if (kill(job->pid, SIGCONT) < 0)
+    if (kill(-job->pid, SIGCONT) < 0)
         unix_error("kill");
     if (!strcmp(argv[0], "bg"))
         job->state = BG;
@@ -373,12 +373,13 @@ void sigint_handler(int sig)
     if (!pid) {
         while ((jid = maxjid(jobs))) {
             pid = getjobjid(jobs, jid)->pid;
-            kill(pid, SIGINT);
+            if (kill(-pid, sig) < 0)
+                unix_error("kill");
             deletejob(jobs, pid);
         }
         exit(0);
     }
-    if (kill(pid, SIGINT) < 0)
+    if (kill(-pid, sig) < 0)
         unix_error("kill");
     return;
 }
@@ -394,7 +395,7 @@ void sigtstp_handler(int sig)
 
     if (!pid)
         return;
-    if (kill(pid, SIGSTOP) < 0)
+    if (kill(-pid, sig) < 0)
         unix_error("kill");
     return;
 }
