@@ -283,13 +283,13 @@ int builtin_cmd(char **argv)
 void do_bgfg(char **argv)
 {
     /* Assume input is well-formed. */
-    int pidorjid = atoi(argv[1]);
-    struct job_t *job = getjobpid(jobs, pidorjid);
+    struct job_t *job;
+    char *buf = argv[1];
 
-    if (!job && !(job = getjobjid(jobs, pidorjid))) {
-        printf("Invalid PID or JID\n");
-        return;
-    }
+    if (*buf == '%')
+        job = getjobjid(jobs, atoi(++buf));
+    else
+        job = getjobpid(jobs, atoi(buf));
     if (kill(job->pid, SIGCONT) < 0)
         unix_error("kill");
     if (!strcmp(argv[0], "bg"))
@@ -343,10 +343,10 @@ void sigchld_handler(int sig)
         if (WIFEXITED(status))
             deletejob(jobs, pid);
         else if (WIFSTOPPED(status)) {
-                getjobpid(jobs, pid)->state = ST;
-                wait_fgpid = pid; /* end sigsuspend */
-                printf("Job [%d] (%d) stopped by signal %d\n",
-                       job->jid, pid, WSTOPSIG(status));
+            getjobpid(jobs, pid)->state = ST;
+            wait_fgpid = pid; /* end sigsuspend */
+            printf("Job [%d] (%d) stopped by signal %d\n",
+                    job->jid, pid, WSTOPSIG(status));
         } else if (WIFSIGNALED(status)) {
             printf("Job [%d] (%d) terminated by signal %d\n",
                    job->jid, pid, WTERMSIG(status));
