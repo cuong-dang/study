@@ -25,3 +25,5 @@ web, code repos), see individual resource page.
   + book: http://gaia.cs.umass.edu/kurose_ross/index.php
 - fpdis: Functional Program Design in Scala (Coursera)
   + Coursera: https://www.coursera.org/learn/scala2-functional-program-design
+- lcpis: Learning Concurrent Programming in Scala
+  + book: https://www.packtpub.com/product/learning-concurrent-programming-in-scala/9781783281411
