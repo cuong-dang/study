@@ -6,7 +6,7 @@ import edu.princeton.cs.algs4.StdOut;
 import java.lang.reflect.InvocationTargetException;
 
 public abstract class UnionFind {
-    protected static final String IN_PATH = "./src/main/resources/ch1/mediumUF.txt";
+    protected static final String IN_PATH = "./src/main/resources/ch1/largeUF.txt";
 
     protected final int[] id;
     protected int count;
