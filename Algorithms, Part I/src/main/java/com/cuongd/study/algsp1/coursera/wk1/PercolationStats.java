@@ -1,6 +1,5 @@
 package com.cuongd.study.algsp1.coursera.wk1;
 
-import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
@@ -26,8 +25,9 @@ public class PercolationStats {
 
                 exp.open(randRow, randCol);
             }
-            thresholds[i] = (double) exp.numberOfOpenSites() / n;
+            thresholds[i] = (double) exp.numberOfOpenSites() / (n*n);
         }
+
     }
 
     public double mean() {
@@ -35,7 +35,7 @@ public class PercolationStats {
     }
 
     public double stddev() {
-        return StdStats.stddev(thresholds);
+        return StdStats.stddevp(thresholds);
     }
 
     public double confidenceLo() {
@@ -47,10 +47,11 @@ public class PercolationStats {
     }
 
     public static void main(String[] args) {
-        PercolationStats ps = new PercolationStats(StdIn.readInt(), StdIn.readInt());
+        PercolationStats ps = new PercolationStats(Integer.parseInt(args[0]),
+                Integer.parseInt(args[1]));
 
-        StdOut.println("mean\t\t\t= " + ps.mean());
-        StdOut.println("stddev\t\t\t= " + ps.mean());
+        StdOut.println("mean\t\t\t\t\t= " + ps.mean());
+        StdOut.println("stddev\t\t\t\t\t= " + ps.stddev());
         StdOut.println(String.format("95%% confidence interval\t= [%f, %f]",
                 ps.confidenceLo(), ps.confidenceHi()));
     }
