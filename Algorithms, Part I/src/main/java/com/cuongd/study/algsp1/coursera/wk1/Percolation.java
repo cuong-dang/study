@@ -92,13 +92,11 @@ public class Percolation {
     private static class Site {
         int row, col;
         boolean isOpen;
-        boolean isFull;
 
         Site(int row, int col) {
             this.row = row;
             this.col = col;
             isOpen = false;
-            isFull = false;
         }
     }
 }
