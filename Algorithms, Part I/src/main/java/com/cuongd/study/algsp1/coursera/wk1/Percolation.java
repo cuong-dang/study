@@ -34,6 +34,9 @@ public class Percolation {
         checkRowCol(row, col);
         int r = row - 1, c = col - 1;
 
+        if (grid[r][c].isOpen) {
+            return;
+        }
         grid[r][c].isOpen = true;
         if (r > 0) connectNeighbor(r, c, r - 1, c); // up
         if (r < N-1) connectNeighbor(r, c, r + 1, c); // down

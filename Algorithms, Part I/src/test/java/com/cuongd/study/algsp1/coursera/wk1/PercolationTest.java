@@ -42,6 +42,7 @@ public class PercolationTest {
         assertTrue(p.isOpen(3, 1));
         assertTrue(p.isFull(1, 1));
         assertTrue(p.percolates());
+        assertEquals(4, p.numberOfOpenSites());
     }
 
     @Test
@@ -65,5 +66,13 @@ public class PercolationTest {
         assertTrue(p.isFull(2, 3));
         assertTrue(p.isFull(3, 3));
         assertTrue(p.percolates());
+        assertEquals(5, p.numberOfOpenSites());
+    }
+
+    @Test
+    public void testDuplicateOpenSite() {
+        p.open(1, 1);
+        p.open(1, 1);
+        assertEquals(1, p.numberOfOpenSites());
     }
 }
