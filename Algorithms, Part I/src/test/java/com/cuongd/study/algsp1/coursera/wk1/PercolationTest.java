@@ -15,18 +15,6 @@ public class PercolationTest {
     }
 
     @Test
-    public void testEmptyGrid() {
-        assertEquals(0, p.numberOfOpenSites());
-        assertFalse(p.percolates());
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                assertFalse(p.isOpen(i+1, j+1));
-                assertFalse(p.isFull(i+1, j+1));
-            }
-        }
-    }
-
-    @Test
     public void testPercolateOpenSequentially() {
         p.open(1, 1);
         assertTrue(p.isOpen(1, 1));
@@ -83,5 +71,14 @@ public class PercolationTest {
         assertFalse(q.percolates());
         q.open(1, 1);
         assertTrue(q.percolates());
+    }
+
+    @Test
+    public void testBackwash() {
+        p.open(1, 1);
+        p.open(2, 1);
+        p.open(3, 1);
+        p.open(3, 3);
+        assertFalse(p.isFull(3, 3));
     }
 }
