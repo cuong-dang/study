@@ -8,7 +8,7 @@ public class Percolation {
     private final int n;
     private int topRoot = UNINITIALIZED;
     private int botRoot = UNINITIALIZED;
-    private final Site[][] grid;
+    private final Boolean[][] grid;
     private int numOpenSites;
     private final WeightedQuickUnionUF uf;
 
@@ -17,11 +17,11 @@ public class Percolation {
             throw new IllegalArgumentException();
         }
         this.n = n;
-        grid = new Site[n][n];
+        grid = new Boolean[n][n];
         numOpenSites = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                grid[i][j] = new Site(i+1, j+1);
+                grid[i][j] = false;
             }
         }
         uf = new WeightedQuickUnionUF(n * n);
@@ -31,10 +31,10 @@ public class Percolation {
         checkRowCol(row, col);
         int r = row - 1, c = col - 1;
 
-        if (grid[r][c].isOpen) {
+        if (grid[r][c]) {
             return;
         }
-        grid[r][c].isOpen = true;
+        grid[r][c] = true;
         if (r == 0) {
             if (topRoot == UNINITIALIZED) {
                 topRoot = r*n + c;
@@ -57,7 +57,7 @@ public class Percolation {
 
     public boolean isOpen(int row, int col) {
         checkRowCol(row, col);
-        return grid[row-1][col-1].isOpen;
+        return grid[row-1][col-1];
     }
 
     public boolean isFull(int row, int col) {
@@ -84,17 +84,6 @@ public class Percolation {
     }
 
     private void connectNeighbor(int thisR, int thisC, int thatR, int thatC) {
-        if (grid[thatR][thatC].isOpen) uf.union(thisR*n + thisC, thatR*n + thatC);
-    }
-
-    private static class Site {
-        int row, col;
-        boolean isOpen;
-
-        Site(int row, int col) {
-            this.row = row;
-            this.col = col;
-            isOpen = false;
-        }
+        if (grid[thatR][thatC]) uf.union(thisR*n + thisC, thatR*n + thatC);
     }
 }
