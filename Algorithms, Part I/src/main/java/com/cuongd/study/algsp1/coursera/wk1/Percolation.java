@@ -43,7 +43,7 @@ public class Percolation {
         if (c > 0) connectNeighbor(r, c, r, c - 1); // left
         if (c < n - 1) connectNeighbor(r, c, r, c + 1); // right
         root = uf.find(i);
-        doesPercolate = ((grid[root] & TOP_CONNECTED) == TOP_CONNECTED) &&
+        doesPercolate = doesPercolate || ((grid[root] & TOP_CONNECTED) == TOP_CONNECTED) &&
                 ((grid[root] & BOT_CONNECTED) == BOT_CONNECTED);
         numOpenSites++;
     }
@@ -59,7 +59,7 @@ public class Percolation {
         checkRowCol(row, col);
         int r = row - 1, c = col - 1, root = uf.find(r*n + c);
 
-        return ((grid[root] & OPEN) == OPEN) && ((grid[root] & TOP_CONNECTED) == TOP_CONNECTED);
+        return isOpen(row, col) && ((grid[root] & TOP_CONNECTED) == TOP_CONNECTED);
     }
 
     public int numberOfOpenSites() {
@@ -77,15 +77,17 @@ public class Percolation {
     }
 
     private void connectNeighbor(int thisR, int thisC, int thatR, int thatC) {
-        int root1, root2;
+        int root1, root2, unionBit;
 
-        if ((grid[thatR * n + thatC] & OPEN) != 1) {
+        if ((grid[thatR * n + thatC] & OPEN) != OPEN) {
             return;
         }
         root1 = uf.find(thisR*n + thisC);
         root2 = uf.find(thatR*n + thatC);
-        grid[root1] = (byte) (grid[root1] | grid[root2]);
-        grid[root2] = grid[root1];
+        unionBit = grid[root1] | grid[root2];
         uf.union(root1, root2);
+        assert (uf.find(root1) == uf.find(root2));
+        assert (uf.find(thisR*n + thisC) == uf.find(root1));
+        grid[uf.find(thisR*n + thisC)] = (byte) unionBit;
     }
 }
