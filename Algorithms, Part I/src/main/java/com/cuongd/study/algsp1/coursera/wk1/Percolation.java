@@ -32,18 +32,19 @@ public class Percolation {
 
     public void open(int row, int col) {
         checkRowCol(row, col);
-        int r = row - 1, c = col - 1, i = r*n + c;
+        int r = row - 1, c = col - 1, i = r*n + c, root;
 
         if ((grid[i] & OPEN) == OPEN) {
             return;
         }
-        grid[r*n + c] |= OPEN;
+        grid[i] |= OPEN;
         if (r > 0) connectNeighbor(r, c, r - 1, c); // up
         if (r < n - 1) connectNeighbor(r, c, r + 1, c); // down
         if (c > 0) connectNeighbor(r, c, r, c - 1); // left
         if (c < n - 1) connectNeighbor(r, c, r, c + 1); // right
-        doesPercolate = ((grid[i] & TOP_CONNECTED) == TOP_CONNECTED) &&
-                ((grid[i] & BOT_CONNECTED) == BOT_CONNECTED);
+        root = uf.find(i);
+        doesPercolate = ((grid[root] & TOP_CONNECTED) == TOP_CONNECTED) &&
+                ((grid[root] & BOT_CONNECTED) == BOT_CONNECTED);
         numOpenSites++;
     }
 
@@ -83,7 +84,8 @@ public class Percolation {
         }
         root1 = uf.find(thisR*n + thisC);
         root2 = uf.find(thatR*n + thatC);
-        grid[root1] = grid[root2] = (byte) (grid[root1] | grid[root2]);
+        grid[root1] = (byte) (grid[root1] | grid[root2]);
+        grid[root2] = grid[root1];
         uf.union(root1, root2);
     }
 }
