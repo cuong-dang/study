@@ -8,7 +8,7 @@ public class Percolation {
     private final int n;
     private int topRoot = UNINITIALIZED;
     private int botRoot = UNINITIALIZED;
-    private final Boolean[][] grid;
+    private final boolean[][] grid;
     private int numOpenSites;
     private final WeightedQuickUnionUF uf;
 
@@ -17,7 +17,7 @@ public class Percolation {
             throw new IllegalArgumentException();
         }
         this.n = n;
-        grid = new Boolean[n][n];
+        grid = new boolean[n][n];
         numOpenSites = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
