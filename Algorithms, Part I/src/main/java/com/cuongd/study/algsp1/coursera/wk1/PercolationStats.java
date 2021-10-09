@@ -6,14 +6,14 @@ import edu.princeton.cs.algs4.StdStats;
 
 public class PercolationStats {
     private final double[] thresholds;
-    private final int T;
+    private final int t;
 
     public PercolationStats(int n, int trials) {
         if (n <= 0 || trials <= 0) {
             throw new IllegalArgumentException();
         }
 
-        T = trials;
+        t = trials;
         thresholds = new double[trials];
 
         for (int i = 0; i < trials; i++) {
@@ -39,11 +39,11 @@ public class PercolationStats {
     }
 
     public double confidenceLo() {
-        return mean() - 1.96*stddev()/Math.sqrt(T);
+        return mean() - 1.96*stddev()/Math.sqrt(t);
     }
 
     public double confidenceHi() {
-        return mean() + 1.96*stddev()/Math.sqrt(T);
+        return mean() + 1.96*stddev()/Math.sqrt(t);
     }
 
     public static void main(String[] args) {

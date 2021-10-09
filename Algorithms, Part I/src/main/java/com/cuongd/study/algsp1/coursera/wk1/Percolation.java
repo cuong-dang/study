@@ -5,7 +5,7 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
     private static final int UNINITIALIZED = -1;
 
-    private final int N;
+    private final int n;
     private int topRoot = UNINITIALIZED;
     private int botRoot = UNINITIALIZED;
     private final Site[][] grid;
@@ -16,7 +16,7 @@ public class Percolation {
         if (n <= 0) {
             throw new IllegalArgumentException();
         }
-        N = n;;
+        this.n = n;
         grid = new Site[n][n];
         numOpenSites = 0;
         for (int i = 0; i < n; i++) {
@@ -37,21 +37,21 @@ public class Percolation {
         grid[r][c].isOpen = true;
         if (r == 0) {
             if (topRoot == UNINITIALIZED) {
-                topRoot = r*N + c;
+                topRoot = r* n + c;
             } else {
-                uf.union(topRoot, r * N + c);
+                uf.union(topRoot, r * n + c);
             }
-        } else if (r == N-1) {
+        } else if (r == n -1) {
             if (botRoot == UNINITIALIZED) {
-                botRoot = r*N + c;
+                botRoot = r* n + c;
             } else {
-                uf.union(botRoot, r*N + c);
+                uf.union(botRoot, r* n + c);
             }
         }
         if (r > 0) connectNeighbor(r, c, r - 1, c); // up
-        if (r < N-1) connectNeighbor(r, c, r + 1, c); // down
+        if (r < n -1) connectNeighbor(r, c, r + 1, c); // down
         if (c > 0) connectNeighbor(r, c, r, c - 1); // left
-        if (c < N-1) connectNeighbor(r, c, r, c + 1); // right
+        if (c < n -1) connectNeighbor(r, c, r, c + 1); // right
         numOpenSites++;
     }
 
@@ -64,7 +64,7 @@ public class Percolation {
         checkRowCol(row, col);
         int r = row - 1, c = col - 1;
 
-        return topRoot != UNINITIALIZED && uf.find(r*N + c) == uf.find(topRoot);
+        return topRoot != UNINITIALIZED && uf.find(r* n + c) == uf.find(topRoot);
     }
 
     public int numberOfOpenSites() {
@@ -77,13 +77,13 @@ public class Percolation {
     }
 
     private void checkRowCol(int row, int col) {
-        if (row < 1 || row > N || col < 1 || col > N ) {
+        if (row < 1 || row > n || col < 1 || col > n) {
             throw new IllegalArgumentException();
         }
     }
 
     private void connectNeighbor(int thisR, int thisC, int thatR, int thatC) {
-        if (grid[thatR][thatC].isOpen) uf.union(thisR*N + thisC, thatR*N + thatC);
+        if (grid[thatR][thatC].isOpen) uf.union(thisR* n + thisC, thatR* n + thatC);
     }
 
     private static class Site {
