@@ -3,12 +3,12 @@ package com.cuongd.study.algsp1.coursera.wk1;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private static final int UNINITIALIZED = -1;
+    private static final byte UNINITIALIZED = -1;
 
     private final int n;
     private int topRoot = UNINITIALIZED;
     private int botRoot = UNINITIALIZED;
-    private final boolean[][] grid;
+    private final byte[][] grid;
     private int numOpenSites;
     private final WeightedQuickUnionUF uf;
 
@@ -17,11 +17,11 @@ public class Percolation {
             throw new IllegalArgumentException();
         }
         this.n = n;
-        grid = new boolean[n][n];
+        grid = new byte[n][n];
         numOpenSites = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                grid[i][j] = false;
+                grid[i][j] = 0;
             }
         }
         uf = new WeightedQuickUnionUF(n * n);
@@ -31,10 +31,10 @@ public class Percolation {
         checkRowCol(row, col);
         int r = row - 1, c = col - 1;
 
-        if (grid[r][c]) {
+        if (grid[r][c] == 1) {
             return;
         }
-        grid[r][c] = true;
+        grid[r][c] = 1;
         if (r == 0) {
             if (topRoot == UNINITIALIZED) {
                 topRoot = r*n + c;
@@ -57,7 +57,7 @@ public class Percolation {
 
     public boolean isOpen(int row, int col) {
         checkRowCol(row, col);
-        return grid[row-1][col-1];
+        return grid[row-1][col-1] == 1;
     }
 
     public boolean isFull(int row, int col) {
@@ -84,6 +84,6 @@ public class Percolation {
     }
 
     private void connectNeighbor(int thisR, int thisC, int thatR, int thatC) {
-        if (grid[thatR][thatC]) uf.union(thisR*n + thisC, thatR*n + thatC);
+        if (grid[thatR][thatC] == 1) uf.union(thisR*n + thisC, thatR*n + thatC);
     }
 }
