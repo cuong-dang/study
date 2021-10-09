@@ -69,10 +69,19 @@ public class PercolationTest {
         assertEquals(5, p.numberOfOpenSites());
     }
 
+    /* Regression */
     @Test
     public void testDuplicateOpenSite() {
         p.open(1, 1);
         p.open(1, 1);
         assertEquals(1, p.numberOfOpenSites());
+    }
+
+    @Test
+    public void testNEquals1() {
+        Percolation q = new Percolation(1);
+        assertFalse(q.percolates());
+        q.open(1, 1);
+        assertTrue(q.percolates());
     }
 }

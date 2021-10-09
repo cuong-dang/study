@@ -37,21 +37,21 @@ public class Percolation {
         grid[r][c].isOpen = true;
         if (r == 0) {
             if (topRoot == UNINITIALIZED) {
-                topRoot = r* n + c;
+                topRoot = r*n + c;
             } else {
-                uf.union(topRoot, r * n + c);
+                uf.union(topRoot, r*n + c);
             }
-        } else if (r == n -1) {
+        } else if (r == n - 1) {
             if (botRoot == UNINITIALIZED) {
-                botRoot = r* n + c;
+                botRoot = r*n + c;
             } else {
-                uf.union(botRoot, r* n + c);
+                uf.union(botRoot, r*n + c);
             }
         }
         if (r > 0) connectNeighbor(r, c, r - 1, c); // up
-        if (r < n -1) connectNeighbor(r, c, r + 1, c); // down
+        if (r < n - 1) connectNeighbor(r, c, r + 1, c); // down
         if (c > 0) connectNeighbor(r, c, r, c - 1); // left
-        if (c < n -1) connectNeighbor(r, c, r, c + 1); // right
+        if (c < n - 1) connectNeighbor(r, c, r, c + 1); // right
         numOpenSites++;
     }
 
@@ -64,7 +64,7 @@ public class Percolation {
         checkRowCol(row, col);
         int r = row - 1, c = col - 1;
 
-        return topRoot != UNINITIALIZED && uf.find(r* n + c) == uf.find(topRoot);
+        return topRoot != UNINITIALIZED && uf.find(r*n + c) == uf.find(topRoot);
     }
 
     public int numberOfOpenSites() {
@@ -72,8 +72,9 @@ public class Percolation {
     }
 
     public boolean percolates() {
-        return topRoot != UNINITIALIZED && botRoot != UNINITIALIZED &&
-                uf.find(topRoot) == uf.find(botRoot);
+        return (n == 1 && topRoot != UNINITIALIZED) ||
+                (topRoot != UNINITIALIZED && botRoot != UNINITIALIZED &&
+                        uf.find(topRoot) == uf.find(botRoot));
     }
 
     private void checkRowCol(int row, int col) {
@@ -83,7 +84,7 @@ public class Percolation {
     }
 
     private void connectNeighbor(int thisR, int thisC, int thatR, int thatC) {
-        if (grid[thatR][thatC].isOpen) uf.union(thisR* n + thisC, thatR* n + thatC);
+        if (grid[thatR][thatC].isOpen) uf.union(thisR*n + thisC, thatR*n + thatC);
     }
 
     private static class Site {
