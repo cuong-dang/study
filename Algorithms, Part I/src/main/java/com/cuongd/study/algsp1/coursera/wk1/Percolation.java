@@ -3,7 +3,6 @@ package com.cuongd.study.algsp1.coursera.wk1;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private static final byte UNINITIALIZED = -1;
     private static final byte CLOSED = 0x0;
     private static final byte OPEN = 0x1;
     private static final byte TOP_CONNECTED = 0x2;
@@ -57,9 +56,9 @@ public class Percolation {
 
     public boolean isFull(int row, int col) {
         checkRowCol(row, col);
-        int r = row - 1, c = col - 1;
+        int r = row - 1, c = col - 1, root = uf.find(r*n + c);
 
-        return (grid[uf.find(r*n + c)] & TOP_CONNECTED) == TOP_CONNECTED;
+        return ((grid[root] & OPEN) == OPEN) && ((grid[root] & TOP_CONNECTED) == TOP_CONNECTED);
     }
 
     public int numberOfOpenSites() {

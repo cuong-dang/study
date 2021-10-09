@@ -81,4 +81,9 @@ public class PercolationTest {
         p.open(3, 3);
         assertFalse(p.isFull(3, 3));
     }
+
+    @Test
+    public void testTopConnectedDoesNotMeanFull() {
+        assertFalse(p.isFull(1, 1));
+    }
 }
