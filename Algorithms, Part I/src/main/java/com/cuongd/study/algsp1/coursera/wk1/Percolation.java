@@ -2,14 +2,13 @@ package com.cuongd.study.algsp1.coursera.wk1;
 
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class Percolation {
+    private static final int UNINITIALIZED = -1;
+
     private final int N;
+    private int topRoot = UNINITIALIZED;
+    private int botRoot = UNINITIALIZED;
     private final Site[][] grid;
-    private final Set<Site> topSites;
-    private final Set<Site> botSites;
     private int numOpenSites;
     private final WeightedQuickUnionUF uf;
 
@@ -17,10 +16,8 @@ public class Percolation {
         if (n <= 0) {
             throw new IllegalArgumentException();
         }
-        N = n;
+        N = n;;
         grid = new Site[n][n];
-        topSites = new HashSet<>();
-        botSites = new HashSet<>();
         numOpenSites = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
@@ -38,15 +35,23 @@ public class Percolation {
             return;
         }
         grid[r][c].isOpen = true;
+        if (r == 0) {
+            if (topRoot == UNINITIALIZED) {
+                topRoot = r*N + c;
+            } else {
+                uf.union(topRoot, r * N + c);
+            }
+        } else if (r == N-1) {
+            if (botRoot == UNINITIALIZED) {
+                botRoot = r*N + c;
+            } else {
+                uf.union(botRoot, r*N + c);
+            }
+        }
         if (r > 0) connectNeighbor(r, c, r - 1, c); // up
         if (r < N-1) connectNeighbor(r, c, r + 1, c); // down
         if (c > 0) connectNeighbor(r, c, r, c - 1); // left
         if (c < N-1) connectNeighbor(r, c, r, c + 1); // right
-        if (r == 0) {
-            topSites.add(grid[r][c]);
-        } else if (r == N-1) {
-            botSites.add(grid[r][c]);
-        }
         numOpenSites++;
     }
 
@@ -59,14 +64,7 @@ public class Percolation {
         checkRowCol(row, col);
         int r = row - 1, c = col - 1;
 
-        for (Site topSite : topSites) {
-            int sr = topSite.row - 1;
-            int sc = topSite.col - 1;
-            if (uf.find(r*N + c) == uf.find(sr*N + sc)) {
-                return true;
-            }
-        }
-        return false;
+        return topRoot != UNINITIALIZED && uf.find(r*N + c) == uf.find(topRoot);
     }
 
     public int numberOfOpenSites() {
@@ -74,12 +72,8 @@ public class Percolation {
     }
 
     public boolean percolates() {
-        for (Site botSite : botSites) {
-            if (isFull(botSite.row, botSite.col)) {
-                return true;
-            }
-        }
-        return false;
+        return topRoot != UNINITIALIZED && botRoot != UNINITIALIZED &&
+                uf.find(topRoot) == uf.find(botRoot);
     }
 
     private void checkRowCol(int row, int col) {
