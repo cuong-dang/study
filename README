@@ -1,15 +1,8 @@
 STUDY
-=====
 Solutions to selected exercises from courses and books. Resource links
 and run instructions could be found in individual folder or file.
 
-WHY
-===
-- To make a habit of writing production quality code
-- To be perchance of help to people who go through the same materials
-
 RESOURCE ID
-===========
 Here are the resource IDs used in commit messages. Each resource
 includes in parentheses which resource types' solutions are available
 as a resource could consist of multiple material types such as books,
@@ -23,7 +16,7 @@ web, code repos), see individual resource page.
   + book: http://csapp.cs.cmu.edu/3e/home.html
 - natda: Computer Networking, A Top-Down Approach
   + book: http://gaia.cs.umass.edu/kurose_ross/index.php
-- fpdis: Functional Program Design in Scala (Coursera)
+- fpdis: Functional Program Design in Scala
   + Coursera: https://www.coursera.org/learn/scala2-functional-program-design
 - lcpis: Learning Concurrent Programming in Scala
   + book: https://www.packtpub.com/product/learning-concurrent-programming-in-scala/9781783281411
