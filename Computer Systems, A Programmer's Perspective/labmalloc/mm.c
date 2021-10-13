@@ -18,10 +18,6 @@
 #include "mm.h"
 #include "memlib.h"
 
-/*********************************************************
- * NOTE TO STUDENTS: Before you do anything else, please
- * provide your team information in the following struct.
- ********************************************************/
 team_t team = {
     /* Team name */
     "ateam",
@@ -38,10 +34,12 @@ team_t team = {
 typedef size_t *hptr;
 typedef unsigned char byte;
 
+static hptr prologue;
+
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
 
-/* rounds up to the nearest multiple of ALIGNMENT */
+/* round up to the nearest multiple of ALIGNMENT */
 #define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~0x7)
 
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
@@ -63,13 +61,15 @@ typedef unsigned char byte;
 #define FL6_SIZE ALIGN(2*SIZE_T_SIZE + FL6_MAXSIZE)
 #define FL7_SIZE ALIGN(2*SIZE_T_SIZE + FL7_MAXSIZE)
 
+#define FL(i) (prologue + (i))
+
 /* header & footer */
 #define ALLOCATED 0x1
 #define PREV_ALLOCATED 0x2
 
 /*
- * Initial size for a prologue block that has pointers to different size free
- * lists, an epilogue header, and one free block for each free list.
+ * initial size for a prologue block that has pointers to different size free
+ * lists, an epilogue header, and one free block for each free list
  */
 #define INIT_SIZE ALIGN(NUM_FREELISTS*sizeof(hptr) + SIZE_T_SIZE + \
         FL1_SIZE + FL2_SIZE + FL3_SIZE + FL4_SIZE + FL5_SIZE + FL6_SIZE + \
@@ -81,25 +81,25 @@ typedef unsigned char byte;
 #define FTR(p) ((hptr)((byte *)NEXT_BLK(p) - SIZE_T_SIZE))
 
 /* function prototypes */
-void init_freelist(int i, int minsize);
-
-static hptr prologue;
+static void init_freelist(int freelist_i);
+static inline size_t get_freelist_size(int freelist_i);
+static inline int find_freelist(size_t size);
+static hptr extend_freelist(int freelist_i);
 
 /*
- * mm_init - initialize the malloc package.
+ * mm_init - Initialize the malloc package.
+ *     Segregated free lists are allocated.
  */
 int mm_init(void)
 {
     int i;
-    int freelist_size[NUM_FREELISTS] = {FL1_SIZE, FL2_SIZE, FL3_SIZE, FL4_SIZE,
-            FL5_SIZE, FL6_SIZE, FL7_SIZE};
 
-    if ((prologue = mem_sbrk(INIT_SIZE)) == (hptr)-1) {
+    if ((prologue = mem_sbrk(INIT_SIZE)) == (hptr)-1)
         return -1;
-    }
-    for (i = 0; i < NUM_FREELISTS; i++) {
-        init_freelist(i, freelist_size[i]);
-    }
+    for (i = 0; i < NUM_FREELISTS; i++)
+        init_freelist(i);
+    /* set epilogue */
+    *(hptr)((byte *)prologue + INIT_SIZE - SIZE_T_SIZE) = ALLOCATED;
     return 0;
 }
 
@@ -109,14 +109,16 @@ int mm_init(void)
  */
 void *mm_malloc(size_t size)
 {
-    int newsize = ALIGN(size + SIZE_T_SIZE);
-    void *p = mem_sbrk(newsize);
-    if (p == (void *)-1)
-	return NULL;
-    else {
-        *(size_t *)p = size;
-        return (void *)((char *)p + SIZE_T_SIZE);
-    }
+    int freelist_i;
+    hptr p;
+
+    if (size == 0)
+        return NULL;
+    freelist_i = find_freelist(size);
+    if ((p = find_first_fit(FL(freelist_i), size)) == NULL ||
+            (p = extend_freelist(freelist_i)) == NULL)
+        return NULL;
+    return p + 1;
 }
 
 /*
@@ -146,16 +148,55 @@ void *mm_realloc(void *ptr, size_t size)
     return newptr;
 }
 
-void init_freelist(int freelist_i, int size)
+/*
+ * init_freelist - Initialize a free list.
+ *     Set prologue pointer to the first block. Next block is set to NULL.
+ */
+static void init_freelist(int freelist_i)
 {
     hptr p = prologue + NUM_FREELISTS;
     int i;
 
-    for (i = 0; i < freelist_i; i++) {
+    for (i = 0; i < freelist_i; i++)
         p = NEXT_BLK(p);
-    }
-    *p = size | ALLOCATED | PREV_ALLOCATED;
-    *(hptr *)(p + 1) = NULL;
-    *(FTR(p)) = *p;
-    *(hptr *)(prologue + i) = p;
+    *p = get_freelist_size(freelist_i); /* set header */
+    *(hptr *)(p + 1) = NULL; /* set next */
+    *(FTR(p)) = *p; /* copy header to footer */
+    *(hptr *)(prologue + i) = p; /* set free list's pointer in prologue */
+}
+
+static inline size_t get_freelist_size(int freelist_i)
+{
+    size_t freelist_size[NUM_FREELISTS] = {FL1_SIZE, FL2_SIZE, FL3_SIZE,
+            FL4_SIZE, FL5_SIZE, FL6_SIZE, FL7_SIZE};
+
+    return freelist_size[freelist_i];
+}
+
+/*
+ * find_freelist - Return index of a segregated free list for a given size.
+ */
+static inline int find_freelist(size_t size)
+{
+    if (size <= FL1_MAXSIZE) return 1;
+    if (size <= FL2_MAXSIZE) return 2;
+    if (size <= FL3_MAXSIZE) return 3;
+    if (size <= FL4_MAXSIZE) return 4;
+    if (size <= FL5_MAXSIZE) return 5;
+    if (size <= FL6_MAXSIZE) return 6;
+    return 7;
+}
+
+static hptr extend_freelist(int freelist_i)
+{
+    size_t extend_size = get_freelist_size(freelist_i);
+    hptr p;
+
+    if ((p = mem_sbrk(extend_size)) == (hptr)-1)
+        return NULL;
+    *(p - 1) = extend_size; /* set header */
+    *(hptr *)p = FL(freelist_i); /* set next pointer */
+    *(hptr *)FL(freelist_i) = (p - 1); /* set prologue's pointer */
+    *(size_t *)((char *)p - SIZE_T_SIZE + extend_size) = ALLOCATED;
+    /* TODO coalesce block before epilogue */
 }
