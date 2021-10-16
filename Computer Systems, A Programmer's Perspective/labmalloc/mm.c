@@ -1,14 +1,19 @@
 /*
- * mm.c - Segregated fits memory allocator. The high level policies are
- *     as follows.
- *     - Coalesce blocks immediately upon freeing.
- *     - Best fit search.
+ * mm.c - Segregated fit memory allocator.
+ *     Applied policies:
+ *     - Coalesce blocks immediately upon freeing
+ *     - Best fit search
+ *     Data structure:
+ *     - Prologue block with pointers to segregated lists
+ *     - For each block, there is a header with size, allocated bit, and
+ *       previous block allocated bit; and two pointers to previous and next
+ *       block in the corresponding free list.
  */
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "mm.h"
 #include "memlib.h"
@@ -26,15 +31,21 @@ team_t team = {
     ""
 };
 
+/* debug */
+#define CHECK_HEAP() check_heap()
+
 typedef size_t word;
 typedef word *wordptr;
 typedef unsigned char byte;
 
 /* global control variables */
-static wordptr prologue;
+static wordptr prologue; /* entrance to free lists */
+/* `wilderness` points at epilogue block and marks the beginning of unused
+ * heap memory.
+ */
 static wordptr wilderness;
 
-#define SBRK_SIZE (1 << 12)
+#define SBRK_SIZE (64 * (1 << 12)) /* minimum requested size from sbrk */
 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
@@ -47,47 +58,51 @@ static wordptr wilderness;
 
 /* free lists */
 #define NUM_FREELISTS 7
-#define FL1_MAXSIZE 2
-#define FL2_MAXSIZE 4
-#define FL3_MAXSIZE 8
-#define FL4_MAXSIZE 16
-#define FL5_MAXSIZE 32
-#define FL6_MAXSIZE 64
-#define FL7_MAXSIZE 128 /* and infinity */
-#define FL1_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL1_MAXSIZE*WORD_SIZE)
-#define FL2_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL2_MAXSIZE*WORD_SIZE)
-#define FL3_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL3_MAXSIZE*WORD_SIZE)
-#define FL4_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL4_MAXSIZE*WORD_SIZE)
-#define FL5_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL5_MAXSIZE*WORD_SIZE)
-#define FL6_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL6_MAXSIZE*WORD_SIZE)
-#define FL7_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL7_MAXSIZE*WORD_SIZE)
-
-#define FL(i) (prologue + (i))
+/* free lists' sizes */
+#define FL1_MAXSIZE 16*WORD_SIZE
+#define FL2_MAXSIZE 32*WORD_SIZE
+#define FL3_MAXSIZE 64*WORD_SIZE
+#define FL4_MAXSIZE 128*WORD_SIZE
+#define FL5_MAXSIZE 256*WORD_SIZE
+#define FL6_MAXSIZE 512*WORD_SIZE
+#define FL7_MAXSIZE 1024*WORD_SIZE /* and more */
+#define FL1_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL1_MAXSIZE)
+#define FL2_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL2_MAXSIZE)
+#define FL3_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL3_MAXSIZE)
+#define FL4_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL4_MAXSIZE)
+#define FL5_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL5_MAXSIZE)
+#define FL6_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL6_MAXSIZE)
+#define FL7_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL7_MAXSIZE)
 
 /* header & footer */
 #define ALLOCATED 0x1
 #define PREV_ALLOCATED 0x2
 
 /*
- * initial size for a prologue block that has pointers to different size free
- * lists and an epilogue header
+ * initial size for a prologue block that has pointers to free lists and an
+ * epilogue header
  */
-#define INIT_SIZE ALIGN(NUM_FREELISTS*sizeof(wordptr) + WORD_SIZE)
+#define INIT_SIZE ALIGN(NUM_FREELISTS*WORD_SIZE + WORD_SIZE)
 
 /* macro functions */
-#define PAYLOAD(p) (p + 3)
-#define BLK_SIZE(p) (*(word *)(p) & ~0x7)
+#define FL_HEAD(i) (*(wordptr *)(prologue + (i)))
+#define PAYLOAD(p) ((p) + 3)
+#define BLK_SIZE(p) (*(p) & ~0x7)
 #define SUCC_BLK(p) ((wordptr)((byte *)(p) + BLK_SIZE(p)))
-#define FTR(p) ((wordptr)((byte *)SUCC_BLK(p) - WORD_SIZE))
-#define NEXT_BLK(p) (*(wordptr *)(p + 2))
+#define PREV_PTR(p) ((wordptr *)(p + 1))
+#define NEXT_PTR(p) ((wordptr *)(p + 2))
 #define PREV_BLK(p) (*(wordptr *)(p + 1))
+#define NEXT_BLK(p) (*(wordptr *)(p + 2))
+#define HDR(p) (*(p))
+#define FTR(p) (*(wordptr)((byte *)SUCC_BLK(p) - WORD_SIZE))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 /* function prototypes */
 static inline size_t get_freelist_size(int freelist_i);
-static inline int find_freelist(size_t size);
-static wordptr find_best_fit(wordptr first_block, size_t size);
+static inline int find_freelist_i(size_t size);
+static wordptr find_best_fit(wordptr head_block, size_t size);
 static wordptr extend_freelist(int freelist_i, size_t size);
+static void check_heap();
 
 /*
  * mm_init - Initialize the malloc package.
@@ -103,7 +118,9 @@ int mm_init(void)
         *(wordptr *)(prologue + i) = NULL;
     /* set epilogue */
     *(wordptr)((byte *)prologue + INIT_SIZE - WORD_SIZE) = ALLOCATED;
-    wilderness = prologue + INIT_SIZE;
+    /* wilderness points to epilogue */
+    wilderness = (wordptr)((byte *)prologue + INIT_SIZE - WORD_SIZE);
+    CHECK_HEAP();
     return 0;
 }
 
@@ -119,20 +136,23 @@ void *mm_malloc(size_t size)
 
     if (size == 0)
         return NULL;
-    freelist_i = find_freelist(size);
+    /* get free block */
+    freelist_i = find_freelist_i(size);
     freelist_sz = get_freelist_size(freelist_i);
-    if ((p = find_best_fit(FL(freelist_i), size)) == NULL &&
+    if ((p = find_best_fit(FL_HEAD(freelist_i), size)) == NULL &&
             (p = extend_freelist(freelist_i, MAX(freelist_sz, size))) == NULL)
         return NULL;
+    /* prepare block */
     *p |= ALLOCATED;
     *(SUCC_BLK(p)) |= PREV_ALLOCATED;
-    if (*(wordptr *)(p + 1) != NULL)
-        *(wordptr *)(PREV_BLK(p) + 2) = p + 2;
+    if (PREV_BLK(p) != NULL)
+        *NEXT_PTR(PREV_BLK(p)) = NEXT_BLK(p);
     else /* first block of list */
-        *(wordptr *)FL(freelist_i) = NEXT_BLK(p);
-    if (*(wordptr *)(p + 2) != NULL)
-        *(wordptr *)(NEXT_BLK(p) + 1) = PREV_BLK(p);
-    /* TODO split block */
+        FL_HEAD(freelist_i) = NEXT_BLK(p);
+    if (NEXT_BLK(p) != NULL)
+        *PREV_PTR(NEXT_BLK(p)) = PREV_BLK(p);
+    /* split block */
+    CHECK_HEAP();
     return PAYLOAD(p);
 }
 
@@ -163,6 +183,9 @@ void *mm_realloc(void *ptr, size_t size)
     return newptr;
 }
 
+/*
+ * get_freelist_size - Return minimum size of a freelist for extension.
+ */
 static inline size_t get_freelist_size(int freelist_i)
 {
     size_t freelist_size[NUM_FREELISTS] = {
@@ -172,9 +195,9 @@ static inline size_t get_freelist_size(int freelist_i)
 }
 
 /*
- * find_freelist - Return index of a segregated free list for a given size.
+ * find_freelist_i - Return index of a segregated free list for a given size.
  */
-static inline int find_freelist(size_t size)
+static inline int find_freelist_i(size_t size)
 {
     if (size <= FL1_MAXSIZE) return 0;
     if (size <= FL2_MAXSIZE) return 1;
@@ -185,38 +208,76 @@ static inline int find_freelist(size_t size)
     return 6;
 }
 
-static wordptr find_best_fit(wordptr first_block, size_t size)
+/*
+ * find_best_fit - Simple linear search entire free list for a best fit
+ *     block.
+ */
+static wordptr find_best_fit(wordptr head_block, size_t size)
 {
-    wordptr best_block = first_block, next_block = first_block;
-    size_t best_fit_size = BLK_SIZE(best_block), next_block_size;
+    wordptr best_block, curr_block;
+    size_t best_fit_size, next_block_size;
 
-    if (*first_block == NULL)
+    if (head_block == NULL)
         return NULL;
-    while ((next_block = NEXT_BLK(next_block)) != NULL) {
-        next_block_size = BLK_SIZE(next_block);
+    best_block = curr_block = head_block;
+    best_fit_size = BLK_SIZE(best_block);
+    while ((curr_block = NEXT_BLK(curr_block)) != NULL) {
+        next_block_size = BLK_SIZE(curr_block);
         if (next_block_size >= size && next_block_size < best_fit_size) {
-            best_block = next_block;
+            best_block = curr_block;
             best_fit_size = next_block_size;
         }
     }
-    return next_block;
+    return best_block;
 }
 
+/*
+ * extend_freelist - Extend a freelist when there are no suitable free blocks.
+ *     A new block is taken from `wilderness`. If `wilderness` is too small,
+ *     call sbrk to extend heap.
+ */
 static wordptr extend_freelist(int freelist_i, size_t size)
 {
     wordptr p = wilderness;
+    /* extend_size equals to requested size and 1 WORD_SIZE for header,
+     * 2*PTR_SIZE for next and prev pointers, and 1 WORD_SIZE for new epilogue
+     * block.
+     */
+    size_t extend_size = ALIGN(size + 2*WORD_SIZE + 2*PTR_SIZE);
+    size_t prev_blk_allocated = *p & PREV_ALLOCATED;
 
-    if (((byte *)p + ALIGN(size) > (byte *)mem_heap_hi) &&
-            mem_sbrk(SBRK_SIZE) == (void *)-1)
+    if (((byte *)p + extend_size > (byte *)mem_heap_hi) &&
+            mem_sbrk(MAX(SBRK_SIZE, extend_size)) == (void *)-1)
         return NULL;
-    *p = ALIGN(size); /* set header */
-    *(wordptr *)FTR(p) = p; /* set footer */
-    *(wordptr *)(p + 1) = NULL; /* set previous */
-    *(wordptr *)(p + 2) = *(wordptr *)FL(freelist_i); /* set next */
-    if (*(wordptr *)(p + 2) != NULL)
-        *(wordptr *)(NEXT_BLK(p) + 1) = p; /* set next block's previous */
-    *(wordptr *)FL(freelist_i) = p; /* set head at prologue */
-    *((byte *)p + ALIGN(size)) = ALLOCATED; /* set epilogue */
-    wilderness = (wordptr)((byte *)wilderness + ALIGN(size) + WORD_SIZE);
+    /* taking whole extend_size as block will get split soon */
+    HDR(p) = extend_size | prev_blk_allocated;
+    FTR(p) = HDR(p);
+    PREV_BLK(p) = NULL;
+    NEXT_BLK(p) = FL_HEAD(freelist_i);
+    if (NEXT_BLK(p) != NULL)
+        *PREV_PTR(NEXT_BLK(p)) = p; /* set next block's previous */
+    FL_HEAD(freelist_i) = p; /* set head at prologue */
+    *((byte *)p + extend_size - WORD_SIZE) = ALLOCATED; /* set epilogue */
+    wilderness = (wordptr)((byte *)wilderness + extend_size - WORD_SIZE);
     return p;
+}
+
+static void check_heap()
+{
+    int i;
+    size_t size;
+    wordptr p, p_prev;
+
+    for (i = 0; i < NUM_FREELISTS; i++) {
+        for (p = FL_HEAD(i), p_prev = NULL; p != NULL;
+                p = NEXT_BLK(p), p_prev = p) {
+            size = BLK_SIZE(p);
+            /* check: block belongs to correct list */
+            assert(find_freelist_i(size) == i);
+            /* check: block is linked properly */
+            assert(PREV_BLK(p) == p_prev);
+            /* check: no two consecutive free blocks */
+            assert(HDR(p) & PREV_ALLOCATED);
+        }
+    }
 }
