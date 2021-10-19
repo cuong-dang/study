@@ -3,6 +3,8 @@
  *     Applied policies:
  *     - Coalesce blocks immediately upon freeing
  *     - Best fit search
+ *     - New free blocks are taken from the `wilderness`, which marks the
+ *     - beginning of unsed heap area.
  *     Data structure:
  *     - Prologue block with pointers to segregated lists
  *     - For each block, there is a header with size, allocated bit, and
@@ -152,6 +154,7 @@ void *mm_malloc(size_t size)
     if (NEXT_BLK(p) != NULL)
         *PREV_PTR(NEXT_BLK(p)) = PREV_BLK(p);
     /* split block */
+
     CHECK_HEAP();
     return PAYLOAD(p);
 }
@@ -277,7 +280,9 @@ static void check_heap()
             /* check: block is linked properly */
             assert(PREV_BLK(p) == p_prev);
             /* check: no two consecutive free blocks */
-            assert(HDR(p) & PREV_ALLOCATED);
+            if (!(HDR(p) & ALLOCATED))
+                assert((HDR(p) & PREV_ALLOCATED) ||
+                       (HDR(NEXT_BLK(p)) & ALLOCATED));
         }
     }
 }
