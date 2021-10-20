@@ -11,8 +11,8 @@ public class SelectionSort extends SortCommon {
                 if (less(a[j], a[min])) {
                     min = j;
                 }
-                exchange(a, i, min);
             }
+            exchange(a, i, min);
         }
     }
 
