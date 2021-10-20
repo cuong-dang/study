@@ -47,7 +47,7 @@ static wordptr prologue; /* entrance to free lists */
  */
 static wordptr wilderness;
 
-#define SBRK_SIZE (64 * (1 << 12)) /* minimum requested size from sbrk */
+#define SBRK_SIZE (8*WORD_SIZE) /* minimum requested size from sbrk */
 
 /* single word (4) or double word (8) alignment */
 #define ALIGNMENT 8
@@ -85,7 +85,7 @@ static wordptr wilderness;
  * initial size for a prologue block that has pointers to free lists and an
  * epilogue header
  */
-#define INIT_SIZE ALIGN(NUM_FREELISTS*WORD_SIZE + WORD_SIZE)
+#define INIT_SIZE (NUM_FREELISTS*WORD_SIZE + WORD_SIZE)
 
 /* macro functions */
 #define FL_HEAD(i) (*(wordptr *)(prologue + (i)))
@@ -117,7 +117,7 @@ int mm_init(void)
 {
     int i;
 
-    if ((prologue = mem_sbrk(SBRK_SIZE)) == (wordptr)-1)
+    if ((prologue = mem_sbrk(MAX(SBRK_SIZE, INIT_SIZE))) == (wordptr)-1)
         return -1;
     for (i = 0; i < NUM_FREELISTS; i++)
         *(wordptr *)(prologue + i) = NULL;
@@ -165,10 +165,20 @@ void *mm_malloc(size_t size)
 }
 
 /*
- * mm_free - Freeing a block does nothing.
+ * mm_free - Free a block. Coalesce immediately if possible.
  */
 void mm_free(void *ptr)
 {
+    wordptr p = (wordptr)ptr - 1;
+    int freelist_i = find_freelist_i(BLOCK_SIZE(p));
+
+    HDR(p) &= ~ALLOCATED;
+    FTR(p) = HDR(p);
+    HDR(SUCC_BLOCK(p)) &= ~PREV_ALLOCATED;
+    if (SUCC_BLOCK(p) != wilderness)
+        FTR(SUCC_BLOCK(p)) = HDR(SUCC_BLOCK(p));
+    insert_freelist(p, freelist_i);
+    CHECK_HEAP();
 }
 
 /*
@@ -224,18 +234,17 @@ static inline int find_freelist_i(size_t size)
  */
 static wordptr find_best_fit(wordptr head_block, size_t size)
 {
-    wordptr best_block, curr_block;
-    size_t best_fit_size, next_block_size;
+    wordptr curr_block, best_block = NULL;
 
-    if (head_block == NULL)
-        return NULL;
-    best_block = curr_block = head_block;
-    best_fit_size = BLOCK_SIZE(best_block);
-    while ((curr_block = NEXT_BLOCK(curr_block)) != NULL) {
-        next_block_size = BLOCK_SIZE(curr_block);
-        if (next_block_size >= size && next_block_size < best_fit_size) {
-            best_block = curr_block;
-            best_fit_size = next_block_size;
+    for (curr_block = head_block; curr_block != NULL;
+            curr_block = NEXT_BLOCK(curr_block)) {
+        if (BLOCK_SIZE(curr_block) >= ALIGN(size) + WORD_SIZE) {
+            if (best_block == NULL) {
+                best_block = curr_block;
+                continue;
+            }
+            if (BLOCK_SIZE(curr_block) < BLOCK_SIZE(best_block))
+                best_block = curr_block;
         }
     }
     return best_block;
@@ -262,8 +271,8 @@ static wordptr extend_freelist(int freelist_i, size_t size)
     HDR(p) = (extend_size - WORD_SIZE) | prev_allocated_status;
     FTR(p) = HDR(p);
     insert_freelist(p, freelist_i);
-    *((byte *)p + BLOCK_SIZE(p)) = ALLOCATED; /* set epilogue */
     wilderness = (wordptr)((byte *)p + BLOCK_SIZE(p));
+    *wilderness = ALLOCATED; /* set epilogue */
     return p;
 }
 
@@ -279,7 +288,7 @@ static void split_block(wordptr p, size_t size)
     HDR(new_block) = new_block_size | PREV_ALLOCATED;
     FTR(new_block) = HDR(new_block);
     insert_freelist(new_block, freelist_i);
-    HDR(p) = (ALIGN(size) + WORD_SIZE) | prev_allocated_status;
+    HDR(p) = (ALIGN(size) + WORD_SIZE) | ALLOCATED | prev_allocated_status;
 }
 
 static inline void insert_freelist(wordptr p, int freelist_i)
@@ -306,9 +315,16 @@ static void check_heap()
             /* check: block is linked properly */
             assert(PREV_BLOCK(p) == p_prev);
             /* check: no two consecutive free blocks */
-            if (!(HDR(p) & ALLOCATED))
-                assert((HDR(p) & PREV_ALLOCATED) ||
-                       (HDR(NEXT_BLOCK(p)) & ALLOCATED));
+            // if (!(HDR(p) & ALLOCATED))
+            //     assert((HDR(p) & PREV_ALLOCATED) ||
+            //            (HDR(SUCC_BLOCK(p)) & ALLOCATED));
         }
     }
+    /* check: successive blocks end at an epilogue */
+    for (p = (wordptr)((byte *)prologue + INIT_SIZE - WORD_SIZE);
+            *p != ALLOCATED && *p != (ALLOCATED | PREV_ALLOCATED);
+            p = SUCC_BLOCK(p))
+        /* check: wilderness points to epilogue block */
+        assert(*wilderness == ALLOCATED ||
+               *wilderness == (ALLOCATED | PREV_ALLOCATED));
 }
