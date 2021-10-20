@@ -55,26 +55,27 @@ static wordptr wilderness;
 /* round up to the nearest multiple of ALIGNMENT */
 #define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~0x7)
 
-#define WORD_SIZE (ALIGN(sizeof(word)))
+#define WORD_SIZE (ALIGN(sizeof(wordptr)))
 #define PTR_SIZE (ALIGN(sizeof(wordptr)))
 
 /* free lists */
 #define NUM_FREELISTS 7
-/* free lists' sizes */
-#define FL1_MAXSIZE 16*WORD_SIZE
-#define FL2_MAXSIZE 32*WORD_SIZE
-#define FL3_MAXSIZE 64*WORD_SIZE
-#define FL4_MAXSIZE 128*WORD_SIZE
-#define FL5_MAXSIZE 256*WORD_SIZE
-#define FL6_MAXSIZE 512*WORD_SIZE
-#define FL7_MAXSIZE 1024*WORD_SIZE /* and more */
-#define FL1_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL1_MAXSIZE)
-#define FL2_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL2_MAXSIZE)
-#define FL3_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL3_MAXSIZE)
-#define FL4_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL4_MAXSIZE)
-#define FL5_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL5_MAXSIZE)
-#define FL6_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL6_MAXSIZE)
-#define FL7_SIZE ALIGN(WORD_SIZE + 2*PTR_SIZE + FL7_MAXSIZE)
+/* free lists' sizes (excluding header) */
+#define FL1_MAXSIZE (4*WORD_SIZE)
+#define FL2_MAXSIZE (16*WORD_SIZE)
+#define FL3_MAXSIZE (32*WORD_SIZE)
+#define FL4_MAXSIZE (64*WORD_SIZE)
+#define FL5_MAXSIZE (128*WORD_SIZE)
+#define FL6_MAXSIZE (256*WORD_SIZE)
+#define FL7_MAXSIZE (512*WORD_SIZE) /* and more */
+#define FL1_SIZE (WORD_SIZE + FL1_MAXSIZE)
+#define FL2_SIZE (WORD_SIZE + FL2_MAXSIZE)
+#define FL3_SIZE (WORD_SIZE + FL3_MAXSIZE)
+#define FL4_SIZE (WORD_SIZE + FL4_MAXSIZE)
+#define FL5_SIZE (WORD_SIZE + FL5_MAXSIZE)
+#define FL6_SIZE (WORD_SIZE + FL6_MAXSIZE)
+#define FL7_SIZE (WORD_SIZE + FL7_MAXSIZE)
+#define MIN_BLOCK_SIZE (2*WORD_SIZE + 2*PTR_SIZE + WORD_SIZE)
 
 /* header & footer */
 #define ALLOCATED 0x1
@@ -88,15 +89,15 @@ static wordptr wilderness;
 
 /* macro functions */
 #define FL_HEAD(i) (*(wordptr *)(prologue + (i)))
-#define PAYLOAD(p) ((p) + 3)
-#define BLK_SIZE(p) (*(p) & ~0x7)
-#define SUCC_BLK(p) ((wordptr)((byte *)(p) + BLK_SIZE(p)))
-#define PREV_PTR(p) ((wordptr *)(p + 1))
-#define NEXT_PTR(p) ((wordptr *)(p + 2))
-#define PREV_BLK(p) (*(wordptr *)(p + 1))
-#define NEXT_BLK(p) (*(wordptr *)(p + 2))
+#define PAYLOAD(p) ((p) + 1)
+#define BLOCK_SIZE(p) (*(p) & ~0x7)
+#define SUCC_BLOCK(p) ((wordptr)((byte *)(p) + BLOCK_SIZE(p)))
+#define PREV_PTR(p) ((wordptr *)((p) + 1))
+#define NEXT_PTR(p) ((wordptr *)((p) + 2))
+#define PREV_BLOCK(p) (*(wordptr *)((p) + 1))
+#define NEXT_BLOCK(p) (*(wordptr *)((p) + 2))
 #define HDR(p) (*(p))
-#define FTR(p) (*(wordptr)((byte *)SUCC_BLK(p) - WORD_SIZE))
+#define FTR(p) (*(wordptr)((byte *)SUCC_BLOCK(p) - WORD_SIZE))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
 /* function prototypes */
@@ -104,6 +105,8 @@ static inline size_t get_freelist_size(int freelist_i);
 static inline int find_freelist_i(size_t size);
 static wordptr find_best_fit(wordptr head_block, size_t size);
 static wordptr extend_freelist(int freelist_i, size_t size);
+static void split_block(wordptr p, size_t size);
+static inline void insert_freelist(wordptr p, int freelist_i);
 static void check_heap();
 
 /*
@@ -146,15 +149,17 @@ void *mm_malloc(size_t size)
         return NULL;
     /* prepare block */
     *p |= ALLOCATED;
-    *(SUCC_BLK(p)) |= PREV_ALLOCATED;
-    if (PREV_BLK(p) != NULL)
-        *NEXT_PTR(PREV_BLK(p)) = NEXT_BLK(p);
+    *(SUCC_BLOCK(p)) |= PREV_ALLOCATED;
+    if (PREV_BLOCK(p) != NULL)
+        *NEXT_PTR(PREV_BLOCK(p)) = NEXT_BLOCK(p);
     else /* first block of list */
-        FL_HEAD(freelist_i) = NEXT_BLK(p);
-    if (NEXT_BLK(p) != NULL)
-        *PREV_PTR(NEXT_BLK(p)) = PREV_BLK(p);
+        FL_HEAD(freelist_i) = NEXT_BLOCK(p);
+    if (NEXT_BLOCK(p) != NULL)
+        *PREV_PTR(NEXT_BLOCK(p)) = PREV_BLOCK(p);
+    CHECK_HEAP();
     /* split block */
-
+    if (BLOCK_SIZE(p) >= ALIGN(size) + WORD_SIZE + MIN_BLOCK_SIZE)
+        split_block(p, size);
     CHECK_HEAP();
     return PAYLOAD(p);
 }
@@ -202,6 +207,8 @@ static inline size_t get_freelist_size(int freelist_i)
  */
 static inline int find_freelist_i(size_t size)
 {
+    size = ALIGN(size);
+
     if (size <= FL1_MAXSIZE) return 0;
     if (size <= FL2_MAXSIZE) return 1;
     if (size <= FL3_MAXSIZE) return 2;
@@ -223,9 +230,9 @@ static wordptr find_best_fit(wordptr head_block, size_t size)
     if (head_block == NULL)
         return NULL;
     best_block = curr_block = head_block;
-    best_fit_size = BLK_SIZE(best_block);
-    while ((curr_block = NEXT_BLK(curr_block)) != NULL) {
-        next_block_size = BLK_SIZE(curr_block);
+    best_fit_size = BLOCK_SIZE(best_block);
+    while ((curr_block = NEXT_BLOCK(curr_block)) != NULL) {
+        next_block_size = BLOCK_SIZE(curr_block);
         if (next_block_size >= size && next_block_size < best_fit_size) {
             best_block = curr_block;
             best_fit_size = next_block_size;
@@ -242,27 +249,46 @@ static wordptr find_best_fit(wordptr head_block, size_t size)
 static wordptr extend_freelist(int freelist_i, size_t size)
 {
     wordptr p = wilderness;
-    /* extend_size equals to requested size and 1 WORD_SIZE for header,
-     * 2*PTR_SIZE for next and prev pointers, and 1 WORD_SIZE for new epilogue
-     * block.
+    /* extend_size equals to requested size plus 1 WORD_SIZE for header plus
+     * 1 WORD_SIZE for new epilogue block.
      */
-    size_t extend_size = ALIGN(size + 2*WORD_SIZE + 2*PTR_SIZE);
-    size_t prev_blk_allocated = *p & PREV_ALLOCATED;
+    size_t extend_size = ALIGN(size) + 2*WORD_SIZE;
+    size_t prev_allocated_status = HDR(p) & PREV_ALLOCATED;
 
     if (((byte *)p + extend_size > (byte *)mem_heap_hi) &&
             mem_sbrk(MAX(SBRK_SIZE, extend_size)) == (void *)-1)
         return NULL;
     /* taking whole extend_size as block will get split soon */
-    HDR(p) = extend_size | prev_blk_allocated;
+    HDR(p) = (extend_size - WORD_SIZE) | prev_allocated_status;
     FTR(p) = HDR(p);
-    PREV_BLK(p) = NULL;
-    NEXT_BLK(p) = FL_HEAD(freelist_i);
-    if (NEXT_BLK(p) != NULL)
-        *PREV_PTR(NEXT_BLK(p)) = p; /* set next block's previous */
-    FL_HEAD(freelist_i) = p; /* set head at prologue */
-    *((byte *)p + extend_size - WORD_SIZE) = ALLOCATED; /* set epilogue */
-    wilderness = (wordptr)((byte *)wilderness + extend_size - WORD_SIZE);
+    insert_freelist(p, freelist_i);
+    *((byte *)p + BLOCK_SIZE(p)) = ALLOCATED; /* set epilogue */
+    wilderness = (wordptr)((byte *)p + BLOCK_SIZE(p));
     return p;
+}
+
+static void split_block(wordptr p, size_t size)
+{
+    size_t new_block_size = BLOCK_SIZE(p) - (ALIGN(size) + WORD_SIZE),
+           prev_allocated_status = HDR(p) & PREV_ALLOCATED;
+    wordptr new_block;
+    int freelist_i;
+
+    new_block = (wordptr)((byte *)p + ALIGN(size) + WORD_SIZE);
+    freelist_i = find_freelist_i(new_block_size);
+    HDR(new_block) = new_block_size | PREV_ALLOCATED;
+    FTR(new_block) = HDR(new_block);
+    insert_freelist(new_block, freelist_i);
+    HDR(p) = (ALIGN(size) + WORD_SIZE) | prev_allocated_status;
+}
+
+static inline void insert_freelist(wordptr p, int freelist_i)
+{
+    PREV_BLOCK(p) = NULL;
+    *NEXT_PTR(p) = FL_HEAD(freelist_i);
+    if (NEXT_BLOCK(p) != NULL)
+        *PREV_PTR(NEXT_BLOCK(p)) = p; /* set next block's previous */
+    FL_HEAD(freelist_i) = p; /* set head at prologue */
 }
 
 static void check_heap()
@@ -273,16 +299,16 @@ static void check_heap()
 
     for (i = 0; i < NUM_FREELISTS; i++) {
         for (p = FL_HEAD(i), p_prev = NULL; p != NULL;
-                p = NEXT_BLK(p), p_prev = p) {
-            size = BLK_SIZE(p);
+                p_prev = p, p = NEXT_BLOCK(p)) {
+            size = BLOCK_SIZE(p);
             /* check: block belongs to correct list */
             assert(find_freelist_i(size) == i);
             /* check: block is linked properly */
-            assert(PREV_BLK(p) == p_prev);
+            assert(PREV_BLOCK(p) == p_prev);
             /* check: no two consecutive free blocks */
             if (!(HDR(p) & ALLOCATED))
                 assert((HDR(p) & PREV_ALLOCATED) ||
-                       (HDR(NEXT_BLK(p)) & ALLOCATED));
+                       (HDR(NEXT_BLOCK(p)) & ALLOCATED));
         }
     }
 }
