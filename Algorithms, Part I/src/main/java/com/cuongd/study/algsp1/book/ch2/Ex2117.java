@@ -7,7 +7,7 @@ import static com.cuongd.study.algsp1.book.ch2.SortCommon.less;
 
 public class Ex2117 {
     private static final int CANVAS_WIDTH = 1024;
-    private static final int CANVAS_HEIGHT = 512;
+    private static final int CANVAS_HEIGHT = 256;
     private static final int DRAW_PAUSE = 10;
     private static final double BAR_WIDTH = 0.007;
     private static final double BAR_HEIGHT_SCALE = 0.5;
@@ -33,6 +33,12 @@ public class Ex2117 {
 
     private static void exchange(double[] a, int i, int j) {
         double t = a[i];
+        StdDraw.setPenColor(StdDraw.BOOK_RED);
+        drawBar(i, a[i]);
+        drawBar(j, a[j]);
+        StdDraw.show();
+        StdDraw.pause(5*DRAW_PAUSE);
+        StdDraw.setPenColor(StdDraw.DARK_GRAY);
         a[i] = a[j];
         a[j] = t;
     }
@@ -40,11 +46,15 @@ public class Ex2117 {
     private static void show(double[] a) {
         StdDraw.clear();
         for (int i = 0; i < a.length; ++i)
-            StdDraw.filledRectangle(
-                    BAR_WIDTH/2 + i*(BAR_WIDTH + BAR_PADDING), BAR_HEIGHT_SCALE*a[i]/2,
-                    BAR_WIDTH/2, BAR_HEIGHT_SCALE*a[i]);
+            drawBar(i, a[i]);
         StdDraw.show();
         StdDraw.pause(DRAW_PAUSE);
+    }
+
+    private static void drawBar(int i, double value) {
+        StdDraw.filledRectangle(
+                BAR_WIDTH/2 + i*(BAR_WIDTH + BAR_PADDING), BAR_HEIGHT_SCALE*value/2,
+                BAR_WIDTH/2, BAR_HEIGHT_SCALE*value);
     }
 
     public static void main(String[] args) {
