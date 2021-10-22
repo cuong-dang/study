@@ -61,13 +61,13 @@ static wordptr wilderness;
 /* free lists */
 #define NUM_FREELISTS 7
 /* free lists' sizes (excluding header) */
-#define FL1_MAXSIZE (4*WORD_SIZE)
-#define FL2_MAXSIZE (16*WORD_SIZE)
-#define FL3_MAXSIZE (32*WORD_SIZE)
-#define FL4_MAXSIZE (64*WORD_SIZE)
-#define FL5_MAXSIZE (128*WORD_SIZE)
-#define FL6_MAXSIZE (256*WORD_SIZE)
-#define FL7_MAXSIZE (512*WORD_SIZE) /* and more */
+#define FL1_MAXSIZE (1*WORD_SIZE)
+#define FL2_MAXSIZE (2*WORD_SIZE)
+#define FL3_MAXSIZE (4*WORD_SIZE)
+#define FL4_MAXSIZE (8*WORD_SIZE)
+#define FL5_MAXSIZE (16*WORD_SIZE)
+#define FL6_MAXSIZE (32*WORD_SIZE)
+#define FL7_MAXSIZE (64*WORD_SIZE) /* and more */
 #define FL1_SIZE (WORD_SIZE + FL1_MAXSIZE)
 #define FL2_SIZE (WORD_SIZE + FL2_MAXSIZE)
 #define FL3_SIZE (WORD_SIZE + FL3_MAXSIZE)
@@ -171,14 +171,14 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
-    wordptr p = (wordptr)ptr - 1, succ_block, pred_block;
+    wordptr p = (wordptr)ptr - 1, succ_block = SUCC_BLOCK(p), pred_block;
     size_t coalesced_size = BLOCK_SIZE(p),
            pred_allocated_status = HDR(p) & PRED_ALLOCATED;
     int freelist_i;
 
     /* coalesce */
     /* succ block is free */
-    if (!(HDR(succ_block = SUCC_BLOCK(p)) & ALLOCATED)) {
+    if (!(HDR(succ_block) & ALLOCATED)) {
         wire_prevnext(succ_block);
         coalesced_size += BLOCK_SIZE(succ_block);
     }
@@ -195,6 +195,7 @@ void mm_free(void *ptr)
     insert_freelist(p, freelist_i);
     HDR(p) = coalesced_size | pred_allocated_status;
     FTR(p) = HDR(p);
+    HDR(SUCC_BLOCK(p)) &= ~PRED_ALLOCATED;
     CHECK_HEAP();
 }
 
