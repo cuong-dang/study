@@ -95,8 +95,6 @@ static wordptr wilderness;
 #define PRED_FTR(p) ((wordptr)((byte *)p - WORD_SIZE))
 #define PRED_HDR(p) ((wordptr)((byte *)(PRED_FTR(p)) - \
                      BLOCK_SIZE(PRED_FTR(p)) + WORD_SIZE))
-#define PREV_PTR(p) ((wordptr *)((p) + 1))
-#define NEXT_PTR(p) ((wordptr *)((p) + 2))
 #define PREV_BLOCK(p) (*(wordptr *)((p) + 1))
 #define NEXT_BLOCK(p) (*(wordptr *)((p) + 2))
 #define HDR(p) (*(p))
@@ -110,7 +108,6 @@ static wordptr find_best_fit(wordptr head_block, size_t size);
 static wordptr extend_freelist(int freelist_i, size_t size);
 static void split_block(wordptr p, size_t size);
 static inline void insert_freelist(wordptr p, int freelist_i);
-static void coalesce(wordptr p);
 static void wire_prevnext(wordptr p);
 static void check_heap();
 
@@ -156,11 +153,11 @@ void *mm_malloc(size_t size)
     *p |= ALLOCATED;
     *(SUCC_BLOCK(p)) |= PRED_ALLOCATED;
     if (PREV_BLOCK(p) != NULL)
-        *NEXT_PTR(PREV_BLOCK(p)) = NEXT_BLOCK(p);
+        NEXT_BLOCK(PREV_BLOCK(p)) = NEXT_BLOCK(p);
     else /* first block of list */
         FL_HEAD(freelist_i) = NEXT_BLOCK(p);
     if (NEXT_BLOCK(p) != NULL)
-        *PREV_PTR(NEXT_BLOCK(p)) = PREV_BLOCK(p);
+        PREV_BLOCK(NEXT_BLOCK(p)) = PREV_BLOCK(p);
     CHECK_HEAP();
     /* split block */
     if (BLOCK_SIZE(p) >= ALIGN(size) + WORD_SIZE + MIN_BLOCK_SIZE)
@@ -174,17 +171,31 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
-    wordptr p = (wordptr)ptr - 1;
-    int freelist_i = find_freelist_i(BLOCK_SIZE(p));
+    wordptr p = (wordptr)ptr - 1, succ_block, pred_block;
+    size_t coalesced_size = BLOCK_SIZE(p),
+           pred_allocated_status = HDR(p) & PRED_ALLOCATED;
+    int freelist_i;
 
-    HDR(p) &= ~ALLOCATED;
-    FTR(p) = HDR(p);
-    HDR(SUCC_BLOCK(p)) &= ~PRED_ALLOCATED;
-    if (SUCC_BLOCK(p) != wilderness)
-        FTR(SUCC_BLOCK(p)) = HDR(SUCC_BLOCK(p));
+    /* coalesce */
+    /* succ block is free */
+    if (!(HDR(succ_block = SUCC_BLOCK(p)) & ALLOCATED)) {
+        wire_prevnext(succ_block);
+        coalesced_size += BLOCK_SIZE(succ_block);
+    }
+    /* pred block is free */
+    if (!(HDR(p) & PRED_ALLOCATED)) {
+        pred_block = PRED_HDR(p);
+        wire_prevnext(pred_block);
+        coalesced_size += BLOCK_SIZE(pred_block);
+        pred_allocated_status = HDR(pred_block) & PRED_ALLOCATED;
+        p = pred_block;
+    }
+
+    freelist_i = find_freelist_i(coalesced_size);
     insert_freelist(p, freelist_i);
+    HDR(p) = coalesced_size | pred_allocated_status;
+    FTR(p) = HDR(p);
     CHECK_HEAP();
-    coalesce(p);
 }
 
 /*
@@ -300,47 +311,11 @@ static void split_block(wordptr p, size_t size)
 static inline void insert_freelist(wordptr p, int freelist_i)
 {
     PREV_BLOCK(p) = NULL;
-    *NEXT_PTR(p) = FL_HEAD(freelist_i);
+    NEXT_BLOCK(p) = FL_HEAD(freelist_i);
     if (NEXT_BLOCK(p) != NULL)
-        *PREV_PTR(NEXT_BLOCK(p)) = p; /* set next block's previous */
+        PREV_BLOCK(NEXT_BLOCK(p)) = p; /* set next block's previous */
     FL_HEAD(freelist_i) = p; /* set head at prologue */
     HDR(p) |= PRED_ALLOCATED;
-}
-
-static void coalesce(wordptr p)
-{
-    wordptr succ_block, pred_block;
-    size_t coalesced_size, pred_allocated_status;
-    int freelist_i, coalesced = 0;
-
-    /* succ block is free */
-    if (!(HDR(succ_block = SUCC_BLOCK(p)) & ALLOCATED)) {
-        coalesced = 1;
-        /* wire prev and next */
-        wire_prevnext(succ_block);
-        wire_prevnext(p);
-        /* coalesce */
-        coalesced_size = BLOCK_SIZE(p) + BLOCK_SIZE(succ_block);
-        pred_allocated_status = HDR(p) & PRED_ALLOCATED;
-    }
-    /* pred block is free */
-    if (!(HDR(p) & PRED_ALLOCATED)) {
-        if (coalesced != 1) {
-            coalesced = 1;
-            wire_prevnext(p);
-        }
-        pred_block = PRED_HDR(p);
-        wire_prevnext(pred_block);
-        coalesced_size = BLOCK_SIZE(p) + BLOCK_SIZE(pred_block);
-        pred_allocated_status = HDR(pred_block) & PRED_ALLOCATED;
-        p = pred_block;
-    }
-    if (coalesced) {
-        freelist_i = find_freelist_i(coalesced_size);
-        insert_freelist(p, freelist_i);
-        HDR(p) = coalesced_size | pred_allocated_status;
-        FTR(p) = HDR(p);
-    }
 }
 
 static void wire_prevnext(wordptr p)
@@ -370,9 +345,9 @@ static void check_heap()
             /* check: block is linked properly */
             assert(PREV_BLOCK(p) == p_prev);
             /* check: no two consecutive free blocks */
-            // if (!(HDR(p) & ALLOCATED))
-            //     assert((HDR(p) & PRED_ALLOCATED) ||
-            //            (HDR(SUCC_BLOCK(p)) & ALLOCATED));
+            if (!(HDR(p) & ALLOCATED))
+                assert((HDR(p) & PRED_ALLOCATED) ||
+                       (HDR(SUCC_BLOCK(p)) & ALLOCATED));
             /* if a block is ALLOCATED then succ block is PRED_ALLOCATED */
             if (HDR(p) & ALLOCATED)
                 assert(HDR(SUCC_BLOCK(p)) & PRED_ALLOCATED);
