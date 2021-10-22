@@ -4,11 +4,11 @@
  *     - Coalesce blocks immediately upon freeing
  *     - Best fit search
  *     - New free blocks are taken from the `wilderness`, which marks the
- *     - beginning of unsed heap area.
+ *       beginning of unsed heap area.
  *     Data structure:
  *     - Prologue block with pointers to segregated lists
  *     - For each block, there is a header with size, allocated bit, and
- *       previous block allocated bit; and two pointers to previous and next
+ *       predecessor block allocated bit; and two pointers to previous and next
  *       block in the corresponding free list.
  */
 #include <assert.h>
@@ -75,6 +75,9 @@ static wordptr wilderness;
 #define FL5_SIZE (WORD_SIZE + FL5_MAXSIZE)
 #define FL6_SIZE (WORD_SIZE + FL6_MAXSIZE)
 #define FL7_SIZE (WORD_SIZE + FL7_MAXSIZE)
+/* min block size is 2 WORD_SIZE for HDR and FTR, 2 PTR_SIZE for prev and next,
+ * and 1 WORD_SIZE payload
+ */
 #define MIN_BLOCK_SIZE (2*WORD_SIZE + 2*PTR_SIZE + WORD_SIZE)
 
 /* header & footer */
@@ -118,15 +121,17 @@ static void check_heap();
 int mm_init(void)
 {
     int i;
+    wordptr epilogue;
 
     if ((prologue = mem_sbrk(MAX(SBRK_SIZE, INIT_SIZE))) == (wordptr)-1)
         return -1;
     for (i = 0; i < NUM_FREELISTS; i++)
         *(wordptr *)(prologue + i) = NULL;
     /* set epilogue */
-    *(wordptr)((byte *)prologue + INIT_SIZE - WORD_SIZE) = ALLOCATED;
+    epilogue = (wordptr)((byte *)prologue + INIT_SIZE - WORD_SIZE);
+    HDR(epilogue) = ALLOCATED | PRED_ALLOCATED;
     /* wilderness points to epilogue */
-    wilderness = (wordptr)((byte *)prologue + INIT_SIZE - WORD_SIZE);
+    wilderness = epilogue;
     CHECK_HEAP();
     return 0;
 }
@@ -143,15 +148,16 @@ void *mm_malloc(size_t size)
 
     if (size == 0)
         return NULL;
+    size = MAX(size, MIN_BLOCK_SIZE);
     /* get free block */
     freelist_i = find_freelist_i(size);
     freelist_sz = get_freelist_size(freelist_i);
     if ((p = find_best_fit(FL_HEAD(freelist_i), size)) == NULL &&
             (p = extend_freelist(freelist_i, MAX(freelist_sz, size))) == NULL)
         return NULL;
-    /* prepare block */
-    *p |= ALLOCATED;
-    *(SUCC_BLOCK(p)) |= PRED_ALLOCATED;
+
+    HDR(p) |= ALLOCATED;
+    HDR(SUCC_BLOCK(p)) |= PRED_ALLOCATED;
     if (PREV_BLOCK(p) != NULL)
         NEXT_BLOCK(PREV_BLOCK(p)) = NEXT_BLOCK(p);
     else /* first block of list */
@@ -192,9 +198,9 @@ void mm_free(void *ptr)
     }
 
     freelist_i = find_freelist_i(coalesced_size);
-    insert_freelist(p, freelist_i);
     HDR(p) = coalesced_size | pred_allocated_status;
     FTR(p) = HDR(p);
+    insert_freelist(p, freelist_i);
     HDR(SUCC_BLOCK(p)) &= ~PRED_ALLOCATED;
     CHECK_HEAP();
 }
@@ -276,28 +282,28 @@ static wordptr find_best_fit(wordptr head_block, size_t size)
 static wordptr extend_freelist(int freelist_i, size_t size)
 {
     wordptr p = wilderness;
-    /* extend_size equals to requested size plus 1 WORD_SIZE for header plus
+    /* extend_size equals requested size plus 1 WORD_SIZE for header plus
      * 1 WORD_SIZE for new epilogue block.
      */
     size_t extend_size = ALIGN(size) + 2*WORD_SIZE;
-    size_t PRED_ALLOCATED_status = HDR(p) & PRED_ALLOCATED;
+    size_t pred_allocated_status = HDR(p) & PRED_ALLOCATED;
 
     if (((byte *)p + extend_size > (byte *)mem_heap_hi) &&
             mem_sbrk(MAX(SBRK_SIZE, extend_size)) == (void *)-1)
         return NULL;
     /* taking whole extend_size as block will get split soon */
-    HDR(p) = (extend_size - WORD_SIZE) | PRED_ALLOCATED_status;
+    HDR(p) = (extend_size - WORD_SIZE) | pred_allocated_status;
     FTR(p) = HDR(p);
     insert_freelist(p, freelist_i);
-    wilderness = (wordptr)((byte *)p + BLOCK_SIZE(p));
-    *wilderness = ALLOCATED; /* set epilogue */
+    wilderness = SUCC_BLOCK(p);
+    HDR(wilderness) = ALLOCATED; /* set epilogue */
     return p;
 }
 
 static void split_block(wordptr p, size_t size)
 {
     size_t new_block_size = BLOCK_SIZE(p) - (ALIGN(size) + WORD_SIZE),
-           PRED_ALLOCATED_status = HDR(p) & PRED_ALLOCATED;
+           pred_allocated_status = HDR(p) & PRED_ALLOCATED;
     wordptr new_block;
     int freelist_i;
 
@@ -306,7 +312,7 @@ static void split_block(wordptr p, size_t size)
     HDR(new_block) = new_block_size | PRED_ALLOCATED;
     FTR(new_block) = HDR(new_block);
     insert_freelist(new_block, freelist_i);
-    HDR(p) = (ALIGN(size) + WORD_SIZE) | ALLOCATED | PRED_ALLOCATED_status;
+    HDR(p) = (ALIGN(size) + WORD_SIZE) | ALLOCATED | pred_allocated_status;
 }
 
 static inline void insert_freelist(wordptr p, int freelist_i)
@@ -316,7 +322,6 @@ static inline void insert_freelist(wordptr p, int freelist_i)
     if (NEXT_BLOCK(p) != NULL)
         PREV_BLOCK(NEXT_BLOCK(p)) = p; /* set next block's previous */
     FL_HEAD(freelist_i) = p; /* set head at prologue */
-    HDR(p) |= PRED_ALLOCATED;
 }
 
 static void wire_prevnext(wordptr p)
@@ -337,28 +342,37 @@ static void check_heap()
     size_t size;
     wordptr p, p_prev;
 
+    /* check: first block after prologue is always PRED_ALLOCATED */
+    assert(HDR((byte *)prologue + INIT_SIZE - WORD_SIZE) & PRED_ALLOCATED);
     for (i = 0; i < NUM_FREELISTS; i++) {
         for (p = FL_HEAD(i), p_prev = NULL; p != NULL;
                 p_prev = p, p = NEXT_BLOCK(p)) {
             size = BLOCK_SIZE(p);
+            /* check: size must be at least MIN_BLOCK_SIZE */
+            assert(size >= MIN_BLOCK_SIZE);
             /* check: block belongs to correct list */
             assert(find_freelist_i(size) == i);
             /* check: block is linked properly */
             assert(PREV_BLOCK(p) == p_prev);
             /* check: no two consecutive free blocks */
-            if (!(HDR(p) & ALLOCATED))
-                assert((HDR(p) & PRED_ALLOCATED) ||
-                       (HDR(SUCC_BLOCK(p)) & ALLOCATED));
-            /* if a block is ALLOCATED then succ block is PRED_ALLOCATED */
+            // if (!(HDR(p) & ALLOCATED))
+            //     assert((HDR(p) & PRED_ALLOCATED) ||
+            //            (HDR(SUCC_BLOCK(p)) & ALLOCATED));
             if (HDR(p) & ALLOCATED)
                 assert(HDR(SUCC_BLOCK(p)) & PRED_ALLOCATED);
         }
     }
-    /* check: successive blocks end at an epilogue */
+    /* check: successive blocks end at epilogue */
     for (p = (wordptr)((byte *)prologue + INIT_SIZE - WORD_SIZE);
             *p != ALLOCATED && *p != (ALLOCATED | PRED_ALLOCATED);
             p = SUCC_BLOCK(p))
+        /* check: if a block is ALLOCATED then succ block is
+         * PRED_ALLOCATED
+         */
+        if (HDR(p) & ALLOCATED)
+            assert(HDR(SUCC_BLOCK(p)) & PRED_ALLOCATED);
         /* check: wilderness points to epilogue block */
-        assert(*wilderness == ALLOCATED ||
-               *wilderness == (ALLOCATED | PRED_ALLOCATED));
+        assert(BLOCK_SIZE(wilderness) == 0 &&
+               (*wilderness == ALLOCATED ||
+                *wilderness == (ALLOCATED | PRED_ALLOCATED)));
 }
