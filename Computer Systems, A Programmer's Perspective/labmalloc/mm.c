@@ -95,14 +95,15 @@ static wordptr wilderness;
 #define PAYLOAD(p) ((p) + 1)
 #define BLOCK_SIZE(p) (*(p) & ~0x7)
 #define SUCC_BLOCK(p) ((wordptr)((byte *)(p) + BLOCK_SIZE(p)))
-#define PRED_FTR(p) ((wordptr)((byte *)p - WORD_SIZE))
-#define PRED_HDR(p) ((wordptr)((byte *)(PRED_FTR(p)) - \
-                     BLOCK_SIZE(PRED_FTR(p)) + WORD_SIZE))
+#define PRED_BLOCK_FTR(p) ((wordptr)((byte *)p - WORD_SIZE))
+#define PRED_BLOCK(p) ((wordptr)((byte *)(PRED_BLOCK_FTR(p)) - \
+                       BLOCK_SIZE(PRED_BLOCK_FTR(p)) + WORD_SIZE))
 #define PREV_BLOCK(p) (*(wordptr *)((p) + 1))
 #define NEXT_BLOCK(p) (*(wordptr *)((p) + 2))
 #define HDR(p) (*(p))
 #define FTR(p) (*(wordptr)((byte *)SUCC_BLOCK(p) - WORD_SIZE))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
 
 /* function prototypes */
 static inline size_t get_freelist_size(int freelist_i);
@@ -177,24 +178,23 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
-    wordptr p = (wordptr)ptr - 1, succ_block = SUCC_BLOCK(p), pred_block;
+    wordptr p = (wordptr)ptr - 1;
     size_t coalesced_size = BLOCK_SIZE(p),
            pred_allocated_status = HDR(p) & PRED_ALLOCATED;
     int freelist_i;
 
     /* coalesce */
     /* succ block is free */
-    if (!(HDR(succ_block) & ALLOCATED)) {
-        wire_prevnext(succ_block);
-        coalesced_size += BLOCK_SIZE(succ_block);
+    if (!(HDR(SUCC_BLOCK(p)) & ALLOCATED)) {
+        wire_prevnext(SUCC_BLOCK(p));
+        coalesced_size += BLOCK_SIZE(SUCC_BLOCK(p));
     }
     /* pred block is free */
     if (!(HDR(p) & PRED_ALLOCATED)) {
-        pred_block = PRED_HDR(p);
-        wire_prevnext(pred_block);
-        coalesced_size += BLOCK_SIZE(pred_block);
-        pred_allocated_status = HDR(pred_block) & PRED_ALLOCATED;
-        p = pred_block;
+        wire_prevnext(PRED_BLOCK(p));
+        coalesced_size += BLOCK_SIZE(PRED_BLOCK(p));
+        pred_allocated_status = HDR(PRED_BLOCK(p)) & PRED_ALLOCATED;
+        p = PRED_BLOCK(p);
     }
 
     freelist_i = find_freelist_i(coalesced_size);
@@ -210,19 +210,50 @@ void mm_free(void *ptr)
  */
 void *mm_realloc(void *ptr, size_t size)
 {
-    void *oldptr = ptr;
-    void *newptr;
-    size_t copySize;
+    wordptr p = (wordptr)ptr - 1, pred_block;
+    void *new_payload;
+    size_t new_required_size = ALIGN(size) + WORD_SIZE,
+           copy_size = BLOCK_SIZE(p) - WORD_SIZE,
+           pred_allocated_status = HDR(p) & PRED_ALLOCATED;
 
-    newptr = mm_malloc(size);
-    if (newptr == NULL)
+    /* use current block if big enough */
+    if (BLOCK_SIZE(p) >= new_required_size + MIN_BLOCK_SIZE) {
+        split_block(p, size);
+        return PAYLOAD(p);
+    }
+    if (BLOCK_SIZE(p) >= new_required_size)
+        return PAYLOAD(p);
+    /* look ahead to see if there's a free block */
+    if (!(HDR(SUCC_BLOCK(p)) & ALLOCATED) &&
+            BLOCK_SIZE(p) + BLOCK_SIZE(SUCC_BLOCK(p)) >= new_required_size) {
+        wire_prevnext(SUCC_BLOCK(p));
+        HDR(p) = (BLOCK_SIZE(p) + BLOCK_SIZE(SUCC_BLOCK(p))) | \
+                 ALLOCATED | pred_allocated_status;
+        HDR(SUCC_BLOCK(p)) |= PRED_ALLOCATED;
+        if (BLOCK_SIZE(p) >= new_required_size + MIN_BLOCK_SIZE)
+            split_block(p, size);
+        return PAYLOAD(p);
+    }
+    /* look back to see if there's a free block */
+    if (!(HDR(p) & PRED_ALLOCATED) &&
+            BLOCK_SIZE(p) + BLOCK_SIZE(PRED_BLOCK(p)) >= new_required_size) {
+        pred_block = PRED_BLOCK(p);
+        wire_prevnext(pred_block);
+        pred_allocated_status = HDR(pred_block) & PRED_ALLOCATED;
+        HDR(pred_block) = (BLOCK_SIZE(p) + BLOCK_SIZE(pred_block)) | \
+                          ALLOCATED | pred_allocated_status;
+        memcpy(PAYLOAD(pred_block), ptr, size);
+        if (BLOCK_SIZE(pred_block) >= new_required_size + MIN_BLOCK_SIZE)
+            split_block(pred_block, size);
+        return PAYLOAD(pred_block);
+    }
+
+    if ((new_payload = mm_malloc(size)) == NULL)
       return NULL;
-    copySize = *(size_t *)((char *)oldptr - WORD_SIZE);
-    if (size < copySize)
-      copySize = size;
-    memcpy(newptr, oldptr, copySize);
-    mm_free(oldptr);
-    return newptr;
+    memcpy(new_payload, ptr, MIN(size, copy_size));
+    mm_free(ptr);
+    CHECK_HEAP();
+    return new_payload;
 }
 
 /*
@@ -300,6 +331,10 @@ static wordptr extend_freelist(int freelist_i, size_t size)
     return p;
 }
 
+/*
+ * split_block - Split block p for a requested size. Assume that p's size is
+ *    at least ALIGN(size) + WORD_SIZE (header) + MIN_BLOCK_SIZE.
+ */
 static void split_block(wordptr p, size_t size)
 {
     size_t new_block_size = BLOCK_SIZE(p) - (ALIGN(size) + WORD_SIZE),
@@ -313,8 +348,12 @@ static void split_block(wordptr p, size_t size)
     FTR(new_block) = HDR(new_block);
     insert_freelist(new_block, freelist_i);
     HDR(p) = (ALIGN(size) + WORD_SIZE) | ALLOCATED | pred_allocated_status;
+    HDR(SUCC_BLOCK(new_block)) &= ~PRED_ALLOCATED;
 }
 
+/*
+ * insert_freelist - Insert block p at head of freelist_i.
+ */
 static inline void insert_freelist(wordptr p, int freelist_i)
 {
     PREV_BLOCK(p) = NULL;
@@ -324,6 +363,10 @@ static inline void insert_freelist(wordptr p, int freelist_i)
     FL_HEAD(freelist_i) = p; /* set head at prologue */
 }
 
+/*
+ * wire_prevnext - Take block p out of a free list by rewiring its
+ *     previous and next block.
+ */
 static void wire_prevnext(wordptr p)
 {
     int freelist_i = find_freelist_i(BLOCK_SIZE(p));
@@ -355,11 +398,18 @@ static void check_heap()
             /* check: block is linked properly */
             assert(PREV_BLOCK(p) == p_prev);
             /* check: no two consecutive free blocks */
-            // if (!(HDR(p) & ALLOCATED))
-            //     assert((HDR(p) & PRED_ALLOCATED) ||
-            //            (HDR(SUCC_BLOCK(p)) & ALLOCATED));
+            if (!(HDR(p) & ALLOCATED)) {
+                assert((HDR(p) & PRED_ALLOCATED));
+                assert((HDR(SUCC_BLOCK(p)) & ALLOCATED));
+            }
+            /* check: if block is allocated, succ block is PRED_ALLOCATED */
             if (HDR(p) & ALLOCATED)
                 assert(HDR(SUCC_BLOCK(p)) & PRED_ALLOCATED);
+            /* check: if block is not allocated, HDR and FTR agree in size */
+            if (!(HDR(p) & ALLOCATED)) {
+                assert(BLOCK_SIZE(p) == (FTR(p) & ~0x7));
+                assert(!(HDR(SUCC_BLOCK(p)) & PRED_ALLOCATED));
+            }
         }
     }
     /* check: successive blocks end at epilogue */
