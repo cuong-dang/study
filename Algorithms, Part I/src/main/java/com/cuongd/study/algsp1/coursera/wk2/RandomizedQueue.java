@@ -6,7 +6,6 @@ import edu.princeton.cs.algs4.StdRandom;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-@SuppressWarnings("unchecked")
 public class RandomizedQueue<Item> implements Iterable<Item> {
     private static final int INIT_SIZE = 2;
 
@@ -59,7 +58,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         return new RandomizedQueueIterator();
     }
 
-    @SuppressWarnings({"ManualMinMaxCalculation", "ManualArrayCopy"})
     private void resize(int newSize) {
         Item[] newItems = (Item[]) new Object[newSize];
         int[] newIndexes = new int[newSize];
@@ -87,7 +85,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         private final int[] iteratorIndexes;
         private int cursor;
 
-        @SuppressWarnings("ManualArrayCopy")
         public RandomizedQueueIterator() {
             iteratorIndexes = new int[size];
             for (int i = 0; i < size; i++)
