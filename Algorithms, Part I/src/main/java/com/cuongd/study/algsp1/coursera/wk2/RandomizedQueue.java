@@ -12,13 +12,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private Item[] items;
     private int[] indexes;
     private int size;
-    private boolean indexesShuffled;
+    private int shuffledSize;
 
     public RandomizedQueue() {
         items = (Item[]) new Object[INIT_SIZE];
         indexes = new int[INIT_SIZE];
-        for (int i = 0; i < INIT_SIZE; ++i)
-            indexes[i] = i;
+        indexes[1] = 1;
     }
 
     public boolean isEmpty() { return size == 0; }
@@ -31,19 +30,32 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         if (size == items.length)
             resize(2 * items.length);
         items[indexes[size++]] = item;
-        indexesShuffled = false;
     }
 
     public Item dequeue() {
         if (isEmpty()) throw new NoSuchElementException();
 
-        if (!indexesShuffled) {
+        Item item;
+        if (shuffledSize == 0) {
             StdRandom.shuffle(indexes, 0, size);
-            indexesShuffled = true;
+            item = items[indexes[--size]];
+            items[indexes[size]] = null;
+            shuffledSize = size;
+        } else {
+            boolean selectShuffled = shuffledSize == size || StdRandom.uniform(size) < shuffledSize;
+            if (selectShuffled) {
+                item = items[indexes[--shuffledSize]];
+                items[indexes[shuffledSize]] = null;
+                indexes[shuffledSize] = indexes[--size];
+            } else {
+                StdRandom.shuffle(indexes, shuffledSize, size);
+                item = items[indexes[--size]];
+                items[indexes[size]] = null;
+                shuffledSize = size;
+            }
         }
-        Item item = items[indexes[--size]];
-        if (size > 0 && size == items.length / 4)
-            resize(items.length / 2);
+//        if (size > 0 && size == items.length / 4)
+//            resize(items.length / 2);
         return item;
     }
 
@@ -70,13 +82,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         if (items.length < newSize) { // grow
             for (int i = 0; i < copySize; ++i)
                 newIndexes[i] = indexes[i]; // copy old indexes
-            for (int i = size; i < newSize; ++i)
-                newIndexes[i] = i; // set new indexes
         } else { // shrink
             for (int i = 0; i < copySize; ++i)
                 newIndexes[i] = i; // set all new indexes
             StdRandom.shuffle(newIndexes, 0, size); // only shuffle existing items' indexes
+            shuffledSize = size;
         }
+        for (int i = size; i < newSize; ++i)
+            newIndexes[i] = i; // set new indexes
         items = newItems;
         indexes = newIndexes;
     }
