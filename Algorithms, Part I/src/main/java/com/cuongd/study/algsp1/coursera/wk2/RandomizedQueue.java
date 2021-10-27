@@ -36,7 +36,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         if (isEmpty()) throw new NoSuchElementException();
 
         Item item;
-        if (shuffledSize == 0) {
+        if (size > 1 && shuffledSize == 0) {
             StdRandom.shuffle(indexes, 0, size);
             item = items[indexes[--size]];
             items[indexes[size]] = null;
@@ -46,7 +46,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             if (selectShuffled) {
                 item = items[indexes[--shuffledSize]];
                 items[indexes[shuffledSize]] = null;
+                /* move last element to dequeued item's index &
+                 * move dequeued item's index to next enqueue spot */
+                int t = indexes[shuffledSize];
                 indexes[shuffledSize] = indexes[--size];
+                indexes[size] = t;
             } else {
                 StdRandom.shuffle(indexes, shuffledSize, size);
                 item = items[indexes[--size]];
@@ -54,8 +58,8 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 shuffledSize = size;
             }
         }
-//        if (size > 0 && size == items.length / 4)
-//            resize(items.length / 2);
+        if (size > 0 && size == items.length / 4)
+            resize(items.length / 2);
         return item;
     }
 
@@ -85,7 +89,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         } else { // shrink
             for (int i = 0; i < copySize; ++i)
                 newIndexes[i] = i; // set all new indexes
-            StdRandom.shuffle(newIndexes, 0, size); // only shuffle existing items' indexes
+            StdRandom.shuffle(newIndexes, 0, size);
             shuffledSize = size;
         }
         for (int i = size; i < newSize; ++i)
@@ -139,6 +143,20 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         StdOut.println();
         for (int i = 0; i < 5; ++i) q.enqueue(i + 10);
         for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.dequeue());
+        StdOut.println();
+
+        for (int i = 0; i < 10; ++i) q.enqueue(i);
+        for (int i = 0; i < 10; ++i)
+            if (StdRandom.uniform() < 0.5)
+                StdOut.printf("%d ", q.dequeue());
+            else
+                q.enqueue(10 + i);
+        StdOut.println();
+        while (!q.isEmpty()) StdOut.printf("%d ", q.dequeue());
+        StdOut.println();
+
+        for (int i = 0; i < 10; ++i) q.enqueue(i);
+        for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.sample());
         StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
