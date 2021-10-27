@@ -12,7 +12,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private Item[] items;
     private int[] indexes;
     private int size;
-    private int shuffledSize;
 
     public RandomizedQueue() {
         items = (Item[]) new Object[INIT_SIZE];
@@ -36,28 +35,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         if (isEmpty()) throw new NoSuchElementException();
 
         Item item;
-        if (size > 1 && shuffledSize == 0) {
-            StdRandom.shuffle(indexes, 0, size);
-            item = items[indexes[--size]];
-            items[indexes[size]] = null;
-            shuffledSize = size;
-        } else {
-            boolean selectShuffled = shuffledSize == size || StdRandom.uniform(size) < shuffledSize;
-            if (selectShuffled) {
-                item = items[indexes[--shuffledSize]];
-                items[indexes[shuffledSize]] = null;
-                /* move last element to dequeued item's index &
-                 * move dequeued item's index to next enqueue spot */
-                int t = indexes[shuffledSize];
-                indexes[shuffledSize] = indexes[--size];
-                indexes[size] = t;
-            } else {
-                StdRandom.shuffle(indexes, shuffledSize, size);
-                item = items[indexes[--size]];
-                items[indexes[size]] = null;
-                shuffledSize = size;
-            }
-        }
+        int randomIndex = StdRandom.uniform(size);
+        item = items[indexes[randomIndex]];
+        items[indexes[randomIndex]] = null;
+        int t = indexes[--size];
+        indexes[size] = indexes[randomIndex];
+        indexes[randomIndex] = t;
         if (size > 0 && size == items.length / 4)
             resize(items.length / 2);
         return item;
@@ -89,8 +72,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         } else { // shrink
             for (int i = 0; i < copySize; ++i)
                 newIndexes[i] = i; // set all new indexes
-            StdRandom.shuffle(newIndexes, 0, size);
-            shuffledSize = size;
         }
         for (int i = size; i < newSize; ++i)
             newIndexes[i] = i; // set new indexes
@@ -134,16 +115,16 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i : q) StdOut.printf("%d ", i);
-        StdOut.println();
+        StdOut.println(); StdOut.println();
         for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.dequeue());
-        StdOut.println();
+        StdOut.println(); StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i = 0; i < 5; ++i) StdOut.printf("%d ", q.dequeue());
         StdOut.println();
         for (int i = 0; i < 5; ++i) q.enqueue(i + 10);
         for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.dequeue());
-        StdOut.println();
+        StdOut.println(); StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i = 0; i < 10; ++i)
@@ -151,13 +132,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 StdOut.printf("%d ", q.dequeue());
             else
                 q.enqueue(10 + i);
-        StdOut.println();
+        StdOut.println(); StdOut.println();
         while (!q.isEmpty()) StdOut.printf("%d ", q.dequeue());
-        StdOut.println();
+        StdOut.println(); StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.sample());
-        StdOut.println();
+        StdOut.println(); StdOut.println();
+
+        for (int i = 0; i < 10; ++i) q.enqueue(i);
+        while (!q.isEmpty()) StdOut.printf("%d ", q.dequeue());
+        StdOut.println(); StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.sample());
