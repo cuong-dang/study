@@ -12,6 +12,7 @@ void get_filetype(char *filename, char *filetype);
 void serve_dynamic(int fd, char *filename, char *cgiargs);
 void clienterror(int fd, char *cause, char *errnum,
                  char *shortmsg, char *longmsg);
+void sigchld_handler(int sig);
 
 int main(int argc, char **argv)
 {
@@ -19,6 +20,8 @@ int main(int argc, char **argv)
         char hostname[MAXLINE], port[MAXLINE];
         socklen_t clientlen;
         struct sockaddr_storage clientaddr;
+
+        Signal(SIGCHLD, sigchld_handler);
 
         /* Check command-line args */
         if (argc != 2) {
@@ -193,10 +196,17 @@ void serve_dynamic(int fd, char *filename, char *cgiargs)
     Rio_writen(fd, buf, strlen(buf));
 
     if (Fork() == 0) { /* Child */
-	/* Real server would set all CGI vars here */
-	setenv("QUERY_STRING", cgiargs, 1);
-	Dup2(fd, STDOUT_FILENO);         /* Redirect stdout to client */
-	Execve(filename, emptylist, environ); /* Run CGI program */
+        /* Real server would set all CGI vars here */
+        setenv("QUERY_STRING", cgiargs, 1);
+        Dup2(fd, STDOUT_FILENO); /* Redirect stdout to client */
+        Execve(filename, emptylist, environ); /* Run CGI program */
     }
-    Wait(NULL); /* Parent waits for and reaps child */
+}
+
+void sigchld_handler(int sig)
+{
+    int pid, status;
+
+    while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0)
+        printf("child process %d reaped with exit status %d\n", pid, status);
 }
