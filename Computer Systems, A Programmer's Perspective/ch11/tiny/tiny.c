@@ -115,9 +115,9 @@ void read_requesthdrs(rio_t *rp)
 
     Rio_readlineb(rp, buf, MAXLINE);
     printf("%s", buf);
-    while(strcmp(buf, "\r\n")) {          //line:netp:readhdrs:checkterm
-	Rio_readlineb(rp, buf, MAXLINE);
-	printf("%s", buf);
+    while(strcmp(buf, "\r\n")) {
+        Rio_readlineb(rp, buf, MAXLINE);
+        printf("%s", buf);
     }
     return;
 }
@@ -161,7 +161,7 @@ void serve_static(int fd, char *filename, int filesize)
     Rio_writen(fd, buf, strlen(buf));
     sprintf(buf, "Content-length: %d\r\n", filesize);
     Rio_writen(fd, buf, strlen(buf));
-    sprintf(buf, "Content-type: %s\r\n\r\n", filetype);
+    sprintf(buf, "Content-type: %s\r\n", filetype);
     Rio_writen(fd, buf, strlen(buf));
 
     /* Send response body to client */
@@ -174,16 +174,12 @@ void serve_static(int fd, char *filename, int filesize)
 
 void get_filetype(char *filename, char *filetype)
 {
-    if (strstr(filename, ".html"))
-	strcpy(filetype, "text/html");
-    else if (strstr(filename, ".gif"))
-	strcpy(filetype, "image/gif");
-    else if (strstr(filename, ".png"))
-	strcpy(filetype, "image/png");
-    else if (strstr(filename, ".jpg"))
-	strcpy(filetype, "image/jpeg");
-    else
-	strcpy(filetype, "text/plain");
+    if (strstr(filename, ".html")) strcpy(filetype, "text/html");
+    else if (strstr(filename, ".gif")) strcpy(filetype, "image/gif");
+    else if (strstr(filename, ".png")) strcpy(filetype, "image/png");
+    else if (strstr(filename, ".jpg")) strcpy(filetype, "image/jpeg");
+    else if (strstr(filename, ".mp4")) strcpy(filetype, "video/mp4");
+    else strcpy(filetype, "text/plain");
 }
 
 void serve_dynamic(int fd, char *filename, char *cgiargs)
