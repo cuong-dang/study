@@ -7,9 +7,9 @@
 void doit(int fd);
 void read_requesthdrs(rio_t *rp);
 int parse_uri(char *uri, char *filename, char *cgiargs);
-void serve_static(int fd, char *filename, int filesize);
+void serve_static(int fd, char *filename, int filesize, int is_head);
 void get_filetype(char *filename, char *filetype);
-void serve_dynamic(int fd, char *filename, char *cgiargs);
+void serve_dynamic(int fd, char *filename, char *cgiargs, int is_head);
 void clienterror(int fd, char *cause, char *errnum,
                  char *shortmsg, char *longmsg);
 void sigchld_handler(int sig);
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 
 void doit(int fd)
 {
-        int is_static;
+        int is_static, is_head;
         struct stat sbuf;
         char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE];
         char filename[MAXLINE], cgiargs[MAXLINE];
@@ -55,11 +55,12 @@ void doit(int fd)
         printf("Request headers:\n");
         printf("%s", buf);
         sscanf(buf, "%s %s %s", method, uri, version);
-        if (strcasecmp(method, "GET")) {
+        if (strcasecmp(method, "GET") && strcasecmp(method, "HEAD")) {
                 clienterror(fd, method, "501", "Not implemented",
                             "Tiny does not implement this method");
                 return;
         }
+        if (!strcasecmp(method, "HEAD")) is_head = 1;
         read_requesthdrs(&rio);
 
         /* Parse URI from GET request */
@@ -76,7 +77,7 @@ void doit(int fd)
                                     "Tiny couldn't read the file");
                         return;
                 }
-                serve_static(fd, filename, sbuf.st_size);
+                serve_static(fd, filename, sbuf.st_size, is_head);
         }
         else { /* Serve dynamic content */
                 if (!(S_ISREG(sbuf.st_mode)) || !(S_IXUSR & sbuf.st_mode)) {
@@ -84,12 +85,12 @@ void doit(int fd)
                                     "Tiny couldn't run the CGI program");
                         return;
                 }
-                serve_dynamic(fd, filename, cgiargs);
+                serve_dynamic(fd, filename, cgiargs, is_head);
         }
 }
 
 void clienterror(int fd, char *cause, char *errnum,
-		 char *shortmsg, char *longmsg)
+                 char *shortmsg, char *longmsg)
 {
         char buf[MAXLINE];
 
@@ -151,7 +152,7 @@ int parse_uri(char *uri, char *filename, char *cgiargs)
     }
 }
 
-void serve_static(int fd, char *filename, int filesize)
+void serve_static(int fd, char *filename, int filesize, int is_head)
 {
     int srcfd, n;
     char *srcp, filetype[MAXLINE], buf[MAXBUF];
@@ -167,6 +168,7 @@ void serve_static(int fd, char *filename, int filesize)
     Rio_writen(fd, buf, strlen(buf));
     sprintf(buf, "Content-type: %s\r\n\r\n", filetype);
     Rio_writen(fd, buf, strlen(buf));
+    if (is_head) return;
 
     /* Send response body to client */
     srcfd = Open(filename, O_RDONLY, 0);
@@ -190,7 +192,7 @@ void get_filetype(char *filename, char *filetype)
     else strcpy(filetype, "text/plain");
 }
 
-void serve_dynamic(int fd, char *filename, char *cgiargs)
+void serve_dynamic(int fd, char *filename, char *cgiargs, int is_head)
 {
     char buf[MAXLINE], *emptylist[] = { NULL };
 
@@ -203,6 +205,7 @@ void serve_dynamic(int fd, char *filename, char *cgiargs)
     if (Fork() == 0) { /* Child */
         /* Real server would set all CGI vars here */
         setenv("QUERY_STRING", cgiargs, 1);
+        if (is_head) setenv("IS_HEAD", "1", 1);
         Dup2(fd, STDOUT_FILENO); /* Redirect stdout to client */
         Execve(filename, emptylist, environ); /* Run CGI program */
     }
