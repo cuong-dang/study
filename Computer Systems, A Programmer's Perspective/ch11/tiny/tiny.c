@@ -153,8 +153,9 @@ int parse_uri(char *uri, char *filename, char *cgiargs)
 
 void serve_static(int fd, char *filename, int filesize)
 {
-    int srcfd;
+    int srcfd, n;
     char *srcp, filetype[MAXLINE], buf[MAXBUF];
+    void *riobuf;
 
     /* Send response headers to client */
     get_filetype(filename, filetype);
@@ -164,15 +165,19 @@ void serve_static(int fd, char *filename, int filesize)
     Rio_writen(fd, buf, strlen(buf));
     sprintf(buf, "Content-length: %d\r\n", filesize);
     Rio_writen(fd, buf, strlen(buf));
-    sprintf(buf, "Content-type: %s\r\n", filetype);
+    sprintf(buf, "Content-type: %s\r\n\r\n", filetype);
     Rio_writen(fd, buf, strlen(buf));
 
     /* Send response body to client */
     srcfd = Open(filename, O_RDONLY, 0);
-    srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);
-    Close(srcfd);
-    Rio_writen(fd, srcp, filesize);
-    Munmap(srcp, filesize);
+    // srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);
+    // Close(srcfd);
+    // Rio_writen(fd, srcp, filesize);
+    // Munmap(srcp, filesize);
+    if (!(riobuf = malloc(BUFSIZ))) return;
+    while ((n = Rio_readn(srcfd, riobuf, BUFSIZ)) > 0)
+        Rio_writen(fd, riobuf, n);
+    free(riobuf);
 }
 
 void get_filetype(char *filename, char *filetype)
