@@ -13,6 +13,7 @@ void serve_dynamic(int fd, char *filename, char *cgiargs, int is_head);
 void clienterror(int fd, char *cause, char *errnum,
                  char *shortmsg, char *longmsg);
 void sigchld_handler(int sig);
+void sigpipe_handler(int sig);
 
 int main(int argc, char **argv)
 {
@@ -22,6 +23,7 @@ int main(int argc, char **argv)
         struct sockaddr_storage clientaddr;
 
         Signal(SIGCHLD, sigchld_handler);
+        Signal(SIGPIPE, sigpipe_handler);
 
         /* Check command-line args */
         if (argc != 2) {
@@ -155,6 +157,7 @@ int parse_uri(char *uri, char *filename, char *cgiargs)
 void serve_static(int fd, char *filename, int filesize, int is_head)
 {
     int srcfd, n;
+    ssize_t write_stt;
     char *srcp, filetype[MAXLINE], buf[MAXBUF];
     void *riobuf;
 
@@ -178,7 +181,10 @@ void serve_static(int fd, char *filename, int filesize, int is_head)
     // Munmap(srcp, filesize);
     if (!(riobuf = malloc(BUFSIZ))) return;
     while ((n = Rio_readn(srcfd, riobuf, BUFSIZ)) > 0)
-        Rio_writen(fd, riobuf, n);
+        if ((write_stt = write(fd, riobuf, n)) == -1) {
+            fprintf(stderr, "warning: %s\n", strerror(errno));
+            return;
+        }
     free(riobuf);
 }
 
@@ -217,4 +223,9 @@ void sigchld_handler(int sig)
 
     while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0)
         printf("child process %d reaped with exit status %d\n", pid, status);
+}
+
+void sigpipe_handler(int sig)
+{
+    /* do nothing */
 }
