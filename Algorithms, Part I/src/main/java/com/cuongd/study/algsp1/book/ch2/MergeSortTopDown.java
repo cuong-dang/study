@@ -3,7 +3,7 @@ package com.cuongd.study.algsp1.book.ch2;
 import java.lang.reflect.InvocationTargetException;
 
 public class MergeSortTopDown extends SortCommon {
-    public static void merge(Comparable[] a, int lo, int mid, int hi, Comparable[] aux) {
+    public void merge(Comparable[] a, int lo, int mid, int hi, Comparable[] aux) {
         int i = lo, j = mid + 1;
         for (int k = lo; k <= hi; ++k)
             aux[k] = a[k];
@@ -21,7 +21,7 @@ public class MergeSortTopDown extends SortCommon {
         sort(a, 0, a.length - 1, aux);
     }
 
-    private static void sort(Comparable[] a, int lo, int hi, Comparable[] aux) {
+    private void sort(Comparable[] a, int lo, int hi, Comparable[] aux) {
         if (lo >= hi) return;
         int mid = lo + (hi - lo) / 2;
         sort(a, lo, mid, aux);
