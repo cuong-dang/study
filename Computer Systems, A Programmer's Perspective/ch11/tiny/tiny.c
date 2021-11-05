@@ -3,6 +3,11 @@
  *     GET method to serve static and dynamic content
  */
 #include "../../lib/csapp.h"
+#include "../../lib/sbuf.h"
+
+#define MAXCONN 64
+#define STARTING_NTHREADS 2
+#define LONG_TASK_SIMUL_SECS 10
 
 void doit(int fd);
 void read_requesthdrs(rio_t *rp);
@@ -14,13 +19,19 @@ void clienterror(int fd, char *cause, char *errnum,
                  char *shortmsg, char *longmsg);
 void sigchld_handler(int sig);
 void sigpipe_handler(int sig);
+void *thread(void *vargp);
+
+int nconns = 0, nthreads = 0;
+pthread_t tids[MAXCONN];
+sem_t conn_lock;
 
 int main(int argc, char **argv)
 {
-        int listenfd, connfd;
+        int listenfd, connfd, old_nthreads, i;
         char hostname[MAXLINE], port[MAXLINE];
         socklen_t clientlen;
         struct sockaddr_storage clientaddr;
+        sbuf_t sbuf;
 
         Signal(SIGCHLD, sigchld_handler);
         Signal(SIGPIPE, sigpipe_handler);
@@ -31,15 +42,29 @@ int main(int argc, char **argv)
                 exit(1);
         }
 
+        /* Spin up threads */
+        Sem_init(&conn_lock, 0, 1);
+        sbuf_init(&sbuf, MAXCONN);
+        for (i = 0; i < STARTING_NTHREADS; ++i)
+            Pthread_create(&tids[nthreads++], NULL, thread, (void *)&sbuf);
         listenfd = Open_listenfd(argv[1]);
         while (1) {
                 clientlen = sizeof(clientaddr);
                 connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+                P(&conn_lock);
+                ++nconns;
+                if (nthreads == nconns) {
+                    printf("Reached %d connections; double to %d threads\n",
+                           nconns, 2*nthreads);
+                    for (i = 0, old_nthreads = nthreads; i < old_nthreads; ++i)
+                        Pthread_create(&tids[nthreads++], NULL, thread,
+                                       (void *)&sbuf);
+                }
+                V(&conn_lock);
                 Getnameinfo((SA *)&clientaddr, clientlen, hostname, MAXLINE,
                             port, MAXLINE, 0);
                 printf("Accepted connection from (%s, %s)\n", hostname, port);
-                doit(connfd);
-                Close(connfd);
+                sbuf_insert(&sbuf, connfd);
         }
 }
 
@@ -54,8 +79,8 @@ void doit(int fd)
         /* Read request line and headers */
         Rio_readinitb(&rio, fd);
         Rio_readlineb(&rio, buf, MAXLINE);
-        printf("Request headers:\n");
-        printf("%s", buf);
+        // printf("Request headers:\n");
+        // printf("%s", buf);
         sscanf(buf, "%s %s %s", method, uri, version);
         if (strcasecmp(method, "GET") && strcasecmp(method, "HEAD")) {
                 clienterror(fd, method, "501", "Not implemented",
@@ -120,12 +145,11 @@ void read_requesthdrs(rio_t *rp)
     char buf[MAXLINE];
 
     Rio_readlineb(rp, buf, MAXLINE);
-    printf("%s", buf);
+    // printf("%s", buf);
     while(strcmp(buf, "\r\n")) {
         Rio_readlineb(rp, buf, MAXLINE);
-        printf("%s", buf);
+        // printf("%s", buf);
     }
-    return;
 }
 
 int parse_uri(char *uri, char *filename, char *cgiargs)
@@ -228,4 +252,35 @@ void sigchld_handler(int sig)
 void sigpipe_handler(int sig)
 {
     /* do nothing */
+}
+
+void *thread(void *vargp)
+{
+    sbuf_t *sp = (sbuf_t *)vargp;
+    int connfd, suicide, old_nthreads, i;
+    pthread_t self = Pthread_self();
+
+    while (1) {
+        connfd = sbuf_remove(sp);
+        doit(connfd);
+        Close(connfd);
+        sleep(LONG_TASK_SIMUL_SECS);
+        P(&conn_lock);
+        --nconns;
+        if (nconns == 0 && nthreads > STARTING_NTHREADS) {
+            printf("No more active connections; halve to %d threads\n",
+                   nthreads/ 2);
+            for (i = nthreads / 2, old_nthreads = nthreads; i < old_nthreads;
+                 ++i) {
+                if (tids[i] == self) suicide = 1;
+                else Pthread_cancel(tids[i]);
+                --nthreads;
+            }
+            if (suicide) {
+                V(&conn_lock);
+                Pthread_cancel(self);
+            }
+        }
+        V(&conn_lock);
+    }
 }
