@@ -10,7 +10,7 @@
 static const char *user_agent_hdr = "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/10.0.3\r\n";
 
 cache *c;
-int readcount = 0;
+int read_count = 0, request_count = 0;
 sem_t mutex, w;
 
 void* serve(void* vargp);
@@ -66,13 +66,16 @@ void *serve(void *vargp)
     printf("connfd requested %s%s\n", host, uri);
     if (sscanf(host, "%[^:]:%s", host, port) != 2)
         strcpy(port, "80");
+    P(&w);
+    ++request_count;
+    V(&w);
 
     /* search cache */
     strcpy(key, host);
     strcat(key, uri);
     P(&mutex);
-    ++readcount;
-    if (readcount == 1)
+    ++read_count;
+    if (read_count == 1)
         P(&w);
     V(&mutex);
     if ((op = cache_lookup(c, key))) {
@@ -96,18 +99,19 @@ void *serve(void *vargp)
         }
     }
     P(&mutex);
-    --readcount;
-    if (readcount == 0)
+    --read_count;
+    if (read_count == 0)
         V(&w);
     V(&mutex);
 
     /* update cache */
     P(&w);
     if (cache_hit)
-        cache_renew_object(op);
+        cache_renew_object(op, request_count);
     else if (cachable) {
         printf("  Cache %s\n", key);
-        cache_insert(c, key, strlen(key), cache_buf, object_size);
+        cache_insert(c, key, strlen(key), cache_buf, object_size,
+                request_count);
     }
     V(&w);
     Close(connfd);
