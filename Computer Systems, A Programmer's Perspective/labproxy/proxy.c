@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "csapp.h"
+#include "cache.h"
 
 /* Recommended max cache and object sizes */
 #define MAX_CACHE_SIZE 1049000
@@ -8,16 +9,7 @@
 /* You won't lose style points for including this long line in your code */
 static const char *user_agent_hdr = "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/10.0.3\r\n";
 
-typedef struct {
-    unsigned long num_requests_since;
-    char key[MAXBUF];
-    int length;
-    char *payload;
-} cache_object;
-
-cache_object *cache[MAX_CACHE_SIZE];
-int cached_bytes = 0;
-int cached_objects = 0;
+cache *c;
 int readcount = 0;
 sem_t mutex, w;
 
@@ -25,8 +17,6 @@ void* serve(void* vargp);
 int read_headers(rio_t *rp, char *method, char *uri, char *host,
         char *proxy_headers);
 void bad_request(int connfd);
-cache_object *lookup_cache(char *key);
-void inc_request_count(void);
 void sigpipe_handler(int sig);
 
 int main(int argc, char **argv)
@@ -41,6 +31,7 @@ int main(int argc, char **argv)
     Sem_init(&mutex, 0, 1);
     Sem_init(&w, 0, 1);
 
+    c = make_cache(MAX_CACHE_SIZE, MAX_OBJECT_SIZE);
     listenfd = Open_listenfd(argv[1]);
     printf("Listening on port %s\n", argv[1]);
     while (1) {
@@ -84,18 +75,18 @@ void *serve(void *vargp)
     if (readcount == 1)
         P(&w);
     V(&mutex);
-    if ((op = lookup_cache(key))) {
+    if ((op = cache_lookup(c, key))) {
         /* cache hit */
         cache_hit = 1;
         printf("  Cache hit! Serving from cache\n");
-        Rio_writen(connfd, op->payload, op->length);
+        Rio_writen(connfd, op->payload, op->payload_size);
     } else {
         /* cache miss */
         printf("  Cache miss! Fetch from remote host\n");
         clientfd = Open_clientfd(host, port);
         Rio_readinitb(&rio, clientfd);
         Rio_writen(clientfd, proxy_headers, strlen(proxy_headers));
-        while ((n = Rio_readlineb(&rio, buf, MAXLINE)) > 0) {
+        while ((n = Rio_readnb(&rio, buf, MAXLINE)) > 0) {
             Rio_writen(connfd, buf, n);
             if (cachable && object_size+n < MAX_OBJECT_SIZE) {
                 memcpy(cache_buf+object_size, buf, n);
@@ -112,19 +103,11 @@ void *serve(void *vargp)
 
     /* update cache */
     P(&w);
-    inc_request_count();
     if (cache_hit)
-        op->num_requests_since = 0;
+        cache_renew_object(op);
     else if (cachable) {
-        printf("  Caching %s\n", key);
-        op = Malloc(sizeof(cache_object));
-        op->num_requests_since = 0;
-        strcpy(op->key, key);
-        op->length = object_size;
-        op->payload = Malloc(op->length);
-        memcpy(op->payload, cache_buf, op->length);
-        cache[cached_objects++] = op;
-        cached_bytes += op->length;
+        printf("  Cache %s\n", key);
+        cache_insert(c, key, strlen(key), cache_buf, object_size);
     }
     V(&w);
     Close(connfd);
@@ -194,24 +177,6 @@ void bad_request(int connfd)
     Rio_writen(connfd, buf, strlen(buf));
     sprintf(buf, "<html><title>400 Bad Request</title></html>\r\n");
     Rio_writen(connfd, buf, strlen(buf));
-}
-
-cache_object *lookup_cache(char *key)
-{
-    int i;
-
-    for (i = 0 ; i < cached_objects; ++i)
-        if (strcmp(cache[i]->key, key) == 0)
-            return cache[i];
-    return NULL;
-}
-
-void inc_request_count(void)
-{
-    int i;
-
-    for (i = 0; i < cached_objects; ++i)
-        ++(cache[i]->num_requests_since);
 }
 
 void sigpipe_handler(int sig)
