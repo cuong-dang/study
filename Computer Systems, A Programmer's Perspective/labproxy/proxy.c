@@ -37,8 +37,9 @@ int main(int argc, char **argv)
 void serve(int connfd)
 {
     rio_t rio;
-    char method[MAXBUF], uri[MAXBUF], host[MAXBUF], proxy_headers[MAXBUF];
-    int rc;
+    char method[MAXBUF], uri[MAXBUF], host[MAXBUF], proxy_headers[MAXBUF],
+            port[MAXBUF], buf[MAXLINE];
+    int rc, clientfd, n;
 
     Rio_readinitb(&rio, connfd);
     if ((rc = read_headers(&rio, method, uri, host, proxy_headers)) != 0) {
@@ -47,48 +48,64 @@ void serve(int connfd)
         return;
     }
     printf("connfd requested %s%s\n", host, uri);
-    fflush(stdout);
+    if (sscanf(host, "%[^:]:%s", host, port) != 2)
+        strcpy(port, "80");
+    printf("Requesting headers:\n%s", proxy_headers);
+    clientfd = Open_clientfd(host, port);
+    Rio_readinitb(&rio, clientfd);
+    Rio_writen(clientfd, proxy_headers, strlen(proxy_headers));
+    while ((n = Rio_readlineb(&rio, buf, MAXLINE)) > 0)
+        Rio_writen(connfd, buf, n);
 }
 
 int read_headers(rio_t *rp, char *method, char *uri, char *host,
         char *proxy_headers)
 {
-    char buf[MAXBUF], raw_uri[MAXBUF], protocol[MAXBUF];
+    char buf[MAXLINE], raw_uri[MAXBUF], protocol[MAXBUF];
     int host_set = 0;
 
-    if (!Rio_readlineb(rp, buf, MAXBUF)) return 1;
-    if (sscanf(buf, "%s %s %s\n", method, raw_uri, protocol) != 3) return 2;
-    if (strcasecmp(method, "GET")) return 3;
+    if (!Rio_readlineb(rp, buf, MAXLINE))
+        return 1;
+    if (sscanf(buf, "%s %s %s\n", method, raw_uri, protocol) != 3)
+        return 2;
+    if (strcasecmp(method, "GET"))
+        return 3;
     if (strcasecmp(protocol, "HTTP/1.0") &&
-            strcasecmp(protocol, "HTTP/1.1")) return 4;
+            strcasecmp(protocol, "HTTP/1.1"))
+        return 4;
 
     /* extract uri */
-    if (strncmp(raw_uri, "https", 5) == 0) return 5;
+    if (strncmp(raw_uri, "https", 5) == 0)
+        return 5;
     if (strncmp(raw_uri, "http", 4) == 0) {
-        if (sscanf(raw_uri, "http://%[^/]%s", host, uri) != 2) return 6;
+        if (sscanf(raw_uri, "http://%[^/]%s", host, uri) != 2)
+            return 6;
         host_set = 1;
     } else
         strcpy(uri, raw_uri);
 
-    sprintf(proxy_headers, "GET %s HTTP/1.0\n", uri);
-    if (host_set) sprintf(proxy_headers, "%sHost: %s\n", proxy_headers, host);
+    sprintf(proxy_headers, "GET %s HTTP/1.0\r\n", uri);
+    if (host_set) sprintf(proxy_headers, "%sHost: %s\r\n", proxy_headers, host);
     while (strcmp(buf, "\r\n")) {
-        Rio_readlineb(rp, buf, MAXBUF);
+        Rio_readlineb(rp, buf, MAXLINE);
         if (strncmp(buf, "Host: ", 6) == 0 && !host_set) {
-            if (sscanf(buf, "Host: %s", host) != 1) return 7;
+            if (sscanf(buf, "Host: %s", host) != 1)
+                return 7;
             host_set = 1;
-            sprintf(proxy_headers, "%sHost: %s\n", proxy_headers, host);
+            sprintf(proxy_headers, "%sHost: %s\r\n", proxy_headers, host);
             continue;
         }
-        if (strncmp(buf, "Connection: ", 12)) continue;
-        if (strncmp(buf, "User-Agent: ", 12)) continue;
+        if (strncmp(buf, "Connection: ", 12))
+            continue;
+        if (strncmp(buf, "User-Agent: ", 12))
+            continue;
         sprintf(proxy_headers, "%s%s", proxy_headers, buf);
     }
 
     if (!host_set) return 8;
-    sprintf(proxy_headers, "%sConnection: close\n", proxy_headers);
-    sprintf(proxy_headers, "%sProxy-Connection: close\n", proxy_headers);
-    sprintf(proxy_headers, "%s%s", proxy_headers, user_agent_hdr);
+    sprintf(proxy_headers, "%sConnection: close\r\n", proxy_headers);
+    sprintf(proxy_headers, "%sProxy-Connection: close\r\n", proxy_headers);
+    sprintf(proxy_headers, "%s%s\r\n", proxy_headers, user_agent_hdr);
     return 0;
 }
 
