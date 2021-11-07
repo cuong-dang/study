@@ -8,7 +8,7 @@
 /* You won't lose style points for including this long line in your code */
 static const char *user_agent_hdr = "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/10.0.3\r\n";
 
-void serve(int connfd);
+void* serve(void* vargp);
 int read_headers(rio_t *rp, char *method, char *uri, char *host,
         char *proxy_headers);
 void bad_request(int connfd);
@@ -19,6 +19,7 @@ int main(int argc, char **argv)
     socklen_t clientlen;
     struct sockaddr_storage clientaddr;
     char host[MAXBUF], port[MAXBUF];
+    pthread_t tid;
 
     listenfd = Open_listenfd(argv[1]);
     printf("Listening on port %s\n", argv[1]);
@@ -28,34 +29,36 @@ int main(int argc, char **argv)
         Getnameinfo((SA *)&clientaddr, clientlen,
                 host, MAXBUF, port, MAXBUF, 0);
         printf("Accepted connfd %d\n", connfd);
-        serve(connfd);
-        Close(connfd);
+        Pthread_create(&tid, NULL, serve, (void *)connfd);
     }
     return 0;
 }
 
-void serve(int connfd)
+void *serve(void *vargp)
 {
     rio_t rio;
+    int connfd = (int)vargp, rc, clientfd, n;
     char method[MAXBUF], uri[MAXBUF], host[MAXBUF], proxy_headers[MAXBUF],
             port[MAXBUF], buf[MAXLINE];
-    int rc, clientfd, n;
 
+    Pthread_detach(Pthread_self());
     Rio_readinitb(&rio, connfd);
     if ((rc = read_headers(&rio, method, uri, host, proxy_headers)) != 0) {
         printf("connfd %d made bad request, errcode %d\n", connfd, rc);
         bad_request(connfd);
-        return;
+        Close(connfd);
+        return NULL;
     }
     printf("connfd requested %s%s\n", host, uri);
     if (sscanf(host, "%[^:]:%s", host, port) != 2)
         strcpy(port, "80");
-    printf("Requesting headers:\n%s", proxy_headers);
     clientfd = Open_clientfd(host, port);
     Rio_readinitb(&rio, clientfd);
     Rio_writen(clientfd, proxy_headers, strlen(proxy_headers));
     while ((n = Rio_readlineb(&rio, buf, MAXLINE)) > 0)
         Rio_writen(connfd, buf, n);
+    Close(connfd);
+    return NULL;
 }
 
 int read_headers(rio_t *rp, char *method, char *uri, char *host,
