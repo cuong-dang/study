@@ -5,18 +5,18 @@ import scala.collection.mutable
 
 object Ex211 {
   class ConcurrentBiMap[K, V] {
-    private val keyToVal: mutable.Map[K, V] = mutable.Map[K, V]
-    private val valToKey: mutable.Map[V, K] = mutable.Map[V, K]
+    private val keyToVal: mutable.Map[K, V] = mutable.Map[K, V]()
+    private val valToKey: mutable.Map[V, K] = mutable.Map[V, K]()
     private val keyLock: AnyRef = new AnyRef
     private val valLock: AnyRef = new AnyRef
 
     def put(k: K, v: V): Option[(K, V)] = keyLock.synchronized {
       valLock.synchronized {
-        val oldKey = valToKey.put(v, k)
         val oldVal = keyToVal.put(k, v)
+        val oldKey = if (oldVal.isDefined) valToKey.get(oldVal.get) else None
+        valToKey.put(v, k)
 
-        if (oldKey.isDefined) Some(oldKey.get, oldVal.get)
-        else None
+        if (oldKey.isDefined) Some(oldKey.get, oldVal.get) else None
       }
     }
 
