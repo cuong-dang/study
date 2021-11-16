@@ -1,7 +1,7 @@
 package com.cuongd.study.lcpis
 package ch1
 
-import com.cuongd.study.lcpis.ch1.Ex17.matcher
+import ch1.Ex17.matcher
 import org.scalatest.flatspec.AnyFlatSpec
 
 class Ex17Spec extends AnyFlatSpec {
