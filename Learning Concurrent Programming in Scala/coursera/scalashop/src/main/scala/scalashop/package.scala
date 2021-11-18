@@ -1,8 +1,6 @@
 import java.util.concurrent._
 import scala.util.DynamicVariable
 
-import org.scalameter._
-
 package object scalashop extends BoxBlurKernelInterface {
 
   /** The value of every pixel is represented as a 32 bit integer. */
@@ -41,9 +39,26 @@ package object scalashop extends BoxBlurKernelInterface {
 
   /** Computes the blurred RGBA value of a single pixel of the input image. */
   def boxBlurKernel(src: Img, x: Int, y: Int, radius: Int): RGBA = {
+    val xStart = clamp(x-radius, 0, src.width-1)
+    val yStart = clamp(y-radius, 0, src.height-1)
+    val xEnd = clamp(x+radius, 0, src.width-1)
+    val yEnd = clamp(y+radius, 0, src.height-1)
+    var r = 0; var g = 0; var b = 0; var a = 0
+    var c = 0
+    var i = xStart; var j = yStart
 
-    // TODO implement using while loops
-    ???
+    while (i <= xEnd) {
+      j = yStart
+      while (j <= yEnd) {
+        val p = src(xStart, yStart)
+        r += red(p); g += green(p); b += blue(p); a += alpha(p)
+        c += 1
+        j += 1
+      }
+      i += 1
+    }
+
+    rgba(r/c, g/c, b/c, a/c)
   }
 
   val forkJoinPool = new ForkJoinPool
