@@ -50,7 +50,7 @@ package object scalashop extends BoxBlurKernelInterface {
     while (i <= xEnd) {
       j = yStart
       while (j <= yEnd) {
-        val p = src(xStart, yStart)
+        val p = src(i, j)
         r += red(p); g += green(p); b += blue(p); a += alpha(p)
         c += 1
         j += 1

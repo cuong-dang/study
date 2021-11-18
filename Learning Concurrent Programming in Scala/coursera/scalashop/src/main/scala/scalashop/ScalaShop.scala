@@ -1,6 +1,7 @@
 package scalashop
 
 import org.scalameter._
+
 import java.awt._
 import java.awt.event._
 import javax.swing._
