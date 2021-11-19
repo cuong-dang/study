@@ -55,7 +55,8 @@ object VerticalBoxBlur extends VerticalBoxBlurInterface {
    *  columns.
    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-    val splittingPoints = 0 until src.width by (src.width / numTasks)
+    val splittingPoints = 0 until src.width by
+      (if (src.width < numTasks) 1 else src.width / numTasks)
     val startEndTuples = splittingPoints zip (splittingPoints.tail :+ src.width)
     val tasks = startEndTuples map {
       case (from, end) => task {
