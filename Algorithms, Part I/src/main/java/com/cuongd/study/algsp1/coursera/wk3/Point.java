@@ -139,8 +139,6 @@ public class Point implements Comparable<Point> {
         // print and draw the line segments
         FastCollinearPoints collinear = new FastCollinearPoints(points);
         for (LineSegment segment : collinear.segments()) {
-            if (segment == null)
-                break;
             StdOut.println(segment);
             segment.draw();
         }
