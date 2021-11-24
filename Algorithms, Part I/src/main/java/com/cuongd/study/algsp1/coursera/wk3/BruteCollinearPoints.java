@@ -11,11 +11,14 @@ public class BruteCollinearPoints {
         if (points == null)
             throw new IllegalArgumentException();
         int n = points.length;
-        for (int i = 0; i < n; ++i)
-            for (int j = i+1; j < n; ++j)
-                if (points[i] == null || points[j] == null ||
-                        points[i].compareTo(points[j]) == 0)
+        for (Point point : points)
+            if (point == null)
+                throw new IllegalArgumentException();
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j)
+                if (points[i].compareTo(points[j]) == 0)
                     throw new IllegalArgumentException();
+        }
 
         numberOfSegments = 0;
         segments = new LineSegment[points.length * points.length];

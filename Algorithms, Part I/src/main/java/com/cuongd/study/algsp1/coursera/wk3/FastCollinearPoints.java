@@ -11,11 +11,14 @@ public class FastCollinearPoints {
         if (points == null)
             throw new IllegalArgumentException();
         int n = points.length;
-        for (int i = 0; i < n; ++i)
-            for (int j = i+1; j < n; ++j)
-                if (points[i] == null || points[j] == null ||
-                        points[i].compareTo(points[j]) == 0)
+        for (Point point : points)
+            if (point == null)
+                throw new IllegalArgumentException();
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j)
+                if (points[i].compareTo(points[j]) == 0)
                     throw new IllegalArgumentException();
+        }
 
         /* main */
         numberOfSegments = 0;
@@ -32,8 +35,8 @@ public class FastCollinearPoints {
 
             /* examine collinear points */
             Point[] collinear = new Point[n];
-            collinear[0] = otherPoints[0];
-            int numCollinear = 1;
+            int numCollinear = 0;
+            collinear[numCollinear++] = otherPoints[0];
             for (int curr = 1, prev = 0; curr < n-1; ++curr, ++prev) {
                 double currSlope = points[i].slopeTo(otherPoints[curr]),
                         prevSlope = points[i].slopeTo(otherPoints[prev]);
@@ -50,6 +53,8 @@ public class FastCollinearPoints {
                 Arrays.sort(collinear, 0, numCollinear);
                 segments[numberOfSegments++] = new LineSegment(collinear[0],
                         collinear[numCollinear-1]);
+                numCollinear = 0;
+                collinear[numCollinear++] = otherPoints[curr];
             }
         }
     }
