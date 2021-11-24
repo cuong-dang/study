@@ -23,10 +23,10 @@ public class FastCollinearPoints {
         for (int i = 0; i < n; ++i) {
             /* sort other points by slope to current point */
             Point[] otherPoints = new Point[n-1];
-            for (int j = 0, k = 0; j < n; ++j, ++k) {
+            for (int j = 0, k = 0; j < n; ++j) {
                 if (j == i)
                     continue;
-                otherPoints[k] = points[j];
+                otherPoints[k++] = points[j];
             }
             Arrays.sort(otherPoints, points[i].slopeOrder());
 
