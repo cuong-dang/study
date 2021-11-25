@@ -31,6 +31,8 @@ public class FastCollinearPoints {
                     continue;
                 otherPoints[k++] = points[j];
             }
+            if (otherPoints.length < 3)
+                break;
             Arrays.sort(otherPoints, points[i].slopeOrder());
 
             /* examine collinear points */
@@ -49,13 +51,14 @@ public class FastCollinearPoints {
                     collinear[numCollinear++] = otherPoints[curr];
                     continue;
                 }
-                collinear[numCollinear++] = points[i];
-                Arrays.sort(collinear, 0, numCollinear);
-                segments[numberOfSegments++] = new LineSegment(collinear[0],
-                        collinear[numCollinear-1]);
+                /* to not have duplicates, only take if the pivot point is min */
+                processCandidate(points[i], collinear, numCollinear);
                 numCollinear = 0;
                 collinear[numCollinear++] = otherPoints[curr];
             }
+            // last
+            if (numCollinear >= 3)
+                processCandidate(points[i], collinear, numCollinear);
         }
     }
 
@@ -67,5 +70,18 @@ public class FastCollinearPoints {
         LineSegment[] r = new LineSegment[numberOfSegments];
         System.arraycopy(segments, 0, r, 0, numberOfSegments);
         return r;
+    }
+
+    private void processCandidate(Point pivot, Point[] collinear, int n) {
+        boolean pivotIsMin = true;
+        for (int j = 0; j < n; j++)
+            if (pivot.compareTo(collinear[j]) > 0) {
+                pivotIsMin = false;
+                break;
+            }
+        if (pivotIsMin) {
+            Arrays.sort(collinear, 0, n);
+            segments[numberOfSegments++] = new LineSegment(pivot, collinear[n-1]);
+        }
     }
 }
