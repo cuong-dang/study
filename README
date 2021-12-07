@@ -26,3 +26,5 @@ courses, or MOOC, in that order. For further supporting material links
 - dbsc: Database System Concepts
   + book: https://www.db-book.com/
   + course: https://15445.courses.cs.cmu.edu/fall2021/
+- pcdp: Parallel, Concurrent, and Distributed Programming in Java
+  + course: https://www.coursera.org/specializations/pcdp
