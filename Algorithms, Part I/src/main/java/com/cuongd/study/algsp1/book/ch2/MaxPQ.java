@@ -8,6 +8,15 @@ public class MaxPQ<Key extends Comparable<Key>> {
         pq = (Key[]) new Comparable[maxN+1];
     }
 
+    public MaxPQ(Key[] elems) {
+        N = elems.length;
+        pq = (Key[]) new Comparable[N+1];
+        System.arraycopy(elems, 0, pq, 1, N);
+        for (int k = N/2; k >= 1; k--) {
+            sink(k);
+        }
+    }
+
     public boolean isEmpty() {
         return N == 0;
     }
