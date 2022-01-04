@@ -13,8 +13,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type WorkerStatus int
+type WorkerUUID string
+
 type Worker_ struct {
-	UUID string
+	UUID WorkerUUID
 }
 
 type WorkerTaskType int
@@ -25,17 +28,18 @@ const (
 )
 
 type WorkerTask struct {
-	ID       int
+	ID       TaskID
 	Kind     WorkerTaskType
 	Filename string
 	NReduce  int
 }
 
 type TaskReport struct {
-	UUID      string
-	TaskKind  WorkerTaskType
-	TaskID    int
-	OFilename string
+	UUID         WorkerUUID
+	TaskKind     WorkerTaskType
+	MapTaskID    TaskID
+	ReduceTaskID TaskID
+	OFilename    string
 }
 
 //
@@ -54,7 +58,7 @@ func ihash(key string) int {
 func Worker(mapf func(string, string) []KeyValue,
 	reducef func(string, []string) string) {
 	worker := new(Worker_)
-	worker.UUID = uuid.NewString()
+	worker.UUID = WorkerUUID(uuid.NewString())
 	log.Printf("Start worker %v", worker.UUID)
 	for {
 		log.Println("Ask for task")
@@ -66,10 +70,10 @@ func Worker(mapf func(string, string) []KeyValue,
 		log.Printf("Received new task %v from master\n", task.ID)
 		switch task.Kind {
 		case Map:
-			oname := doMap(task, mapf)
+			oname, reduceID := doMap(task, mapf)
 			log.Println("Send map task report to master")
-			ok = call("Master.ReceiveTaskReport", TaskReport{worker.UUID, Map, task.ID, oname},
-				new(struct{}))
+			ok = call("Master.ReceiveTaskReport",
+				TaskReport{worker.UUID, Map, task.ID, reduceID, oname}, new(struct{}))
 			if !ok {
 				log.Fatalf("Failed to report status for map task, file %v, worker %v",
 					task.Filename, worker.UUID)
@@ -82,7 +86,7 @@ func Worker(mapf func(string, string) []KeyValue,
 	}
 }
 
-func doMap(task *WorkerTask, mapf func(string, string) []KeyValue) (oname string) {
+func doMap(task *WorkerTask, mapf func(string, string) []KeyValue) (oname string, reduceID TaskID) {
 	log.Printf("Run map task for file %v\n", task.Filename)
 	file, err := os.Open(task.Filename)
 	if err != nil {
@@ -97,7 +101,8 @@ func doMap(task *WorkerTask, mapf func(string, string) []KeyValue) (oname string
 	intermediate := mapf(task.Filename, string(content))
 	sort.Sort(ByKey(intermediate))
 
-	oname = fmt.Sprintf("mr-%v-%v", task.ID, ihash(task.Filename)%task.NReduce)
+	reduceID = TaskID(ihash(task.Filename) % task.NReduce)
+	oname = fmt.Sprintf("mr-%v-%v", task.ID, reduceID)
 	log.Printf("Write output to %v\n", oname)
 	ofile, err := os.Create(oname)
 	if err != nil {
@@ -110,7 +115,7 @@ func doMap(task *WorkerTask, mapf func(string, string) []KeyValue) (oname string
 			log.Fatalf("Cannot write value %v", kv)
 		}
 	}
-	return oname
+	return oname, reduceID
 }
 
 //

@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-type WorkerStatus int
-
 const (
 	working WorkerStatus = iota
 	available
@@ -19,26 +17,49 @@ const (
 )
 
 type Master struct {
-	mu                sync.Mutex
-	mapTasks          map[int]MasterMapTask
-	mapTasksIdle      int
-	mapTasksCompleted int
-	workerStatus      map[string]WorkerStatus
-	reduceTasks       []string
-	nReduce           int
+	mu           sync.Mutex
+	mapTasks     MapTasks
+	reduceTasks  ReduceTasks
+	workerStatus map[WorkerUUID]WorkerStatus
+}
+
+type MapTasks struct {
+	tasks map[TaskID]MasterMapTask
+	TaskNumbers
+}
+
+type ReduceTasks struct {
+	tasks map[TaskID]MasterReduceTask
+	TaskNumbers
+}
+
+type TaskNumbers struct {
+	total     int
+	idle      int
+	completed int
 }
 
 type MasterMapTask struct {
-	filename         string
-	status           MapTaskStatus
+	filename string
+	Task
+}
+
+type MasterReduceTask struct {
+	filenames []string
+	Task
+}
+
+type Task struct {
+	status           TaskStatus
 	startedTimestamp int64
 	worker           Worker_
 }
 
-type MapTaskStatus int
+type TaskID int
+type TaskStatus int
 
 const (
-	idle MapTaskStatus = iota
+	idle TaskStatus = iota
 	inProgress
 	completed
 )
@@ -51,25 +72,27 @@ func (m *Master) AssignTask(worker Worker_, reply *WorkerTask) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.mapTasksIdle > 0 {
-		log.Printf("There are %d idle map tasks\n", m.mapTasksIdle)
-		for i, task := range m.mapTasks {
+	if m.mapTasks.idle > 0 {
+		log.Printf("There are %d idle map tasks\n", m.mapTasks.idle)
+		for i, task := range m.mapTasks.tasks {
 			if task.status == idle {
 				log.Printf("Assign map task, file %v\n", task.filename)
-				reply.ID = i
+				reply.ID = TaskID(i)
 				reply.Kind = Map
 				reply.Filename = task.filename
-				reply.NReduce = m.nReduce
+				reply.NReduce = m.reduceTasks.total
 
 				task.status = inProgress
 				task.startedTimestamp = time.Now().Unix()
-				m.mapTasksIdle--
+				m.mapTasks.idle--
 				m.workerStatus[worker.UUID] = working
 				break
 			}
 		}
-	} else if m.mapTasksCompleted == len(m.mapTasks) {
-		log.Printf("")
+	} else if m.mapTasks.completed == m.mapTasks.total {
+		if m.reduceTasks.idle != m.reduceTasks.total {
+			log.Fatal("inconsistent reduce tasks!")
+		}
 	}
 	return nil
 }
@@ -89,12 +112,22 @@ func (m *Master) ReceiveTaskReport(report TaskReport, reply *struct{}) error {
 			log.Println("Ignore report from worker marked dead")
 			return nil
 		}
-		task := m.mapTasks[report.TaskID]
-		task.status = completed
-		m.mapTasks[report.TaskID] = task
-		m.mapTasksCompleted++
-		log.Printf("Completed %v/%v map tasks\n", m.mapTasksCompleted, len(m.mapTasks))
-		m.reduceTasks = append(m.reduceTasks, report.OFilename)
+
+		mapTask := m.mapTasks.tasks[report.MapTaskID]
+		mapTask.status = completed
+		m.mapTasks.tasks[report.MapTaskID] = mapTask
+		m.mapTasks.completed++
+		log.Printf("Completed %v/%v map tasks\n", m.mapTasks.completed, m.mapTasks.total)
+
+		reduceTask, ok := m.reduceTasks.tasks[report.ReduceTaskID]
+		if !ok { // new reduce task
+			m.reduceTasks.idle++
+			reduceTask = MasterReduceTask{[]string{report.OFilename}, Task{idle, 0, Worker_{}}}
+		} else {
+			reduceTask.filenames = append(reduceTask.filenames, report.OFilename)
+			m.reduceTasks.tasks[report.ReduceTaskID] = reduceTask
+		}
+
 		m.workerStatus[report.UUID] = available
 	}
 	return nil
@@ -137,15 +170,17 @@ func MakeMaster(files []string, nReduce int) *Master {
 	m := Master{}
 
 	log.Println("Make master")
-	m.mapTasks = make(map[int]MasterMapTask)
-	m.workerStatus = make(map[string]WorkerStatus)
+	m.mapTasks.tasks = make(map[TaskID]MasterMapTask)
+	m.reduceTasks.tasks = make(map[TaskID]MasterReduceTask)
+	m.workerStatus = make(map[WorkerUUID]WorkerStatus)
 	for i, filename := range files {
-		m.mapTasks[i] = MasterMapTask{filename, idle, 0, Worker_{}}
+		m.mapTasks.tasks[TaskID(i)] = MasterMapTask{filename, Task{idle, 0, Worker_{}}}
 	}
-	m.mapTasksIdle = len(m.mapTasks)
-	log.Printf("Discovered %v files", m.mapTasksIdle)
-	m.nReduce = nReduce
-	log.Printf("%v reduce tasks specified\n", nReduce)
+	m.mapTasks.total = len(m.mapTasks.tasks)
+	m.mapTasks.idle = m.mapTasks.total
+	log.Printf("Discovered %v files", m.mapTasks.total)
+	m.reduceTasks.total = nReduce
+	log.Printf("%v reduce tasks specified\n", m.reduceTasks.total)
 
 	m.server()
 	return &m
