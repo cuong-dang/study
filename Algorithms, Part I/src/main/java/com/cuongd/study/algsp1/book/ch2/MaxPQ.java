@@ -1,8 +1,15 @@
 package com.cuongd.study.algsp1.book.ch2;
 
+@SuppressWarnings("unchecked")
 public class MaxPQ<Key extends Comparable<Key>> {
+    private static final int INIT_SIZE = 4;
+
     private Key[] pq;
     private int N = 0;
+
+    public MaxPQ() {
+        pq = (Key[]) new Comparable[INIT_SIZE];
+    }
 
     public MaxPQ(int maxN) {
         pq = (Key[]) new Comparable[maxN+1];
@@ -26,6 +33,8 @@ public class MaxPQ<Key extends Comparable<Key>> {
     }
 
     public void insert(Key v) {
+        if (N == pq.length-1)
+            grow();
         pq[++N] = v;
         swim(N);
     }
@@ -35,7 +44,13 @@ public class MaxPQ<Key extends Comparable<Key>> {
         exch(1, N--);
         pq[N+1] = null;
         sink(1);
+        if (N > 0 && N*4 == pq.length)
+            shrink();
         return max;
+    }
+
+    public int capacity() {
+        return pq.length;
     }
 
     private boolean less(int i, int j) {
@@ -63,5 +78,19 @@ public class MaxPQ<Key extends Comparable<Key>> {
             exch(j, k);
             k = j;
         }
+    }
+
+    private void grow() {
+        resize(pq.length*2, pq.length-1);
+    }
+
+    private void shrink() {
+        resize(pq.length/2, N);
+    }
+
+    private void resize(int newSize, int copyLength) {
+        Key[] newPq = (Key[]) new Comparable[newSize];
+        System.arraycopy(pq, 1, newPq, 1, copyLength);
+        pq = newPq;
     }
 }

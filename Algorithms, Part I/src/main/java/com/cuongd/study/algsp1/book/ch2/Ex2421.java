@@ -8,6 +8,10 @@ public class Ex2421<Key> {
         pq = new MaxPQ<>(maxN);
     }
 
+    public Ex2421() {
+        pq = new MaxPQ<>();
+    }
+
     public void push(Key item) {
         Box<Key> box = new Box<>(item, currWeight++);
         pq.insert(box);
@@ -15,6 +19,10 @@ public class Ex2421<Key> {
 
     public Key pop() {
         return pq.delMax().item;
+    }
+
+    public int capacity() {
+        return pq.capacity();
     }
 
     private static class Box<Key> implements Comparable<Box<Key>> {
