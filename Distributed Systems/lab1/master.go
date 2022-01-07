@@ -18,17 +18,18 @@ const (
 
 type Master struct {
 	mu           sync.Mutex
-	mapTasks     MapTasks
-	reduceTasks  ReduceTasks
+	cond         *sync.Cond
+	mapTasks     MasterMapTasks
+	reduceTasks  MasterReduceTasks
 	workerStatus map[WorkerUUID]WorkerStatus
 }
 
-type MapTasks struct {
+type MasterMapTasks struct {
 	tasks map[TaskID]MasterMapTask
 	TaskNumbers
 }
 
-type ReduceTasks struct {
+type MasterReduceTasks struct {
 	tasks map[TaskID]MasterReduceTask
 	TaskNumbers
 }
@@ -77,9 +78,9 @@ func (m *Master) AssignTask(worker Worker_, reply *WorkerTask) error {
 		for i, task := range m.mapTasks.tasks {
 			if task.status == idle {
 				log.Printf("Assign map task, file %v\n", task.filename)
-				reply.ID = TaskID(i)
+				reply.ID = i
 				reply.Kind = Map
-				reply.Filename = task.filename
+				reply.MapFilename = task.filename
 				reply.NReduce = m.reduceTasks.total
 
 				task.status = inProgress
@@ -89,9 +90,24 @@ func (m *Master) AssignTask(worker Worker_, reply *WorkerTask) error {
 				break
 			}
 		}
-	} else if m.mapTasks.completed == m.mapTasks.total {
-		if m.reduceTasks.idle != m.reduceTasks.total {
-			log.Fatal("inconsistent reduce tasks!")
+		return nil
+	} else if m.mapTasks.completed != m.mapTasks.total {
+		log.Println("Wait for all map tasks to complete")
+		m.cond.Wait()
+	}
+	log.Printf("There are %d idle reduce tasks\n", m.reduceTasks.idle)
+	for i, task := range m.reduceTasks.tasks {
+		if task.status == idle {
+			log.Printf("Assign reduce task, files %v\n", task.filenames)
+			reply.ID = i
+			reply.Kind = Reduce
+			reply.ReduceFilenames = task.filenames
+
+			task.status = inProgress
+			task.startedTimestamp = time.Now().Unix()
+			m.reduceTasks.idle--
+			m.workerStatus[worker.UUID] = working
+			break
 		}
 	}
 	return nil
@@ -107,7 +123,7 @@ func (m *Master) ReceiveTaskReport(report TaskReport, reply *struct{}) error {
 
 	switch report.TaskKind {
 	case Map:
-		log.Printf("Report for map task, ofile %v\n", report.OFilename)
+		log.Println("Report for map task")
 		if m.workerStatus[report.UUID] == dead {
 			log.Println("Ignore report from worker marked dead")
 			return nil
@@ -119,16 +135,24 @@ func (m *Master) ReceiveTaskReport(report TaskReport, reply *struct{}) error {
 		m.mapTasks.completed++
 		log.Printf("Completed %v/%v map tasks\n", m.mapTasks.completed, m.mapTasks.total)
 
-		reduceTask, ok := m.reduceTasks.tasks[report.ReduceTaskID]
-		if !ok { // new reduce task
-			m.reduceTasks.idle++
-			reduceTask = MasterReduceTask{[]string{report.OFilename}, Task{idle, 0, Worker_{}}}
-		} else {
-			reduceTask.filenames = append(reduceTask.filenames, report.OFilename)
-			m.reduceTasks.tasks[report.ReduceTaskID] = reduceTask
+		for taskID, filenames := range report.ReduceTasks {
+			log.Printf("There are %v files for reduce ID %v\n", len(filenames), taskID)
+			reduceTask, ok := m.reduceTasks.tasks[taskID]
+			if !ok { // new reduce task
+				m.reduceTasks.idle++
+				reduceTask = MasterReduceTask{[]string{}, Task{idle, 0, Worker_{}}}
+				copy(reduceTask.filenames, filenames)
+			} else {
+				reduceTask.filenames = append(reduceTask.filenames, filenames...)
+			}
+			m.reduceTasks.tasks[taskID] = reduceTask
 		}
 
 		m.workerStatus[report.UUID] = available
+	}
+	if m.mapTasks.completed == m.mapTasks.total {
+		log.Println("All map tasks completed")
+		m.cond.Broadcast()
 	}
 	return nil
 }
@@ -167,9 +191,10 @@ func (m *Master) Done() bool {
 // nReduce is the number of reduce tasks to use.
 //
 func MakeMaster(files []string, nReduce int) *Master {
-	m := Master{}
-
 	log.Println("Make master")
+	m := Master{}
+	m.cond = sync.NewCond(&m.mu)
+
 	m.mapTasks.tasks = make(map[TaskID]MasterMapTask)
 	m.reduceTasks.tasks = make(map[TaskID]MasterReduceTask)
 	m.workerStatus = make(map[WorkerUUID]WorkerStatus)
