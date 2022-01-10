@@ -25,6 +25,7 @@ type WorkerTaskType int
 const (
 	Map WorkerTaskType = iota
 	Reduce
+	AllDone
 )
 
 type WorkerTask struct {
@@ -38,8 +39,9 @@ type WorkerTask struct {
 type TaskReport struct {
 	UUID        WorkerUUID
 	TaskKind    WorkerTaskType
-	MapTaskID   TaskID
+	TaskID      TaskID
 	ReduceTasks map[TaskID][]string
+	ReduceOFile string
 }
 
 //
@@ -67,19 +69,33 @@ func Worker(mapf func(string, string) []KeyValue,
 		if !ok { // all done
 			return
 		}
-		log.Printf("Received new task %v from master\n", task.ID)
+		taskKindString := "map"
+		if task.Kind == Reduce {
+			taskKindString = "reduce"
+		}
+		log.Printf("Received new %v task %v from master\n", taskKindString, task.ID)
 		switch task.Kind {
 		case Map:
 			reduceTasks := doMap(task, mapf)
-			log.Println("Send map task report to master")
+			log.Printf("Send map task ID %v report to master\n", task.ID)
 			ok = call("Master.ReceiveTaskReport",
-				TaskReport{worker.UUID, Map, task.ID, reduceTasks}, new(struct{}))
+				TaskReport{worker.UUID, Map, task.ID, reduceTasks, ""}, new(struct{}))
 			if !ok {
 				log.Fatalf("Failed to report status for map task, file %v, worker %v",
 					task.MapFilename, worker.UUID)
 			}
 		case Reduce:
-			// doReduce(task, mapf)
+			ofile := doReduce(task, reducef)
+			log.Printf("Send reduce task ID %v report to master\n", task.ID)
+			ok = call("Master.ReceiveTaskReport",
+				TaskReport{worker.UUID, Reduce, task.ID, nil, ofile}, new(struct{}))
+			if !ok {
+				log.Fatalf("Failed to report status for reduce task, file %v, worker %v",
+					task.ReduceFilenames, worker.UUID)
+			}
+		case AllDone:
+			log.Println("ALL DONE!")
+			return
 		default:
 			log.Fatalf("Unknown task %v\n", task.Kind)
 		}
@@ -114,9 +130,10 @@ func doMap(task *WorkerTask, mapf func(string, string) []KeyValue) (reduceTasks 
 	}
 
 	reduceTasks = make(map[TaskID][]string)
+	onames := []string{}
 	for reduceID, kva := range reduceIDMap {
 		oname := fmt.Sprintf("mr-%v-%v", task.ID, reduceID)
-		log.Printf("Write output to %v\n", oname)
+		onames = append(onames, oname)
 		ofile, err := os.Create(oname)
 		if err != nil {
 			log.Fatalf("Cannot create %v", oname)
@@ -130,11 +147,13 @@ func doMap(task *WorkerTask, mapf func(string, string) []KeyValue) (reduceTasks 
 		}
 		reduceTasks[reduceID] = append(reduceTasks[reduceID], oname)
 	}
+	log.Printf("Wrote output to %v\n", onames)
 	return reduceTasks
 }
 
-func doReduce(task *WorkerTask, reducef func(string, []string) string) {
+func doReduce(task *WorkerTask, reducef func(string, []string) string) (oname string) {
 	log.Printf("Run reduce task for files %v\n", task.ReduceFilenames)
+	intermediate := []KeyValue{}
 	for _, filename := range task.ReduceFilenames {
 		file, err := os.Open(filename)
 		if err != nil {
@@ -142,17 +161,40 @@ func doReduce(task *WorkerTask, reducef func(string, []string) string) {
 		}
 		defer file.Close()
 
-		var kva []KeyValue
+		kva := []KeyValue{}
 		dec := json.NewDecoder(file)
 		for {
-			var kv KeyValue
+			kv := KeyValue{}
 			if err := dec.Decode(&kv); err != nil {
 				break
 			}
 			kva = append(kva, kv)
 		}
+		intermediate = append(intermediate, kva...)
 	}
 
+	oname = fmt.Sprintf("mr-out-%v", task.ID)
+	log.Printf("Write output to %v\n", oname)
+	ofile, err := os.Create(oname)
+	if err != nil {
+		log.Fatalf("Fail to create file %v\n", oname)
+	}
+	sort.Sort(ByKey(intermediate))
+	i := 0
+	for i < len(intermediate) {
+		j := i + 1
+		for j < len(intermediate) && intermediate[i].Key == intermediate[j].Key {
+			j++
+		}
+		values := []string{}
+		for k := i; k < j; k++ {
+			values = append(values, intermediate[k].Value)
+		}
+		output := reducef(intermediate[i].Key, values)
+		fmt.Fprintf(ofile, "%v %v\n", intermediate[i].Key, output)
+		i = j
+	}
+	return oname
 }
 
 //

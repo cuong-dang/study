@@ -26,15 +26,15 @@ type Master struct {
 
 type MasterMapTasks struct {
 	tasks map[TaskID]MasterMapTask
-	TaskNumbers
+	TaskStats
 }
 
 type MasterReduceTasks struct {
 	tasks map[TaskID]MasterReduceTask
-	TaskNumbers
+	TaskStats
 }
 
-type TaskNumbers struct {
+type TaskStats struct {
 	total     int
 	idle      int
 	completed int
@@ -74,37 +74,48 @@ func (m *Master) AssignTask(worker Worker_, reply *WorkerTask) error {
 	defer m.mu.Unlock()
 
 	if m.mapTasks.idle > 0 {
-		log.Printf("There are %d idle map tasks\n", m.mapTasks.idle)
-		for i, task := range m.mapTasks.tasks {
+		log.Printf("There are %v idle map tasks\n", m.mapTasks.idle)
+		for taskID, task := range m.mapTasks.tasks {
 			if task.status == idle {
-				log.Printf("Assign map task, file %v\n", task.filename)
-				reply.ID = i
+				log.Printf("Assign map task ID %v, file %v\n", taskID, task.filename)
+				reply.ID = taskID
 				reply.Kind = Map
 				reply.MapFilename = task.filename
 				reply.NReduce = m.reduceTasks.total
 
 				task.status = inProgress
 				task.startedTimestamp = time.Now().Unix()
+				m.mapTasks.tasks[taskID] = task
 				m.mapTasks.idle--
 				m.workerStatus[worker.UUID] = working
 				break
 			}
 		}
 		return nil
-	} else if m.mapTasks.completed != m.mapTasks.total {
+	}
+	for m.mapTasks.completed != m.mapTasks.total {
 		log.Println("Wait for all map tasks to complete")
 		m.cond.Wait()
 	}
-	log.Printf("There are %d idle reduce tasks\n", m.reduceTasks.idle)
-	for i, task := range m.reduceTasks.tasks {
+	for m.reduceTasks.idle == 0 && m.reduceTasks.completed != m.reduceTasks.total {
+		log.Println("No more tasks right now, waiting...")
+		m.cond.Wait()
+	}
+	if m.reduceTasks.completed == m.reduceTasks.total {
+		reply.Kind = AllDone
+		return nil
+	}
+	log.Printf("There are %v idle reduce tasks\n", m.reduceTasks.idle)
+	for taskID, task := range m.reduceTasks.tasks {
 		if task.status == idle {
-			log.Printf("Assign reduce task, files %v\n", task.filenames)
-			reply.ID = i
+			log.Printf("Assign reduce task %v, files %v\n", taskID, task.filenames)
+			reply.ID = taskID
 			reply.Kind = Reduce
 			reply.ReduceFilenames = task.filenames
 
 			task.status = inProgress
 			task.startedTimestamp = time.Now().Unix()
+			m.reduceTasks.tasks[taskID] = task
 			m.reduceTasks.idle--
 			m.workerStatus[worker.UUID] = working
 			break
@@ -121,38 +132,51 @@ func (m *Master) ReceiveTaskReport(report TaskReport, reply *struct{}) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	if m.workerStatus[report.UUID] == dead {
+		log.Println("Ignore report from worker marked dead")
+		return nil
+	}
+
 	switch report.TaskKind {
 	case Map:
-		log.Println("Report for map task")
-		if m.workerStatus[report.UUID] == dead {
-			log.Println("Ignore report from worker marked dead")
-			return nil
-		}
-
-		mapTask := m.mapTasks.tasks[report.MapTaskID]
+		log.Printf("Report for map task ID %v\n", report.TaskID)
+		mapTask := m.mapTasks.tasks[report.TaskID]
 		mapTask.status = completed
-		m.mapTasks.tasks[report.MapTaskID] = mapTask
+		m.mapTasks.tasks[report.TaskID] = mapTask
 		m.mapTasks.completed++
 		log.Printf("Completed %v/%v map tasks\n", m.mapTasks.completed, m.mapTasks.total)
 
 		for taskID, filenames := range report.ReduceTasks {
-			log.Printf("There are %v files for reduce ID %v\n", len(filenames), taskID)
 			reduceTask, ok := m.reduceTasks.tasks[taskID]
 			if !ok { // new reduce task
 				m.reduceTasks.idle++
 				reduceTask = MasterReduceTask{[]string{}, Task{idle, 0, Worker_{}}}
-				copy(reduceTask.filenames, filenames)
-			} else {
-				reduceTask.filenames = append(reduceTask.filenames, filenames...)
 			}
+			reduceTask.filenames = append(reduceTask.filenames, filenames...)
 			m.reduceTasks.tasks[taskID] = reduceTask
+			log.Printf("Collected files for reduce ID %v: %v\n", taskID, reduceTask.filenames)
+		}
+		m.workerStatus[report.UUID] = available
+
+		if m.mapTasks.completed == m.mapTasks.total {
+			m.reduceTasks.total = m.reduceTasks.idle
+			log.Println("All map tasks completed")
+			m.cond.Broadcast()
 		}
 
+	case Reduce:
+		log.Printf("Report for reduce task ID %v\n", report.TaskID)
+		reduceTask := m.reduceTasks.tasks[report.TaskID]
+		reduceTask.status = completed
+		m.reduceTasks.tasks[report.TaskID] = reduceTask
+		m.reduceTasks.completed++
+		log.Printf("Completed %v/%v reduce tasks\n", m.reduceTasks.completed, m.reduceTasks.total)
 		m.workerStatus[report.UUID] = available
-	}
-	if m.mapTasks.completed == m.mapTasks.total {
-		log.Println("All map tasks completed")
-		m.cond.Broadcast()
+
+		if m.reduceTasks.completed == m.reduceTasks.total {
+			log.Println("All reduce tasks completed")
+			m.cond.Broadcast()
+		}
 	}
 	return nil
 }
@@ -178,11 +202,9 @@ func (m *Master) server() {
 // if the entire job has finished.
 //
 func (m *Master) Done() bool {
-	ret := false
-
-	// Your code here.
-
-	return ret
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.reduceTasks.completed == m.reduceTasks.total
 }
 
 //
@@ -204,6 +226,7 @@ func MakeMaster(files []string, nReduce int) *Master {
 	m.mapTasks.total = len(m.mapTasks.tasks)
 	m.mapTasks.idle = m.mapTasks.total
 	log.Printf("Discovered %v files", m.mapTasks.total)
+	// reduceTasks.total could change later due to input, finalize after all map tasks complete
 	m.reduceTasks.total = nReduce
 	log.Printf("%v reduce tasks specified\n", m.reduceTasks.total)
 
