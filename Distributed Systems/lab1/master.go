@@ -16,12 +16,15 @@ const (
 	dead
 )
 
+const deadWorkerThresholdSeconds = 10
+
 type Master struct {
 	mu           sync.Mutex
 	cond         *sync.Cond
 	mapTasks     MasterMapTasks
 	reduceTasks  MasterReduceTasks
 	workerStatus map[WorkerUUID]WorkerStatus
+	taskReseted  bool
 }
 
 type MasterMapTasks struct {
@@ -73,55 +76,64 @@ func (m *Master) AssignTask(worker Worker_, reply *WorkerTask) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.mapTasks.idle > 0 {
-		log.Printf("There are %v idle map tasks\n", m.mapTasks.idle)
-		for taskID, task := range m.mapTasks.tasks {
+	for {
+		if m.mapTasks.idle > 0 {
+			log.Printf("There are %v idle map tasks\n", m.mapTasks.idle)
+			for taskID, task := range m.mapTasks.tasks {
+				if task.status == idle {
+					log.Printf("Assign map task ID %v, file %v\n", taskID, task.filename)
+					reply.ID = taskID
+					reply.Kind = Map
+					reply.MapFilename = task.filename
+					reply.NReduce = m.reduceTasks.total
+
+					task.status = inProgress
+					task.startedTimestamp = time.Now().Unix()
+					task.worker.UUID = worker.UUID
+					m.mapTasks.tasks[taskID] = task
+					m.mapTasks.idle--
+					m.workerStatus[worker.UUID] = working
+					break
+				}
+			}
+			return nil
+		}
+		for m.mapTasks.completed != m.mapTasks.total && !m.taskReseted {
+			log.Println("Wait for all map tasks to complete")
+			m.cond.Wait()
+		}
+		for m.reduceTasks.idle == 0 && m.reduceTasks.completed != m.reduceTasks.total &&
+			!m.taskReseted {
+			log.Println("No more tasks right now, waiting...")
+			m.cond.Wait()
+		}
+		if m.taskReseted {
+			m.taskReseted = false
+			continue
+		}
+		if m.reduceTasks.completed == m.reduceTasks.total {
+			reply.Kind = AllDone
+			return nil
+		}
+		log.Printf("There are %v idle reduce tasks\n", m.reduceTasks.idle)
+		for taskID, task := range m.reduceTasks.tasks {
 			if task.status == idle {
-				log.Printf("Assign map task ID %v, file %v\n", taskID, task.filename)
+				log.Printf("Assign reduce task %v, files %v\n", taskID, task.filenames)
 				reply.ID = taskID
-				reply.Kind = Map
-				reply.MapFilename = task.filename
-				reply.NReduce = m.reduceTasks.total
+				reply.Kind = Reduce
+				reply.ReduceFilenames = task.filenames
 
 				task.status = inProgress
 				task.startedTimestamp = time.Now().Unix()
-				m.mapTasks.tasks[taskID] = task
-				m.mapTasks.idle--
+				task.worker.UUID = worker.UUID
+				m.reduceTasks.tasks[taskID] = task
+				m.reduceTasks.idle--
 				m.workerStatus[worker.UUID] = working
 				break
 			}
 		}
 		return nil
 	}
-	for m.mapTasks.completed != m.mapTasks.total {
-		log.Println("Wait for all map tasks to complete")
-		m.cond.Wait()
-	}
-	for m.reduceTasks.idle == 0 && m.reduceTasks.completed != m.reduceTasks.total {
-		log.Println("No more tasks right now, waiting...")
-		m.cond.Wait()
-	}
-	if m.reduceTasks.completed == m.reduceTasks.total {
-		reply.Kind = AllDone
-		return nil
-	}
-	log.Printf("There are %v idle reduce tasks\n", m.reduceTasks.idle)
-	for taskID, task := range m.reduceTasks.tasks {
-		if task.status == idle {
-			log.Printf("Assign reduce task %v, files %v\n", taskID, task.filenames)
-			reply.ID = taskID
-			reply.Kind = Reduce
-			reply.ReduceFilenames = task.filenames
-
-			task.status = inProgress
-			task.startedTimestamp = time.Now().Unix()
-			m.reduceTasks.tasks[taskID] = task
-			m.reduceTasks.idle--
-			m.workerStatus[worker.UUID] = working
-			break
-		}
-	}
-	return nil
 }
 
 //
@@ -182,6 +194,55 @@ func (m *Master) ReceiveTaskReport(report TaskReport, reply *struct{}) error {
 }
 
 //
+// check worker health
+//
+func (m *Master) checkWorkerHealth() {
+	for {
+		m.mu.Lock()
+		if m.mapTasks.completed != m.mapTasks.total {
+			for taskID, task := range m.mapTasks.tasks {
+				if task.status == idle || task.status == completed {
+					continue
+				}
+				now := time.Now().Unix()
+				if now-task.startedTimestamp > deadWorkerThresholdSeconds {
+					log.Printf("Worker %v declared dead, reset map task %v\n",
+						task.worker.UUID, taskID)
+					m.workerStatus[task.worker.UUID] = dead
+					task.status = idle
+					task.startedTimestamp = 0
+					m.mapTasks.tasks[taskID] = task
+					m.mapTasks.idle++
+					m.taskReseted = true
+				}
+			}
+		} else {
+			for taskID, task := range m.reduceTasks.tasks {
+				if task.status == idle || task.status == completed {
+					continue
+				}
+				now := time.Now().Unix()
+				if now-task.startedTimestamp > deadWorkerThresholdSeconds {
+					log.Printf("Worker %v declared dead, reset reduce task %v\n",
+						task.worker.UUID, taskID)
+					m.workerStatus[task.worker.UUID] = dead
+					task.status = idle
+					task.startedTimestamp = 0
+					m.reduceTasks.tasks[taskID] = task
+					m.reduceTasks.idle++
+					m.taskReseted = true
+				}
+			}
+		}
+		if m.taskReseted {
+			m.cond.Broadcast()
+		}
+		m.mu.Unlock()
+		time.Sleep(time.Second)
+	}
+}
+
+//
 // start a thread that listens for RPCs from worker.go
 //
 func (m *Master) server() {
@@ -229,6 +290,7 @@ func MakeMaster(files []string, nReduce int) *Master {
 	// reduceTasks.total could change later due to input, finalize after all map tasks complete
 	m.reduceTasks.total = nReduce
 	log.Printf("%v reduce tasks specified\n", m.reduceTasks.total)
+	go m.checkWorkerHealth()
 
 	m.server()
 	return &m

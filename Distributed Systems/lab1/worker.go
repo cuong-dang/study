@@ -134,7 +134,7 @@ func doMap(task *WorkerTask, mapf func(string, string) []KeyValue) (reduceTasks 
 	for reduceID, kva := range reduceIDMap {
 		oname := fmt.Sprintf("mr-%v-%v", task.ID, reduceID)
 		onames = append(onames, oname)
-		ofile, err := os.Create(oname)
+		ofile, err := ioutil.TempFile("", "temp")
 		if err != nil {
 			log.Fatalf("Cannot create %v", oname)
 		}
@@ -145,6 +145,7 @@ func doMap(task *WorkerTask, mapf func(string, string) []KeyValue) (reduceTasks 
 				log.Fatalf("Cannot write value %v", kv)
 			}
 		}
+		os.Rename(ofile.Name(), oname)
 		reduceTasks[reduceID] = append(reduceTasks[reduceID], oname)
 	}
 	log.Printf("Wrote output to %v\n", onames)
@@ -175,7 +176,7 @@ func doReduce(task *WorkerTask, reducef func(string, []string) string) (oname st
 
 	oname = fmt.Sprintf("mr-out-%v", task.ID)
 	log.Printf("Write output to %v\n", oname)
-	ofile, err := os.Create(oname)
+	ofile, err := ioutil.TempFile("", "temp")
 	if err != nil {
 		log.Fatalf("Fail to create file %v\n", oname)
 	}
@@ -194,6 +195,7 @@ func doReduce(task *WorkerTask, reducef func(string, []string) string) (oname st
 		fmt.Fprintf(ofile, "%v %v\n", intermediate[i].Key, output)
 		i = j
 	}
+	os.Rename(ofile.Name(), oname)
 	return oname
 }
 
