@@ -4,8 +4,8 @@ package com.cuongd.study.algsp1.book.ch2;
 public class MaxPQ<Key extends Comparable<Key>> {
     private static final int INIT_SIZE = 4;
 
-    private Key[] pq;
-    private int N = 0;
+    protected Key[] pq;
+    protected int N = 0;
 
     public MaxPQ() {
         pq = (Key[]) new Comparable[INIT_SIZE];
@@ -63,14 +63,14 @@ public class MaxPQ<Key extends Comparable<Key>> {
         pq[j] = t;
     }
 
-    private void swim(int k) {
+    protected void swim(int k) {
         while (k != 1 && less(k/2, k)) {
             exch(k/2, k);
             k = k/2;
         }
     }
 
-    private void sink(int k) {
+    protected void sink(int k) {
         while (2*k <= N) {
             int j = 2*k;
             if (j < N && less(j, j+1)) ++j;
