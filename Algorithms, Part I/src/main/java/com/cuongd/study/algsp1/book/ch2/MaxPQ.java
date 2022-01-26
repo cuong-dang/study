@@ -6,6 +6,7 @@ public class MaxPQ<Key extends Comparable<Key>> {
 
     protected Key[] pq;
     protected int N = 0;
+    private Key min;
 
     public MaxPQ() {
         pq = (Key[]) new Comparable[INIT_SIZE];
@@ -36,6 +37,10 @@ public class MaxPQ<Key extends Comparable<Key>> {
         if (N == pq.length-1)
             grow();
         pq[++N] = v;
+        if (N == 1)
+            min = v;
+        else if (min.compareTo(v) > 0)
+            min = v;
         swim(N);
     }
 
@@ -47,6 +52,10 @@ public class MaxPQ<Key extends Comparable<Key>> {
         if (N > 0 && N*4 == pq.length)
             shrink();
         return max;
+    }
+
+    public Key min() {
+        return min;
     }
 
     public int capacity() {
