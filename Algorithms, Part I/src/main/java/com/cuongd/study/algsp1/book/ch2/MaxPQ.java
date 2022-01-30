@@ -54,6 +54,10 @@ public class MaxPQ<Key extends Comparable<Key>> {
         return max;
     }
 
+    public Key peek() {
+        return pq[1];
+    }
+
     public Key min() {
         return min;
     }
