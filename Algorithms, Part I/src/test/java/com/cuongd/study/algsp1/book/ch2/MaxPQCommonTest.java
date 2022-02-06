@@ -16,7 +16,8 @@ public class MaxPQCommonTest<T extends MaxPQ<Integer>> {
     @Parameters
     public static Collection<Object[]> parameters() {
         return Arrays.asList(new Object[][] {
-                { Ex2426.class }
+                { Ex2426.class },
+                { Ex2431.class }
         });
     }
 

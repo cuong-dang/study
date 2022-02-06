@@ -70,7 +70,7 @@ public class MaxPQ<Key extends Comparable<Key>> {
         return pq[i].compareTo(pq[j]) < 0;
     }
 
-    private void exch(int i, int j) {
+    protected void exch(int i, int j) {
         Key t = pq[i];
         pq[i] = pq[j];
         pq[j] = t;
