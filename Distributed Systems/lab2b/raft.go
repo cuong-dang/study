@@ -147,8 +147,10 @@ func (rf *Raft) readPersist(data []byte) {
 // field names must start with capital letters!
 //
 type RequestVoteArgs struct {
-	Term        int
-	CandidateId int
+	Term         int
+	CandidateId  int
+	LastLogIndex int
+	LastLogTerm  int
 }
 
 //
@@ -181,6 +183,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.mu.Lock()
 	log.Printf("%d: RequestVote RPC recevied from %d, term %d\n",
 		rf.me, args.CandidateId, args.Term)
+	log.Printf("%d: ....Args: %v\n", rf.me, args)
 	if args.Term > rf.currentTerm {
 		rf.currentTerm = args.Term
 		rf.becomeFollower()
@@ -188,7 +191,8 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		log.Printf("%d: Vote declined to %d\n", rf.me, args.CandidateId)
 		reply.VoteGranted = false
 	}
-	if rf.state == follower && (rf.votedFor == -1 || rf.votedFor == args.CandidateId) {
+	if rf.state == follower && (rf.votedFor == -1 || rf.votedFor == args.CandidateId) &&
+		(len(rf.log)-1 <= args.LastLogIndex && rf.log[len(rf.log)-1].Term <= args.LastLogTerm) {
 		log.Printf("%d: Vote granted to %d\n", rf.me, args.CandidateId)
 		rf.votedFor = args.CandidateId
 		reply.VoteGranted = true
@@ -426,7 +430,8 @@ func (rf *Raft) sendRequestVoteTo(peer int, term int) {
 			rf.me, rf.state, rf.currentTerm, term)
 		return
 	}
-	args := RequestVoteArgs{Term: term, CandidateId: rf.me}
+	args := RequestVoteArgs{Term: term, CandidateId: rf.me,
+		LastLogIndex: len(rf.log) - 1, LastLogTerm: rf.log[len(rf.log)-1].Term}
 	reply := RequestVoteReply{}
 	rf.mu.Unlock()
 	ok := rf.sendRequestVote(peer, &args, &reply)
@@ -465,7 +470,7 @@ func (rf *Raft) becomeFollower() {
 	log.Printf("%d: Becomes follower\n", rf.me)
 	rf.state = follower
 	rf.votedFor = -1
-	rf.resetElectionTimer()
+	// rf.resetElectionTimer()
 }
 
 func (rf *Raft) executeAppendEntries() {
@@ -520,6 +525,7 @@ func (rf *Raft) sendAppendEntriesTo(peer int, term int) {
 		rf.matchIndex[peer] = len(rf.log) - 1
 		rf.updateLeaderCommitIndex(term)
 	} else if reply.Term > rf.currentTerm {
+		rf.currentTerm = reply.Term
 		rf.becomeFollower()
 	} else if !reply.Success && reply.Term == term {
 		rf.nextIndex[peer]--
