@@ -12,6 +12,8 @@ public class Solver {
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
+        if (initial == null)
+            throw new IllegalArgumentException();
         MinPQ<Node> pq = new MinPQ<>();
         MinPQ<Node> pqTwin = new MinPQ<>();
         pq.insert(new Node(initial, 0, null));
@@ -52,6 +54,8 @@ public class Solver {
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
+        if (!solvable)
+            return null;
         Stack<Board> solution = new Stack<>();
         for (Node curr = goalNode; curr != null; curr = curr.prev)
             solution.push(curr.board);
