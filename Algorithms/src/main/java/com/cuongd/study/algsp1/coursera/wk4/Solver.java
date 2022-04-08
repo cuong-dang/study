@@ -2,9 +2,8 @@ package com.cuongd.study.algsp1.coursera.wk4;
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
-
-import java.util.Stack;
 
 public class Solver {
     private final Node goalNode;
@@ -32,10 +31,10 @@ public class Solver {
                 return;
             } else {
                 for (Board neighbor : curr.board.neighbors())
-                    if (neighbor != curr.prev.board)
+                    if (curr.prev == null || !neighbor.equals(curr.prev.board))
                         pq.insert(new Node(neighbor, curr.moves + 1, curr));
                 for (Board neighborTwin : currTwin.board.neighbors())
-                    if (neighborTwin != currTwin.prev.board)
+                    if (currTwin.prev == null || !neighborTwin.equals(currTwin.prev.board))
                         pqTwin.insert(new Node(neighborTwin, currTwin.moves + 1, currTwin));
             }
         }
@@ -55,7 +54,7 @@ public class Solver {
     public Iterable<Board> solution() {
         Stack<Board> solution = new Stack<>();
         for (Node curr = goalNode; curr != null; curr = curr.prev)
-            solution.add(curr.board);
+            solution.push(curr.board);
         return solution;
     }
 

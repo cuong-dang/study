@@ -84,6 +84,7 @@ public class Board {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Board that = (Board) o;
+        if (this.board.length != that.board.length) return false;
         for (int i = 0; i < n; ++i)
             for (int j = 0; j < n; ++j)
                 if (board[i][j] != that.board[i][j])
