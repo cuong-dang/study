@@ -219,42 +219,44 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		log.Printf("%d: AppendEntries RPC recevied, term %d\n", rf.me, args.Term)
 	}
 	reply.Term = rf.currentTerm
-	if args.Term > rf.currentTerm {
-		rf.currentTerm = args.Term
-		rf.becomeFollower()
-	} else if args.Term == rf.currentTerm {
-		if rf.state == candidate {
-			rf.state = follower
-		}
-		if len(rf.log) <= args.PrevLogIndex || rf.log[args.PrevLogIndex].Term != args.PrevLogTerm {
-			reply.Success = false
-		} else {
-			reply.Success = true
-			logIndex := args.PrevLogIndex + 1
-			for _, entry := range args.Entries {
-				if logIndex < len(rf.log) {
-					rf.log[logIndex] = entry
-				} else {
-					rf.log = append(rf.log, entry)
-				}
-				logIndex++
-			}
-			if args.LeaderCommit > rf.commitIndex {
-				oldCommitIndex := rf.commitIndex
-				if args.LeaderCommit < len(rf.log)-1 {
-					rf.commitIndex = args.LeaderCommit
-				} else {
-					rf.commitIndex = len(rf.log) - 1
-				}
-				if rf.commitIndex > oldCommitIndex {
-					rf.commit(oldCommitIndex + 1)
-				}
-			}
-		}
-	} else {
+	if args.Term < rf.currentTerm {
 		reply.Success = false
 		rf.mu.Unlock()
 		return
+	}
+	if args.Term > rf.currentTerm {
+		rf.currentTerm = args.Term
+		rf.becomeFollower()
+	}
+	if rf.state == candidate {
+		rf.becomeFollower()
+	}
+	if len(rf.log) <= args.PrevLogIndex || rf.log[args.PrevLogIndex].Term != args.PrevLogTerm {
+		reply.Success = false
+	} else {
+		reply.Success = true
+		logIndex := args.PrevLogIndex + 1
+		for _, entry := range args.Entries {
+			if logIndex < len(rf.log) && rf.log[logIndex].Term != entry.Term {
+				rf.log = rf.log[:logIndex]
+				rf.log = append(rf.log, entry)
+			} else {
+				rf.log = append(rf.log, entry)
+			}
+			logIndex++
+		}
+		if args.LeaderCommit > rf.commitIndex {
+			oldCommitIndex := rf.commitIndex
+			lastNewEntryIndex := args.PrevLogIndex + len(args.Entries)
+			if args.LeaderCommit < lastNewEntryIndex {
+				rf.commitIndex = args.LeaderCommit
+			} else {
+				rf.commitIndex = lastNewEntryIndex
+			}
+			if rf.commitIndex > oldCommitIndex {
+				rf.commitFrom(oldCommitIndex + 1)
+			}
+		}
 	}
 	rf.resetElectionTimer()
 	rf.persist()
@@ -408,6 +410,7 @@ func (rf *Raft) runElectionTimer() {
 			rf.timeSince += tick
 		} else if rf.state == follower || rf.state == candidate {
 			go rf.startElection()
+			rf.resetElectionTimer()
 		} else {
 			rf.resetElectionTimer()
 		}
@@ -429,7 +432,6 @@ func (rf *Raft) startElection() {
 	rf.currentTerm += 1
 	rf.votedFor = rf.me
 	rf.voteCount = 1
-	rf.resetElectionTimer()
 	if PrintDebug {
 		log.Printf("%d: Start election for term %d\n", rf.me, rf.currentTerm)
 	}
@@ -500,7 +502,6 @@ func (rf *Raft) becomeFollower() {
 	}
 	rf.state = follower
 	rf.votedFor = -1
-	// rf.resetElectionTimer()
 }
 
 func (rf *Raft) executeAppendEntries() {
@@ -574,17 +575,18 @@ func (rf *Raft) updateLeaderCommitIndex(term int) {
 		matchIndex := rf.matchIndex[i]
 		if matchIndex > rf.commitIndex {
 			indexReplica[matchIndex] = indexReplica[matchIndex] + 1
-			if indexReplica[matchIndex] > len(rf.peers)/2 {
+			if indexReplica[matchIndex] > len(rf.peers)/2 && matchIndex < len(rf.log) &&
+				rf.log[matchIndex].Term == rf.currentTerm {
 				rf.commitIndex = matchIndex
 			}
 		}
 	}
 	if rf.commitIndex > oldCommitIndex {
-		rf.commit(oldCommitIndex + 1)
+		rf.commitFrom(oldCommitIndex + 1)
 	}
 }
 
-func (rf *Raft) commit(fromIndex int) {
+func (rf *Raft) commitFrom(fromIndex int) {
 	if PrintDebug {
 		log.Printf("%d: Commit from %d to %d\n", rf.me, fromIndex, rf.commitIndex)
 	}
