@@ -18,12 +18,14 @@ package raft
 //
 
 import (
+	"bytes"
 	"log"
 	"math/rand"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"../labgob"
 	"../labrpc"
 )
 
@@ -112,14 +114,13 @@ func (rf *Raft) GetState() (int, bool) {
 // see paper's Figure 2 for a description of what should be persistent.
 //
 func (rf *Raft) persist() {
-	// Your code here (2C).
-	// Example:
-	// w := new(bytes.Buffer)
-	// e := labgob.NewEncoder(w)
-	// e.Encode(rf.xxx)
-	// e.Encode(rf.yyy)
-	// data := w.Bytes()
-	// rf.persister.SaveRaftState(data)
+	w := new(bytes.Buffer)
+	e := labgob.NewEncoder(w)
+	e.Encode(rf.currentTerm)
+	e.Encode(rf.votedFor)
+	e.Encode(rf.log)
+	data := w.Bytes()
+	rf.persister.SaveRaftState(data)
 }
 
 //
@@ -129,19 +130,19 @@ func (rf *Raft) readPersist(data []byte) {
 	if data == nil || len(data) < 1 { // bootstrap without any state?
 		return
 	}
-	// Your code here (2C).
-	// Example:
-	// r := bytes.NewBuffer(data)
-	// d := labgob.NewDecoder(r)
-	// var xxx
-	// var yyy
-	// if d.Decode(&xxx) != nil ||
-	//    d.Decode(&yyy) != nil {
-	//   error...
-	// } else {
-	//   rf.xxx = xxx
-	//   rf.yyy = yyy
-	// }
+	r := bytes.NewBuffer(data)
+	d := labgob.NewDecoder(r)
+	var currentTerm int
+	var votedFor int
+	var log_ []LogEntry
+	if d.Decode(&currentTerm) != nil || d.Decode(&votedFor) != nil || d.Decode(&log_) != nil {
+		log.Fatalf("%d: Failed to restore persisted state\n", rf.me)
+		return
+	} else {
+		rf.currentTerm = currentTerm
+		rf.votedFor = votedFor
+		rf.log = log_
+	}
 }
 
 //
@@ -186,7 +187,6 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	if PrintDebug {
 		log.Printf("%d: RequestVote RPC recevied from %d, term %d\n",
 			rf.me, args.CandidateId, args.Term)
-		log.Printf("%d: ....Args: %v\n", rf.me, args)
 	}
 	if args.Term > rf.currentTerm {
 		rf.currentTerm = args.Term
@@ -209,6 +209,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		rf.resetElectionTimer()
 	}
 	reply.Term = rf.currentTerm
+	rf.persist()
 	rf.mu.Unlock()
 }
 
@@ -216,12 +217,11 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	rf.mu.Lock()
 	if PrintDebug {
 		log.Printf("%d: AppendEntries RPC recevied, term %d\n", rf.me, args.Term)
-		log.Printf("%d: ....Old log: %v\n", rf.me, rf.log)
-		log.Printf("%d: ....Args: %v\n", rf.me, args)
 	}
 	reply.Term = rf.currentTerm
 	if args.Term > rf.currentTerm {
 		rf.currentTerm = args.Term
+		rf.becomeFollower()
 	} else if args.Term == rf.currentTerm {
 		if rf.state == candidate {
 			rf.state = follower
@@ -238,9 +238,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 					rf.log = append(rf.log, entry)
 				}
 				logIndex++
-			}
-			if PrintDebug {
-				log.Printf("%d: ....New Log: %v\n", rf.me, rf.log)
 			}
 			if args.LeaderCommit > rf.commitIndex {
 				oldCommitIndex := rf.commitIndex
@@ -260,6 +257,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		return
 	}
 	rf.resetElectionTimer()
+	rf.persist()
 	rf.mu.Unlock()
 }
 
@@ -331,6 +329,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	logEntry := LogEntry{Command: command, Term: term}
 	rf.log = append(rf.log, logEntry)
 	rf.matchIndex[rf.me] = len(rf.log) - 1
+	rf.persist()
 	rf.mu.Unlock()
 	return index, term, isLeader
 }
@@ -440,6 +439,7 @@ func (rf *Raft) startElection() {
 		}
 		go rf.sendRequestVoteTo(i, rf.currentTerm)
 	}
+	rf.persist()
 	rf.mu.Unlock()
 }
 
@@ -475,6 +475,7 @@ func (rf *Raft) sendRequestVoteTo(peer int, term int) {
 		rf.currentTerm = reply.Term
 		rf.becomeFollower()
 	}
+	rf.persist()
 	rf.mu.Unlock()
 }
 
@@ -542,10 +543,6 @@ func (rf *Raft) sendAppendEntriesTo(peer int, term int) {
 		Entries:      entries,
 		LeaderCommit: rf.commitIndex,
 	}
-	if PrintDebug {
-		log.Printf("%d!: ....Log: %v\n", rf.me, rf.log)
-		log.Printf("%d!: ....Args: %v\n", rf.me, args)
-	}
 	rf.mu.Unlock()
 	reply := AppendEntriesReply{}
 	ok := rf.sendAppendEntries(peer, &args, &reply)
@@ -554,13 +551,17 @@ func (rf *Raft) sendAppendEntriesTo(peer int, term int) {
 	}
 	rf.mu.Lock()
 	if reply.Success && reply.Term == term {
-		rf.nextIndex[peer] = len(rf.log)
-		rf.matchIndex[peer] = len(rf.log) - 1
+		rf.nextIndex[peer] = prevLogIndex + len(entries) + 1
+		rf.matchIndex[peer] = rf.nextIndex[peer] - 1
 		rf.updateLeaderCommitIndex(term)
 	} else if reply.Term > rf.currentTerm {
 		rf.currentTerm = reply.Term
 		rf.becomeFollower()
 	} else if !reply.Success && reply.Term == term {
+		if PrintDebug {
+			log.Printf("%d!: %d's next index %d -> %d\n", rf.me, peer,
+				rf.nextIndex[peer], rf.nextIndex[peer]-1)
+		}
 		rf.nextIndex[peer]--
 	}
 	rf.mu.Unlock()
