@@ -2,7 +2,7 @@ package com.cuongd.study.algsp1.book.ch3;
 
 import edu.princeton.cs.algs4.Queue;
 
-public class Ex313<Key extends Comparable<Key>, Value> {
+public class Ex313<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
     private Node head = null;
     private int n = 0;
 

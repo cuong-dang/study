@@ -2,20 +2,38 @@ package com.cuongd.study.algsp1.book.ch3;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class Ex313Test {
-    Ex313<String, Integer> st;
-    List<String> keys;
+@RunWith(Parameterized.class)
+public class OrderedSTTest {
+    private final Class<OrderedST<String, Integer>> stClass;
+    private OrderedST<String, Integer> st;
+    private List<String> keys;
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> parameters() {
+        return Arrays.asList(new Object[][]{
+                { Ex313.class }
+        });
+    }
+
+    public OrderedSTTest(Class<OrderedST<String, Integer>> stClass) {
+        this.stClass = stClass;
+    }
 
     @Before
-    public void init() {
-        st = new Ex313<>();
+    public void init() throws NoSuchMethodException, InvocationTargetException,
+            InstantiationException, IllegalAccessException {
+        st = stClass.getDeclaredConstructor().newInstance();
         keys = new ArrayList<>();
     }
 
