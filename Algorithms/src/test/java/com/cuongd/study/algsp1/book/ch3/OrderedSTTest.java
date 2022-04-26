@@ -22,7 +22,8 @@ public class OrderedSTTest {
     @Parameterized.Parameters
     public static Collection<Object[]> parameters() {
         return Arrays.asList(new Object[][]{
-                { Ex313.class }
+                { Ex313.class },
+                { BST.class }
         });
     }
 
@@ -102,6 +103,30 @@ public class OrderedSTTest {
     }
 
     @Test
+    public void testDeleteMin() {
+        st.put("S", 0);
+        st.put("E", 1);
+        st.put("X", 7);
+        st.put("R", 3);
+        st.deleteMin();
+        assertEquals(3, st.size());
+        st.keys().forEach(keys::add);
+        assertEquals(Arrays.asList("R", "S", "X"), keys);
+    }
+
+    @Test
+    public void testDeleteMax() {
+        st.put("S", 0);
+        st.put("E", 1);
+        st.put("X", 7);
+        st.put("R", 3);
+        st.deleteMax();
+        assertEquals(3, st.size());
+        st.keys().forEach(keys::add);
+        assertEquals(Arrays.asList("E", "R", "S"), keys);
+    }
+
+    @Test
     public void testDeleteOne() {
         st.put("S", 0);;
         st.delete("S");
@@ -145,6 +170,17 @@ public class OrderedSTTest {
     }
 
     @Test
+    public void testDeleteMid2() {
+        st.put("S", 0); st.put("E", 1); st.put("A", 2); st.put("R", 3); st.put("C", 4);
+        st.put("H", 5); st.put("E", 6); st.put("X", 7); st.put("A", 8); st.put("M", 9);
+        st.put("P", 10); st.put("L", 11); st.put("E", 12);
+        st.delete("E");
+        assertEquals(9, st.size());
+        st.keys().forEach(keys::add);
+        assertEquals(Arrays.asList("A", "C", "H", "L", "M", "P", "R", "S", "X"), keys);
+    }
+
+    @Test
     public void testContains() {
         st.put("S", 0);
         assertTrue(st.contains("S"));
@@ -176,6 +212,15 @@ public class OrderedSTTest {
         st.put("X", 7);
         st.put("R", 3);
         assertEquals("S", st.floor("T"));
+    }
+
+    @Test
+    public void testFloor2() {
+        st.put("S", 0); st.put("E", 1); st.put("A", 2); st.put("R", 3); st.put("C", 4);
+        st.put("H", 5); st.put("E", 6); st.put("X", 7); st.put("A", 8); st.put("M", 9);
+        st.put("P", 10); st.put("L", 11); st.put("E", 12);
+        assertEquals("H", st.floor("H"));
+        assertEquals("H", st.floor("I"));
     }
 
     @Test
