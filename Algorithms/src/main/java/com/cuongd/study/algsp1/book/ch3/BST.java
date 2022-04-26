@@ -5,7 +5,7 @@ import edu.princeton.cs.algs4.Queue;
 import java.util.NoSuchElementException;
 
 public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
-    private Node root;
+    protected Node root;
 
     @Override
     public void put(Key key, Value val) {
@@ -72,7 +72,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         return size(root);
     }
 
-    private int size(Node x) {
+    protected int size(Node x) {
         if (x == null) return 0;
         return x.n;
     }
@@ -215,11 +215,11 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         return keys(min(), max());
     }
 
-    private class Node {
-        private final Key key;
-        private Value val;
-        private Node left, right;
-        private int n;
+    protected class Node {
+        protected final Key key;
+        protected Value val;
+        protected Node left, right;
+        protected int n;
 
         public Node(Key key, Value val, int n) {
             this.key = key;
