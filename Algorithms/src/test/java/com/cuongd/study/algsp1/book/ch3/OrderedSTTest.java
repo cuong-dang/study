@@ -23,7 +23,8 @@ public class OrderedSTTest {
     public static Collection<Object[]> parameters() {
         return Arrays.asList(new Object[][]{
                 { Ex313.class },
-                { BST.class }
+                { BST.class },
+                { Ex3213.class }
         });
     }
 
