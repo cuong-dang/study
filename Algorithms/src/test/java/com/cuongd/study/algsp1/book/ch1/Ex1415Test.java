@@ -11,11 +11,11 @@ import static com.cuongd.study.algsp1.book.ch1.Ex1415.twoSumFaster;
 import static org.junit.Assert.assertEquals;
 
 public class Ex1415Test {
-    private static final String ONE_KINTS_PATH = "./src/main/resources/1Kints.txt";
-    private static final String TWO_KINTS_PATH = "./src/main/resources/2Kints.txt";
-    private static final String FOUR_KINTS_PATH = "./src/main/resources/4Kints.txt";
-    private static final String EIGHT_KINTS_PATH = "./src/main/resources/8Kints.txt";
-    private static final String ONE_MINTS_PATH = "./src/main/resources/1Mints.txt";
+    private static final String ONE_KINTS_PATH = "./src/main/resources/ch1/1Kints.txt";
+    private static final String TWO_KINTS_PATH = "./src/main/resources/ch1/2Kints.txt";
+    private static final String FOUR_KINTS_PATH = "./src/main/resources/ch1/4Kints.txt";
+    private static final String EIGHT_KINTS_PATH = "./src/main/resources/ch1/8Kints.txt";
+    private static final String ONE_MINTS_PATH = "./src/main/resources/ch1/1Mints.txt";
 
     @Test
     public void testTwoSumNoPairs() {

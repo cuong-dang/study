@@ -100,7 +100,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
     private Node max(Node x) {
         if (x == null) return null;
         if (x.right == null) return x;
-        return min(x.right);
+        return max(x.right);
 
     }
 
