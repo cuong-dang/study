@@ -1,22 +1,16 @@
 package kvraft
 
-import (
-	"fmt"
-	"math/rand"
-	"time"
-)
-
 const (
-	OK             = "OK"
-	ErrNoKey       = "ErrNoKey"
-	ErrWrongLeader = "ErrWrongLeader"
+	OK              = "OK"
+	ErrWrongLeader  = "ErrWrongLeader"
+	ErrNotCommitted = "NotCommitted"
 )
 
 type Err string
 
 // Put or Append
 type PutAppendArgs struct {
-	RequestId string
+	RequestId int64
 	Key       string
 	Value     string
 	Op        string // "Put" or "Append"
@@ -27,15 +21,11 @@ type PutAppendReply struct {
 }
 
 type GetArgs struct {
-	RequestId string
+	RequestId int64
 	Key       string
 }
 
 type GetReply struct {
 	Err   Err
 	Value string
-}
-
-func makeId() string {
-	return fmt.Sprintf("%v-%v", time.Now().Unix(), rand.Int())
 }

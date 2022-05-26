@@ -8,6 +8,7 @@ import (
 )
 
 type Clerk struct {
+	id      int64
 	servers []*labrpc.ClientEnd
 	leader  int
 }
@@ -21,6 +22,7 @@ func nrand() int64 {
 
 func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck := new(Clerk)
+	ck.id = nrand()
 	ck.servers = servers
 	ck.leader = 0
 	return ck
@@ -39,11 +41,12 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) Get(key string) string {
-	args := GetArgs{RequestId: makeId(), Key: key}
-	reply := GetReply{}
+	args := GetArgs{RequestId: nrand(), Key: key}
 	for {
+		reply := GetReply{}
+		DPrintf("%d --Get--> %d: %v\n", ck.id, ck.leader, args)
 		ok := ck.servers[ck.leader].Call("KVServer.Get", &args, &reply)
-		if ok && reply.Err == OK {
+		if ck.handleResponse(ok, reply.Err, "Get") {
 			return reply.Value
 		}
 		ck.leader = (ck.leader + 1) % len(ck.servers)
@@ -61,11 +64,12 @@ func (ck *Clerk) Get(key string) string {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) PutAppend(key string, value string, op string) {
-	args := PutAppendArgs{RequestId: makeId(), Key: key, Value: value, Op: op}
-	reply := GetReply{}
+	args := PutAppendArgs{RequestId: nrand(), Key: key, Value: value, Op: op}
 	for {
+		reply := PutAppendReply{}
+		DPrintf("%d --PutAppend--> %d: %v\n", ck.id, ck.leader, args)
 		ok := ck.servers[ck.leader].Call("KVServer.PutAppend", &args, &reply)
-		if ok && reply.Err == OK {
+		if ck.handleResponse(ok, reply.Err, "PutAppend") {
 			return
 		}
 		ck.leader = (ck.leader + 1) % len(ck.servers)
@@ -77,4 +81,18 @@ func (ck *Clerk) Put(key string, value string) {
 }
 func (ck *Clerk) Append(key string, value string) {
 	ck.PutAppend(key, value, "Append")
+}
+
+func (ck *Clerk) handleResponse(ok bool, err Err, requestType string) bool {
+	if ok && err == OK {
+		DPrintf("%d <--%v-- %d: OK\n", ck.id, requestType, ck.leader)
+		return true
+	} else if ok && err == ErrWrongLeader {
+		DPrintf("%d <--%v-- %d: Not leader\n", ck.id, requestType, ck.leader)
+	} else if ok && err == ErrNotCommitted {
+		DPrintf("%d <--%v-- %d: Not committed\n", ck.id, requestType, ck.leader)
+	} else {
+		DPrintf("%d <--%v-- %d: No responses from server\n", ck.id, requestType, ck.leader)
+	}
+	return false
 }
