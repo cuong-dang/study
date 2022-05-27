@@ -43,7 +43,6 @@ type KVServer struct {
 	indexRequest    map[int]int64
 	termRequests    map[int][]int64
 	requestExecuted map[int64]bool
-	requestReplied  map[int64]bool
 }
 
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
@@ -70,7 +69,6 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 		kv.termRequests[term] = make([]int64, 0)
 		kv.termRequests[term] = append(kv.termRequests[term], args.RequestId)
 	}
-	kv.requestReplied[args.RequestId] = false
 	waitCh := kv.requestWaitCh[args.RequestId]
 	kv.mu.Unlock()
 	ok := <-waitCh
@@ -104,6 +102,7 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 		kv.mu.Unlock()
 		return
 	}
+	kv.isLeader = true
 	kv.requestWaitCh[args.RequestId] = make(chan bool)
 	kv.indexRequest[index] = args.RequestId
 	if _, ok := kv.termRequests[term]; ok {
@@ -112,7 +111,6 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 		kv.termRequests[term] = make([]int64, 0)
 		kv.termRequests[term] = append(kv.termRequests[term], args.RequestId)
 	}
-	kv.requestReplied[args.RequestId] = false
 	waitCh := kv.requestWaitCh[args.RequestId]
 	kv.mu.Unlock()
 	ok := <-waitCh
@@ -180,7 +178,6 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.indexRequest = make(map[int]int64)
 	kv.termRequests = make(map[int][]int64)
 	kv.requestExecuted = make(map[int64]bool)
-	kv.requestReplied = make(map[int64]bool)
 
 	go kv.applyMsgHandler()
 	go kv.termChangeDetector()
@@ -199,36 +196,15 @@ func (kv *KVServer) applyMsgHandler() {
 		if applyMsg.CommandValid {
 			cmd := applyMsg.Command.(Op)
 			DPrintf("%d:%v: Received applyMsg %v\n", kv.me, cmd.RequestId, applyMsg)
-			executed := kv.requestExecuted[cmd.RequestId]
-			if !executed {
-				DPrintf("%d:%v: Execute command\n", kv.me, cmd.RequestId)
-				if cmd.Name == "Put" {
-					kv.table[cmd.Key] = cmd.Value
-				} else if cmd.Name == "Append" {
-					kv.table[cmd.Key] = kv.table[cmd.Key] + cmd.Value
-				}
-				kv.requestExecuted[cmd.RequestId] = true
-			} else {
-				DPrintf("%d:%v: Duplicate command detected\n", kv.me, cmd.RequestId)
-			}
-			if waitCh, ok := kv.requestWaitCh[cmd.RequestId]; ok && !kv.requestReplied[cmd.RequestId] {
-				DPrintf("%d:%v: Signal true to waitCh\n", kv.me, cmd.RequestId)
-				waitCh <- true
-				delete(kv.requestWaitCh, cmd.RequestId)
-				DPrintf("%d:%v: Done signaling\n", kv.me, cmd.RequestId)
-				kv.requestReplied[cmd.RequestId] = true
-			} else if requestId, ok := kv.indexRequest[applyMsg.CommandIndex]; ok && requestId != cmd.RequestId &&
-				!kv.requestReplied[requestId] {
+			kv.executeCommand(cmd)
+			if _, ok := kv.requestWaitCh[cmd.RequestId]; ok {
+				kv.signalWaitCh(cmd.RequestId, true)
+			} else if requestId, ok := kv.indexRequest[applyMsg.CommandIndex]; ok && requestId != cmd.RequestId {
 				DPrintf("%d:%v: Different request id at index\n", kv.me, cmd.RequestId)
-				DPrintf("%d:%v: Signal false to waitCh\n", kv.me, cmd.RequestId)
-				kv.requestWaitCh[requestId] <- false
-				delete(kv.requestWaitCh, requestId)
+				if _, ok := kv.requestWaitCh[requestId]; ok {
+					kv.signalWaitCh(requestId, false)
+				}
 				delete(kv.indexRequest, applyMsg.CommandIndex)
-				DPrintf("%d:%v: Done signaling\n", kv.me, cmd.RequestId)
-				kv.requestReplied[requestId] = true
-			}
-			if kv.currentTerm != applyMsg.RaftTerm {
-				kv.handleTermChange(applyMsg.RaftTerm)
 			}
 		}
 		kv.mu.Unlock()
@@ -248,12 +224,8 @@ func (kv *KVServer) termChangeDetector() {
 		if kv.isLeader && !isLeader {
 			DPrintf("%d: Detected lost leadership\n", kv.me)
 			kv.isLeader = false
-			for requestId, waitCh := range kv.requestWaitCh {
-				if !kv.requestReplied[requestId] {
-					waitCh <- false
-					delete(kv.requestWaitCh, requestId)
-					kv.requestReplied[requestId] = true
-				}
+			for requestId, _ := range kv.requestWaitCh {
+				kv.signalWaitCh(requestId, false)
 			}
 		}
 		kv.mu.Unlock()
@@ -261,15 +233,33 @@ func (kv *KVServer) termChangeDetector() {
 	}
 }
 
+func (kv *KVServer) executeCommand(cmd Op) {
+	executed := kv.requestExecuted[cmd.RequestId]
+	if !executed {
+		DPrintf("%d:%v: Execute command\n", kv.me, cmd.RequestId)
+		if cmd.Name == "Put" {
+			kv.table[cmd.Key] = cmd.Value
+		} else if cmd.Name == "Append" {
+			kv.table[cmd.Key] = kv.table[cmd.Key] + cmd.Value
+		}
+		kv.requestExecuted[cmd.RequestId] = true
+	} else {
+		DPrintf("%d:%v: Duplicate command detected\n", kv.me, cmd.RequestId)
+	}
+}
+
+func (kv *KVServer) signalWaitCh(requestId int64, result bool) {
+	DPrintf("%d:%v: Signal %v to waitCh\n", kv.me, requestId, result)
+	kv.requestWaitCh[requestId] <- result
+	delete(kv.requestWaitCh, requestId)
+	DPrintf("%d:%v: Done signaling\n", kv.me, requestId)
+}
+
 func (kv *KVServer) handleTermChange(newTerm int) {
 	DPrintf("%d: Detected term change from %d to %d\n", kv.me, kv.currentTerm, newTerm)
 	for _, requestId := range kv.termRequests[kv.currentTerm] {
-		if !kv.requestReplied[requestId] {
-			DPrintf("%d:%v: Signal false to waitCh\n", kv.me, requestId)
-			kv.requestWaitCh[requestId] <- false
-			delete(kv.requestWaitCh, requestId)
-			DPrintf("%d:%v: Done signaling\n", kv.me, requestId)
-			kv.requestReplied[requestId] = true
+		if _, ok := kv.requestWaitCh[requestId]; ok {
+			kv.signalWaitCh(requestId, false)
 		}
 	}
 	delete(kv.termRequests, kv.currentTerm)
