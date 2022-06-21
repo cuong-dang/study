@@ -40,11 +40,11 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         root = delete(root, key);
     }
 
-    private Node delete(Node x, Key key) {
+    protected Node delete(Node x, Key key) {
         if (x == null) return null;
         int cmp = key.compareTo(x.key);
         if (cmp < 0) x.left = delete(x.left, key);
-        else if (cmp > 0) x.right = delete (x.right, key);
+        else if (cmp > 0) x.right = delete(x.right, key);
         else {
             if (x.left == null) return x.right;
             if (x.right == null) return x.left;
@@ -84,7 +84,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         return x.key;
     }
 
-    private Node min(Node x) {
+    protected Node min(Node x) {
         if (x == null) return null;
         if (x.left == null) return x;
         return min(x.left);
@@ -141,7 +141,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         return rank(root, key);
     }
 
-    private int rank(Node x, Key key) {
+    protected int rank(Node x, Key key) {
         if (x == null) return 0;
         if (key.compareTo(x.key) < 0) return rank(x.left, key);
         else if (key.compareTo(x.key) > 0) return 1 + rank(x.left, key) + rank(x.right, key);
@@ -167,7 +167,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         root = deleteMin(root);
     }
 
-    private Node deleteMin(Node x) {
+    protected Node deleteMin(Node x) {
         if (x.left == null) return x.right;
         x.left = deleteMin(x.left);
         x.n = size(x.left) + size(x.right) + 1;

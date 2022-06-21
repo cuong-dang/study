@@ -24,7 +24,8 @@ public class OrderedSTTest {
         return Arrays.asList(new Object[][]{
                 { Ex313.class },
                 { BST.class },
-                { Ex3213.class }
+                { Ex3213.class },
+                { Ex3234.class },
         });
     }
 
