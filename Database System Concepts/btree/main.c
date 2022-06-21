@@ -4,10 +4,12 @@
 #include <string.h>
 #include <glib.h>
 
-#define FANOUT 4
-#define MAXKEYS (FANOUT - 1)
-#define KEY(i) ((i)*2 + 1)
-#define POINTER(i) ((i)*2)
+#define N 4
+#define MAXKEYS (N - 1)
+#define KEY(i) (((i) - 1) * 2 + 1)
+#define POINTER(i) (((i) - 1) * 2)
+#define KEYS_TO_LENGTH(k) (2*(k) + 1)
+#define MAXKEYS_PLUS_1_SIZE (sizeof(struct node) + 2*sizeof(void *))
 
 struct node {
     int is_leaf_node;
@@ -34,146 +36,310 @@ struct node *find_target_leaf(struct node *node, char *key) {
         if (node->is_leaf_node) {
             return node;
         }
-        for (i = 0; i < node->num_keys; ++i) {
+        for (i = 1; i <= node->num_keys; ++i) {
             curr_key = (char *) node->data[KEY(i)];
             if (strcmp(key, curr_key) < 0) {
                 parent = node;
                 node = (struct node *) node->data[POINTER(i)];
-                g_hash_table_insert(parent_list, parent, node);
+                g_hash_table_insert(parent_list, node, parent);
                 break;
             }
         }
-        node = (struct node *) node->data[2 * i];
     }
 }
 
-void copy_leaf(struct node *dst, struct node *src, int from, int n) {
+void copy_data(struct node *dst, struct node *src, int from, int to) {
     int i;
 
-    for (i = from; i < n; ++i) {
-        dst->data[KEY(i - from)] = src->data[KEY(i)];
-        dst->data[POINTER(i - from)] = src->data[POINTER(i)];
+    for (i = from; i <= to; ++i) {
+        dst->data[i - from] = src->data[i];
     }
-    dst->num_keys = n - from;
 }
 
-void insert_in_leaf(struct node *leaf, char *key, void *p) {
-    int i, j;
+void insert_at(struct node* node, int i, int n,
+        void *p, char* key, int is_pk_order) {
+    int j;
 
-    for (i = 0; i < leaf->num_keys; ++i) {
-        if (strcmp(key, leaf->data[KEY(i)]) < 0) {
-            break;
+    for (j = n - 4; j >= i; j -= 2) {
+        node->data[j + 3] = node->data[j + 1];
+        node->data[j + 2] = node->data[j];
+    }
+    if (j == -1) {
+        node->data[2] = node->data[0];
+    }
+    if (is_pk_order) {
+        node->data[i] = p;
+        node->data[i + 1] = key;
+    } else {
+        node->data[i] = key;
+        node->data[i + 1] = p;
+    }
+    ++node->num_keys;
+}
+
+void insert_pk_at(struct node* node, int i, int n, void *p, char* key) {
+    insert_at(node, i, n, p, key, 1);
+}
+
+void insert_kp_at(struct node* node, int i, int n, char *key, void* p) {
+    insert_at(node, i, n, p, key, 0);
+}
+
+int find_key_i(struct node *node, char *key) {
+    int i;
+
+    for (i = 1; i <= node->num_keys; ++i) {
+        if (strcmp(key, node->data[KEY(i)]) < 0) {
+            return KEY(i);
         }
     }
-    for (j = leaf->num_keys - 1; j >= i; --j) {
-        leaf->data[KEY(j + 1)] = leaf->data[KEY(j)];
-        leaf->data[POINTER(j + 1)] = leaf->data[POINTER(j)];
-    }
-    leaf->data[KEY(i)] = key;
-    leaf->data[POINTER(i)] = p;
-    ++leaf->num_keys;
+    return KEY(node->num_keys + 1);
 }
 
-void insert_in_parent(struct node **root,
+void insert_in_leaf(struct node *leaf, int maxkeys, char *key, void *p) {
+    int i = find_key_i(leaf, key);
+
+    insert_pk_at(leaf, i - 1, KEYS_TO_LENGTH(maxkeys), p, key);
+}
+
+int find_pointer_i(struct node *node, void *p) {
+    int i;
+
+    for (i = 0; i < KEYS_TO_LENGTH(MAXKEYS); ++i) {
+        if (node->data[i] == p) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void insert_in_parent(struct node **rootp,
         struct node *leaf1, char *key, struct node *leaf2) {
     struct node *parent, *t, *new_parent;
-    int lparent_last_pointer_i;
+    int leaf1_i;
     char *new_key;
 
     if ((parent = g_hash_table_lookup(parent_list, leaf1)) == NULL) {
-        *root = make();
-        (*root)->data[KEY(0)] = key;
-        (*root)->data[POINTER(0)] = leaf1;
-        (*root)->data[POINTER(1)] = leaf2;
-        (*root)->num_keys = 1;
-        (*root)->is_leaf_node = 0;
+        *rootp = make();
+        (*rootp)->data[KEY(1)] = key;
+        (*rootp)->data[POINTER(1)] = leaf1;
+        (*rootp)->data[POINTER(2)] = leaf2;
+        (*rootp)->num_keys = 1;
+        (*rootp)->is_leaf_node = 0;
         return;
     }
+    leaf1_i = find_pointer_i(parent, leaf1);
     if (parent->num_keys < MAXKEYS) {
-        insert_in_leaf(parent, key, leaf2);
+        insert_kp_at(parent, leaf1_i + 1, KEYS_TO_LENGTH(MAXKEYS), key, leaf2);
     } else {
-        t = malloc(sizeof(struct node) + 2*sizeof(void *));
-        t->is_leaf_node = 1;
-        copy_leaf(t, parent, 0, parent->num_keys);
-        insert_in_leaf(t, key, leaf2);
-        
-        copy_leaf(parent, t, 0, ceil(FANOUT / 2.0));
+        t = malloc(MAXKEYS_PLUS_1_SIZE);
+        copy_data(t, parent, 0, KEYS_TO_LENGTH(MAXKEYS));
+        t->num_keys = parent->num_keys;
+        insert_kp_at(t, leaf1_i + 1, KEYS_TO_LENGTH(MAXKEYS + 1), key, leaf2);
+
+        copy_data(parent, t, POINTER(1), POINTER(ceil((N + 1) / 2.0)));
+        parent->num_keys = ceil((N + 1) / 2.0) - 1;
         new_parent = make();
         new_parent->is_leaf_node = 0;
-        copy_leaf(parent, t, 0, ceil(FANOUT / 2.0));
-        lparent_last_pointer_i = POINTER(parent->num_keys) + 2;
-        parent->data[lparent_last_pointer_i] = t->data[lparent_last_pointer_i];
-        copy_leaf(new_parent, t, ceil((FANOUT + 1) / 2.0) + 1, t->num_keys);
-        new_key = t->data[KEY((int) ceil((FANOUT + 1) / 2.0))];
-        insert_in_parent(root, parent, new_key, new_parent);
+        copy_data(new_parent, t,
+                  POINTER(ceil((N + 1) / 2.0) + 1), POINTER(N + 1));
+        new_parent->num_keys = t->num_keys - parent->num_keys - 1;
+        new_key = t->data[KEY((int) ceil((N + 1) / 2.0))];
+        insert_in_parent(rootp, parent, new_key, new_parent);
     }
 }
 
-void insert(struct node **root, char *key, void *p) {
+void insert(struct node **rootp, char *key, void *p) {
     struct node *leaf, *t, *new_leaf;
 
-    leaf = find_target_leaf(*root, key);
+    leaf = find_target_leaf(*rootp, key);
     if (leaf->num_keys < MAXKEYS) {
-        insert_in_leaf(leaf, key, p);
+        insert_in_leaf(leaf, MAXKEYS, key, p);
     } else {
-        t = malloc(sizeof(struct node) + 2*sizeof(void *));
-        t->is_leaf_node = 1;
-        copy_leaf(t, leaf, 0, leaf->num_keys);
-        insert_in_leaf(t, key, p);
+        t = malloc(MAXKEYS_PLUS_1_SIZE);
+        copy_data(t, leaf, 0, KEYS_TO_LENGTH(MAXKEYS));
+        t->num_keys = leaf->num_keys;
+        insert_in_leaf(t, MAXKEYS + 1, key, p);
 
         new_leaf = make();
-        new_leaf->data[POINTER(MAXKEYS)] = leaf->data[POINTER(MAXKEYS)];
-        leaf->data[POINTER(MAXKEYS)] = new_leaf;
-        copy_leaf(leaf, t, 0, ceil(FANOUT / 2.0));
-        copy_leaf(new_leaf, t, ceil(FANOUT / 2.0), t->num_keys);
-        insert_in_parent(root, leaf, new_leaf->data[KEY(0)], new_leaf);
+        new_leaf->data[POINTER(N)] = leaf->data[POINTER(N)];
+        leaf->data[POINTER(N)] = new_leaf;
+        copy_data(leaf, t, POINTER(1), KEY(ceil(N / 2.0)));
+        leaf->num_keys = ceil(N / 2.0);
+        copy_data(new_leaf, t, POINTER(ceil(N / 2.0) + 1), KEY(N));
+        new_leaf->num_keys = N - leaf->num_keys;
+        insert_in_parent(rootp, leaf, new_leaf->data[KEY(1)], new_leaf);
     }
 }
 
 int main() {
-    struct node *root = make(), *left, *right;
+    struct node *btree = make(), *p0, *p1, *p2, *p3;
 
-    insert(&root, "b", "bb");
-    assert(root->num_keys == 1);
-    assert(strcmp(root->data[0], "bb") == 0);
-    assert(strcmp(root->data[1], "b") == 0);
+    insert(&btree, "b", "bb");
+    assert(btree->num_keys == 1);
+    assert(strcmp(btree->data[0], "bb") == 0);
+    assert(strcmp(btree->data[1], "b") == 0);
 
-    insert(&root, "a", "aa");
-    assert(root->num_keys == 2);
-    assert(strcmp(root->data[0], "aa") == 0);
-    assert(strcmp(root->data[1], "a") == 0);
-    assert(strcmp(root->data[2], "bb") == 0);
-    assert(strcmp(root->data[3], "b") == 0);
+    insert(&btree, "a", "aa");
+    assert(btree->num_keys == 2);
+    assert(strcmp(btree->data[0], "aa") == 0);
+    assert(strcmp(btree->data[1], "a") == 0);
+    assert(strcmp(btree->data[2], "bb") == 0);
+    assert(strcmp(btree->data[3], "b") == 0);
 
-    insert(&root, "g", "gg");
-    assert(root->num_keys == 3);
-    assert(strcmp(root->data[0], "aa") == 0);
-    assert(strcmp(root->data[1], "a") == 0);
-    assert(strcmp(root->data[2], "bb") == 0);
-    assert(strcmp(root->data[3], "b") == 0);
-    assert(strcmp(root->data[4], "gg") == 0);
-    assert(strcmp(root->data[5], "g") == 0);
+    insert(&btree, "m", "mm");
+    assert(btree->num_keys == 3);
+    assert(strcmp(btree->data[0], "aa") == 0);
+    assert(strcmp(btree->data[1], "a") == 0);
+    assert(strcmp(btree->data[2], "bb") == 0);
+    assert(strcmp(btree->data[3], "b") == 0);
+    assert(strcmp(btree->data[4], "mm") == 0);
+    assert(strcmp(btree->data[5], "m") == 0);
 
-    insert(&root, "h", "hh");
-    assert(root->num_keys == 1);
-    assert(strcmp(root->data[1], "g") == 0);
-    left = root->data[0];
-    right = root->data[2];
-    assert(left->num_keys == 2);
-    assert(strcmp(left->data[0], "aa") == 0);
-    assert(strcmp(left->data[1], "a") == 0);
-    assert(strcmp(left->data[2], "bb") == 0);
-    assert(strcmp(left->data[3], "b") == 0);
-    assert(left->data[6] == right);
-    assert(right->num_keys == 2);
-    assert(strcmp(right->data[0], "gg") == 0);
-    assert(strcmp(right->data[1], "g") == 0);
-    assert(strcmp(right->data[2], "hh") == 0);
-    assert(strcmp(right->data[3], "h") == 0);
+    insert(&btree, "n", "nn");
+    assert(btree->num_keys == 1);
+    assert(strcmp(btree->data[1], "m") == 0);
+    p0 = btree->data[0];
+    p1 = btree->data[2];
+    assert(p0->num_keys == 2);
+    assert(strcmp(p0->data[0], "aa") == 0);
+    assert(strcmp(p0->data[1], "a") == 0);
+    assert(strcmp(p0->data[2], "bb") == 0);
+    assert(strcmp(p0->data[3], "b") == 0);
+    assert(p0->data[6] == p1);
+    assert(p1->num_keys == 2);
+    assert(strcmp(p1->data[0], "mm") == 0);
+    assert(strcmp(p1->data[1], "m") == 0);
+    assert(strcmp(p1->data[2], "nn") == 0);
+    assert(strcmp(p1->data[3], "n") == 0);
 
-    insert(&root, "c", "cc");
-    insert(&root, "d", "dd");
-    insert(&root, "e", "ee");
+    insert(&btree, "c", "cc");
+    assert(p0->num_keys == 3);
+    assert(strcmp(p0->data[0], "aa") == 0);
+    assert(strcmp(p0->data[1], "a") == 0);
+    assert(strcmp(p0->data[2], "bb") == 0);
+    assert(strcmp(p0->data[3], "b") == 0);
+    assert(strcmp(p0->data[4], "cc") == 0);
+    assert(strcmp(p0->data[5], "c") == 0);
+    insert(&btree, "d", "dd");
+    assert(btree->num_keys == 2);
+    assert(btree->data[0] == p0);
+    assert(p0->num_keys == 2);
+    assert(strcmp(p0->data[0], "aa") == 0);
+    assert(strcmp(p0->data[1], "a") == 0);
+    assert(strcmp(p0->data[2], "bb") == 0);
+    assert(strcmp(p0->data[3], "b") == 0);
+    assert(strcmp(btree->data[1], "c") == 0);
+    p2 = btree->data[2];
+    assert(p2->num_keys == 2);
+    assert(strcmp(p2->data[0], "cc") == 0);
+    assert(strcmp(p2->data[1], "c") == 0);
+    assert(strcmp(p2->data[2], "dd") == 0);
+    assert(strcmp(p2->data[3], "d") == 0);
+    assert(btree->data[4] == p1);
+    assert(p1->num_keys == 2);
+    assert(strcmp(p1->data[0], "mm") == 0);
+    assert(strcmp(p1->data[1], "m") == 0);
+    assert(strcmp(p1->data[2], "nn") == 0);
+    assert(strcmp(p1->data[3], "n") == 0);
+    insert(&btree, "e", "ee");
+    assert(p2->num_keys == 3);
+    assert(strcmp(p2->data[0], "cc") == 0);
+    assert(strcmp(p2->data[1], "c") == 0);
+    assert(strcmp(p2->data[2], "dd") == 0);
+    assert(strcmp(p2->data[3], "d") == 0);
+    assert(strcmp(p2->data[4], "ee") == 0);
+    assert(strcmp(p2->data[5], "e") == 0);
 
+    insert(&btree, "f", "ff");
+    assert(btree->num_keys == 3);
+    assert(strcmp(btree->data[1], "c") == 0);
+    assert(strcmp(btree->data[3], "e") == 0);
+    assert(strcmp(btree->data[5], "m") == 0);
+    assert(btree->data[0] == p0);
+    assert(p0->num_keys == 2);
+    assert(strcmp(p0->data[0], "aa") == 0);
+    assert(strcmp(p0->data[1], "a") == 0);
+    assert(strcmp(p0->data[2], "bb") == 0);
+    assert(strcmp(p0->data[3], "b") == 0);
+    assert(btree->data[2] == p2);
+    assert(p2->num_keys == 2);
+    assert(strcmp(p2->data[0], "cc") == 0);
+    assert(strcmp(p2->data[1], "c") == 0);
+    assert(strcmp(p2->data[2], "dd") == 0);
+    assert(strcmp(p2->data[3], "d") == 0);
+    assert(btree->data[6] == p1);
+    assert(p1->num_keys == 2);
+    assert(strcmp(p1->data[0], "mm") == 0);
+    assert(strcmp(p1->data[1], "m") == 0);
+    assert(strcmp(p1->data[2], "nn") == 0);
+    assert(strcmp(p1->data[3], "n") == 0);
+    p3 = btree->data[4];
+    assert(p3->num_keys == 2);
+    assert(strcmp(p3->data[0], "ee") == 0);
+    assert(strcmp(p3->data[1], "e") == 0);
+    assert(strcmp(p3->data[2], "ff") == 0);
+    assert(strcmp(p3->data[3], "f") == 0);
+
+    insert(&btree, "g", "gg");
+    assert(p3->num_keys == 3);
+    assert(strcmp(p3->data[0], "ee") == 0);
+    assert(strcmp(p3->data[1], "e") == 0);
+    assert(strcmp(p3->data[2], "ff") == 0);
+    assert(strcmp(p3->data[3], "f") == 0);
+    assert(strcmp(p3->data[4], "gg") == 0);
+    assert(strcmp(p3->data[5], "g") == 0);
+    insert(&btree, "h", "hh");
+    assert(btree->num_keys = 1);
+    assert(btree->is_leaf_node == 0);
+    assert(strcmp(btree->data[1], "g") == 0);
+    p0 = btree->data[0];
+    assert(p0->num_keys == 2);
+    assert(p0->is_leaf_node == 0);
+    assert(strcmp(p0->data[1], "c") == 0);
+    assert(strcmp(p0->data[3], "e") == 0);
+    p1 = p0->data[0];
+    assert(p1->num_keys == 2);
+    assert(p1->is_leaf_node == 1);
+    assert(strcmp(p1->data[0], "aa") == 0);
+    assert(strcmp(p1->data[1], "a") == 0);
+    assert(strcmp(p1->data[2], "bb") == 0);
+    assert(strcmp(p1->data[3], "b") == 0);
+    p2 = p0->data[2];
+    assert(p1->data[6] == p2);
+    assert(p2->num_keys == 2);
+    assert(p2->is_leaf_node == 1);
+    assert(strcmp(p2->data[0], "cc") == 0);
+    assert(strcmp(p2->data[1], "c") == 0);
+    assert(strcmp(p2->data[2], "dd") == 0);
+    assert(strcmp(p2->data[3], "d") == 0);
+    p3 = p0->data[4];
+    assert(p2->data[6] == p3);
+    assert(p3->num_keys == 2);
+    assert(strcmp(p3->data[0], "ee") == 0);
+    assert(strcmp(p3->data[1], "e") == 0);
+    assert(strcmp(p3->data[2], "ff") == 0);
+    assert(strcmp(p3->data[3], "f") == 0);
+
+    p0 = btree->data[2];
+    assert(p0->num_keys == 1);
+    assert(p0->is_leaf_node == 0);
+    assert(strcmp(p0->data[1], "m") == 0);
+    p1 = p0->data[0];
+    assert(p3->data[6] == p1);
+    assert(p1->num_keys == 2);
+    assert(p1->is_leaf_node == 1);
+    assert(strcmp(p1->data[0], "gg") == 0);
+    assert(strcmp(p1->data[1], "g") == 0);
+    assert(strcmp(p1->data[2], "hh") == 0);
+    assert(strcmp(p1->data[3], "h") == 0);
+    p2 = p0->data[2];
+    assert(p1->data[6] == p2);
+    assert(p2->num_keys == 2);
+    assert(p2->is_leaf_node == 1);
+    assert(strcmp(p2->data[0], "mm") == 0);
+    assert(strcmp(p2->data[1], "m") == 0);
+    assert(strcmp(p2->data[2], "nn") == 0);
+    assert(strcmp(p2->data[3], "n") == 0);
     return 0;
 }
