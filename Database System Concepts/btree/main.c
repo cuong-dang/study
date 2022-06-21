@@ -172,6 +172,31 @@ void insert(struct node **rootp, char *key, void *p) {
     }
 }
 
+char *find(struct node *btree, char *key) {
+    int i;
+
+    while (!btree->is_leaf_node) {
+        for (i = 1; i <= btree->num_keys; ++i) {
+            if (strcmp(key, btree->data[KEY(i)]) <= 0) {
+                break;
+            }
+        }
+        if (i > btree->num_keys) {
+            btree = btree->data[POINTER(btree->num_keys + 1)];
+        } else if (strcmp(key, btree->data[KEY(i)]) == 0) {
+            btree = btree->data[POINTER(i + 1)];
+        } else {
+            btree = btree->data[POINTER(i)];
+        }
+    }
+    for (i = 1; i <= btree->num_keys; ++i) {
+        if (strcmp(key, btree->data[KEY(i)]) == 0) {
+            return btree->data[POINTER(i)];
+        }
+    }
+    return NULL;
+}
+
 int main() {
     struct node *btree = make(), *p0, *p1, *p2, *p3;
 
@@ -341,5 +366,18 @@ int main() {
     assert(strcmp(p2->data[1], "m") == 0);
     assert(strcmp(p2->data[2], "nn") == 0);
     assert(strcmp(p2->data[3], "n") == 0);
+
+    assert(strcmp(find(btree, "a"), "aa") == 0);
+    assert(strcmp(find(btree, "b"), "bb") == 0);
+    assert(strcmp(find(btree, "c"), "cc") == 0);
+    assert(strcmp(find(btree, "d"), "dd") == 0);
+    assert(strcmp(find(btree, "e"), "ee") == 0);
+    assert(strcmp(find(btree, "f"), "ff") == 0);
+    assert(strcmp(find(btree, "g"), "gg") == 0);
+    assert(strcmp(find(btree, "h"), "hh") == 0);
+    assert(strcmp(find(btree, "m"), "mm") == 0);
+    assert(strcmp(find(btree, "n"), "nn") == 0);
+    assert(find(btree, "z") == NULL);
+
     return 0;
 }
