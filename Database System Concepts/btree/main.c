@@ -10,6 +10,8 @@
 #define POINTER(i) (((i) - 1) * 2)
 #define KEYS_TO_LENGTH(k) (2*(k) + 1)
 #define MAXKEYS_PLUS_1_SIZE (sizeof(struct node) + 2*sizeof(void *))
+#define LEAF_MINKEYS ceil((N - 1) / 2.0)
+#define NONLEAF_MINPOINTERS ceil(N / 2.0)
 
 struct node {
     int is_leaf_node;
@@ -20,31 +22,35 @@ struct node {
 static GHashTable *parent_list;
 
 struct node *make() {
-    struct node *btree = malloc(sizeof(struct node));
+    struct node *btree = calloc(1, sizeof(struct node));
     btree->num_keys = 0;
     btree->is_leaf_node = 1;
     return btree;
 }
 
-struct node *find_target_leaf(struct node *node, char *key) {
-    int i;
+struct node *find_target_leaf(struct node *root, char *key) {
+    int i, cmp;
     char *curr_key;
     struct node *parent;
 
+    if (parent_list) {
+        g_hash_table_destroy(parent_list);
+    }
     parent_list = g_hash_table_new(g_int_hash, g_int_equal);
     while (1) {
-        if (node->is_leaf_node) {
-            return node;
+        if (root->is_leaf_node) {
+            return root;
         }
-        for (i = 1; i <= node->num_keys; ++i) {
-            curr_key = (char *) node->data[KEY(i)];
-            if (strcmp(key, curr_key) < 0) {
-                parent = node;
-                node = (struct node *) node->data[POINTER(i)];
-                g_hash_table_insert(parent_list, node, parent);
+        for (i = 1; i <= root->num_keys; ++i) {
+            curr_key = (char *) root->data[KEY(i)];
+            cmp = strcmp(key, curr_key);
+            if (cmp <= 0) {
                 break;
             }
         }
+        parent = root;
+        root = root->data[POINTER(cmp == 0 ? i + 1 : i)];
+        g_hash_table_insert(parent_list, root, parent);
     }
 }
 
@@ -102,7 +108,7 @@ void insert_in_leaf(struct node *leaf, int maxkeys, char *key, void *p) {
     insert_pk_at(leaf, i - 1, KEYS_TO_LENGTH(maxkeys), p, key);
 }
 
-int find_pointer_i(struct node *node, void *p) {
+int find_i(struct node *node, void *p) {
     int i;
 
     for (i = 0; i < KEYS_TO_LENGTH(MAXKEYS); ++i) {
@@ -128,11 +134,11 @@ void insert_in_parent(struct node **rootp,
         (*rootp)->is_leaf_node = 0;
         return;
     }
-    leaf1_i = find_pointer_i(parent, leaf1);
+    leaf1_i = find_i(parent, leaf1);
     if (parent->num_keys < MAXKEYS) {
         insert_kp_at(parent, leaf1_i + 1, KEYS_TO_LENGTH(MAXKEYS), key, leaf2);
     } else {
-        t = malloc(MAXKEYS_PLUS_1_SIZE);
+        t = calloc(1, MAXKEYS_PLUS_1_SIZE);
         copy_data(t, parent, 0, KEYS_TO_LENGTH(MAXKEYS));
         t->num_keys = parent->num_keys;
         insert_kp_at(t, leaf1_i + 1, KEYS_TO_LENGTH(MAXKEYS + 1), key, leaf2);
@@ -156,7 +162,7 @@ void insert(struct node **rootp, char *key, void *p) {
     if (leaf->num_keys < MAXKEYS) {
         insert_in_leaf(leaf, MAXKEYS, key, p);
     } else {
-        t = malloc(MAXKEYS_PLUS_1_SIZE);
+        t = calloc(1, MAXKEYS_PLUS_1_SIZE);
         copy_data(t, leaf, 0, KEYS_TO_LENGTH(MAXKEYS));
         t->num_keys = leaf->num_keys;
         insert_in_leaf(t, MAXKEYS + 1, key, p);
@@ -197,8 +203,60 @@ char *find(struct node *btree, char *key) {
     return NULL;
 }
 
+void delete_entry(struct node **rootp, struct node *node, char *key, void *p) {
+    int key_i = find_i(node, key), i, node_i;
+    struct node *parent, *prev_sibling, *next_sibling;
+    char *mid_key;
+
+    for (; key_i < KEYS_TO_LENGTH(MAXKEYS) - 3; key_i += 2) {
+        if (node->is_leaf_node) {
+            node->data[key_i] = node->data[key_i + 2];
+            node->data[key_i - 1] = node->data[key_i + 1];
+        } else {
+            node->data[key_i] = node->data[key_i + 2];
+            node->data[key_i + 1] = node->data[key_i + 3];
+        }
+    }
+    --node->num_keys;
+    i = node->is_leaf_node ? POINTER(node->num_keys + 1) : KEY(node->num_keys + 1);
+    for (; i < KEYS_TO_LENGTH(MAXKEYS); ++i) {
+        node->data[i] = NULL;
+    }
+
+    parent = g_hash_table_lookup(parent_list, node);
+    if (!parent && node->data[POINTER(2)] == NULL) {
+        *rootp = node->data[POINTER(1)];
+    } else if ((node->is_leaf_node && node->num_keys < LEAF_MINKEYS) ||
+            (!node->is_leaf_node && node->num_keys < NONLEAF_MINPOINTERS)) {
+        node_i = find_i(parent, node);
+        prev_sibling = node_i - 2 >= 0 ? parent->data[node_i - 2] : NULL;
+        next_sibling = node_i + 2 < KEYS_TO_LENGTH(MAXKEYS) ? parent->data[node_i + 2] : NULL;
+        if (prev_sibling && (prev_sibling->num_keys + node->num_keys) <= MAXKEYS) {
+            mid_key = parent->data[node_i - 1];
+            if (!prev_sibling->is_leaf_node) {
+                /* SKIPPED */
+            } else {
+                for (i = 1; i <= node->num_keys; ++i) {
+                    prev_sibling->data[KEY(prev_sibling->num_keys + i)] = node->data[KEY(i)];
+                    prev_sibling->data[POINTER(prev_sibling->num_keys + i)] = node->data[POINTER(i)];
+                    ++prev_sibling->num_keys;
+                }
+                prev_sibling->data[POINTER(N)] = node->data[POINTER(N)];
+            }
+            delete_entry(rootp, parent, mid_key, node);
+        } else {
+            /* SKIPPED */
+        }
+    }
+}
+
+void delete(struct node **rootp, char *key, void *p) {
+    struct node *leaf = find_target_leaf(*rootp, key);
+    delete_entry(rootp, leaf, key, p);
+}
+
 int main() {
-    struct node *btree = make(), *p0, *p1, *p2, *p3;
+    struct node *btree = make(), *p0, *p1, *p2, *p3, *btree2 = make();
 
     insert(&btree, "b", "bb");
     assert(btree->num_keys == 1);
@@ -378,6 +436,26 @@ int main() {
     assert(strcmp(find(btree, "m"), "mm") == 0);
     assert(strcmp(find(btree, "n"), "nn") == 0);
     assert(find(btree, "z") == NULL);
+
+    delete(&btree, "m", "mm");
+    assert(p2->num_keys == 1);
+    assert(strcmp(p2->data[0], "nn") == 0);
+    assert(strcmp(p2->data[1], "n") == 0);
+
+    insert(&btree2, "b", "bb");
+    insert(&btree2, "a", "aa");
+    insert(&btree2, "m", "mm");
+    insert(&btree2, "n", "nn");
+
+    delete(&btree2, "n", "nn");
+    assert(btree2->num_keys == 3);
+    assert(btree2->is_leaf_node);
+    assert(strcmp(btree2->data[0], "aa") == 0);
+    assert(strcmp(btree2->data[1], "a") == 0);
+    assert(strcmp(btree2->data[2], "bb") == 0);
+    assert(strcmp(btree2->data[3], "b") == 0);
+    assert(strcmp(btree2->data[4], "mm") == 0);
+    assert(strcmp(btree2->data[5], "m") == 0);
 
     return 0;
 }
