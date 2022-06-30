@@ -1,6 +1,7 @@
 package kvraft
 
 import (
+	"bytes"
 	"log"
 	"sync"
 	"sync/atomic"
@@ -12,6 +13,7 @@ import (
 )
 
 const Debug = 0
+const HousekeepersSleepTime = 10 * time.Millisecond
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -36,13 +38,14 @@ type KVServer struct {
 
 	maxraftstate int // snapshot if log grows this big
 
-	table           map[string]string
-	currentTerm     int
-	isLeader        bool
-	requestWaitCh   map[int64]chan bool
-	indexRequest    map[int]int64
-	termRequests    map[int][]int64
-	requestExecuted map[int64]bool
+	table             map[string]string
+	currentTerm       int
+	isLeader          bool
+	requestWaitCh     map[int64]chan bool
+	indexRequest      map[int]int64
+	termRequests      map[int][]int64
+	requestExecuted   map[int64]bool
+	lastExecutedIndex int
 }
 
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
@@ -179,10 +182,32 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.termRequests = make(map[int][]int64)
 	kv.requestExecuted = make(map[int64]bool)
 
+	kv.restoreSnapshot(kv.rf.GetSavedSnapshot())
+
 	go kv.applyMsgHandler()
-	go kv.termChangeDetector()
+	go kv.termChangeHandler()
+	if maxraftstate != -1 {
+		go kv.maxRaftStateHandler()
+	}
 
 	return kv
+}
+
+func (kv *KVServer) restoreSnapshot(data []byte) {
+	if data == nil || len(data) < 1 {
+		return
+	}
+	r := bytes.NewBuffer(data)
+	d := labgob.NewDecoder(r)
+	var table map[string]string
+	var requestExecuted map[int64]bool
+	if d.Decode(&table) != nil || d.Decode(&requestExecuted) != nil {
+		DPrintf("%d: Failed to restore snapshot\n", kv.me)
+		return
+	} else {
+		kv.table = table
+		kv.requestExecuted = requestExecuted
+	}
 }
 
 func (kv *KVServer) applyMsgHandler() {
@@ -196,7 +221,7 @@ func (kv *KVServer) applyMsgHandler() {
 		if applyMsg.CommandValid {
 			cmd := applyMsg.Command.(Op)
 			DPrintf("%d:%v: Received applyMsg %v\n", kv.me, cmd.RequestId, applyMsg)
-			kv.executeCommand(cmd)
+			kv.executeCommand(cmd, applyMsg.CommandIndex)
 			if _, ok := kv.requestWaitCh[cmd.RequestId]; ok {
 				kv.signalWaitCh(cmd.RequestId, true)
 			} else if requestId, ok := kv.indexRequest[applyMsg.CommandIndex]; ok && requestId != cmd.RequestId {
@@ -206,12 +231,15 @@ func (kv *KVServer) applyMsgHandler() {
 				}
 				delete(kv.indexRequest, applyMsg.CommandIndex)
 			}
+		} else if applyMsg.IsSnapshot {
+			kv.restoreSnapshot(applyMsg.Data)
+			kv.lastExecutedIndex = applyMsg.CommandIndex
 		}
 		kv.mu.Unlock()
 	}
 }
 
-func (kv *KVServer) termChangeDetector() {
+func (kv *KVServer) termChangeHandler() {
 	for {
 		if kv.killed() {
 			return
@@ -229,11 +257,11 @@ func (kv *KVServer) termChangeDetector() {
 			}
 		}
 		kv.mu.Unlock()
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(HousekeepersSleepTime)
 	}
 }
 
-func (kv *KVServer) executeCommand(cmd Op) {
+func (kv *KVServer) executeCommand(cmd Op, cmdIdx int) {
 	executed := kv.requestExecuted[cmd.RequestId]
 	if !executed {
 		DPrintf("%d:%v: Execute command\n", kv.me, cmd.RequestId)
@@ -243,6 +271,7 @@ func (kv *KVServer) executeCommand(cmd Op) {
 			kv.table[cmd.Key] = kv.table[cmd.Key] + cmd.Value
 		}
 		kv.requestExecuted[cmd.RequestId] = true
+		kv.lastExecutedIndex = cmdIdx
 	} else {
 		DPrintf("%d:%v: Duplicate command detected\n", kv.me, cmd.RequestId)
 	}
@@ -264,4 +293,26 @@ func (kv *KVServer) handleTermChange(newTerm int) {
 	}
 	delete(kv.termRequests, kv.currentTerm)
 	kv.currentTerm = newTerm
+}
+
+func (kv *KVServer) maxRaftStateHandler() {
+	for {
+		if kv.killed() {
+			return
+		}
+		if kv.rf.GetStateSize() >= kv.maxraftstate {
+			kv.mu.Lock()
+			DPrintf("%d: Begin to save snapshot at log index %d\n", kv.me, kv.lastExecutedIndex)
+			w := new(bytes.Buffer)
+			e := labgob.NewEncoder(w)
+			e.Encode(kv.table)
+			e.Encode(kv.requestExecuted)
+			data := w.Bytes()
+			lastExecutedIndex := kv.lastExecutedIndex
+			kv.mu.Unlock()
+			kv.rf.SaveSnapshot(data, lastExecutedIndex)
+			DPrintf("%d: Done saving snapshot at log index %d\n", kv.me, kv.lastExecutedIndex)
+		}
+		time.Sleep(HousekeepersSleepTime)
+	}
 }
