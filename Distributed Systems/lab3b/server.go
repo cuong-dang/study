@@ -46,6 +46,7 @@ type KVServer struct {
 	termRequests      map[int][]int64
 	requestExecuted   map[int64]bool
 	lastExecutedIndex int
+	snapshotIndex     int
 }
 
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
@@ -181,6 +182,8 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.indexRequest = make(map[int]int64)
 	kv.termRequests = make(map[int][]int64)
 	kv.requestExecuted = make(map[int64]bool)
+	kv.lastExecutedIndex = 0
+	kv.snapshotIndex = 0
 
 	kv.restoreSnapshot(kv.rf.GetSavedSnapshot())
 
@@ -201,12 +204,14 @@ func (kv *KVServer) restoreSnapshot(data []byte) {
 	d := labgob.NewDecoder(r)
 	var table map[string]string
 	var requestExecuted map[int64]bool
-	if d.Decode(&table) != nil || d.Decode(&requestExecuted) != nil {
+	var lastExecutedIndex int
+	if d.Decode(&table) != nil || d.Decode(&requestExecuted) != nil || d.Decode(&lastExecutedIndex) != nil {
 		DPrintf("%d: Failed to restore snapshot\n", kv.me)
 		return
 	} else {
 		kv.table = table
 		kv.requestExecuted = requestExecuted
+		kv.lastExecutedIndex = lastExecutedIndex
 	}
 }
 
@@ -300,18 +305,21 @@ func (kv *KVServer) maxRaftStateHandler() {
 		if kv.killed() {
 			return
 		}
-		if kv.rf.GetStateSize() >= kv.maxraftstate {
+		if kv.rf.GetStateSize() >= kv.maxraftstate && kv.lastExecutedIndex != kv.snapshotIndex {
 			kv.mu.Lock()
 			DPrintf("%d: Begin to save snapshot at log index %d\n", kv.me, kv.lastExecutedIndex)
 			w := new(bytes.Buffer)
 			e := labgob.NewEncoder(w)
 			e.Encode(kv.table)
+			DPrintf("%d: Snapshot table size %d\n", kv.me, len(w.Bytes()))
 			e.Encode(kv.requestExecuted)
+			e.Encode(kv.lastExecutedIndex)
+			DPrintf("%d: Total snapshot size %d\n", kv.me, len(w.Bytes()))
 			data := w.Bytes()
 			lastExecutedIndex := kv.lastExecutedIndex
+			kv.snapshotIndex = kv.lastExecutedIndex
 			kv.mu.Unlock()
 			kv.rf.SaveSnapshot(data, lastExecutedIndex)
-			DPrintf("%d: Done saving snapshot at log index %d\n", kv.me, kv.lastExecutedIndex)
 		}
 		time.Sleep(HousekeepersSleepTime)
 	}
