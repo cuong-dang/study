@@ -8,9 +8,10 @@ import (
 )
 
 type Clerk struct {
-	id      int64
-	servers []*labrpc.ClientEnd
-	leader  int
+	id            int64
+	servers       []*labrpc.ClientEnd
+	leader        int
+	lastRequestId int64
 }
 
 func nrand() int64 {
@@ -25,6 +26,7 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck.id = nrand()
 	ck.servers = servers
 	ck.leader = 0
+	ck.lastRequestId = 0
 	return ck
 }
 
@@ -41,12 +43,13 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) Get(key string) string {
-	args := GetArgs{RequestId: nrand(), Key: key}
+	args := GetArgs{RequestId: nrand(), Key: key, LastRequestId: ck.lastRequestId}
 	for {
 		reply := GetReply{}
 		DPrintf("%d --Get--> %d: %v\n", ck.id, ck.leader, args)
 		ok := ck.servers[ck.leader].Call("KVServer.Get", &args, &reply)
 		if ck.handleResponse(ok, reply.Err, "Get") {
+			ck.lastRequestId = args.RequestId
 			return reply.Value
 		}
 		ck.leader = (ck.leader + 1) % len(ck.servers)
@@ -64,12 +67,13 @@ func (ck *Clerk) Get(key string) string {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) PutAppend(key string, value string, op string) {
-	args := PutAppendArgs{RequestId: nrand(), Key: key, Value: value, Op: op}
+	args := PutAppendArgs{RequestId: nrand(), Key: key, Value: value, Op: op, LastRequestId: ck.lastRequestId}
 	for {
 		reply := PutAppendReply{}
 		DPrintf("%d --PutAppend--> %d: %v\n", ck.id, ck.leader, args)
 		ok := ck.servers[ck.leader].Call("KVServer.PutAppend", &args, &reply)
 		if ck.handleResponse(ok, reply.Err, "PutAppend") {
+			ck.lastRequestId = args.RequestId
 			return
 		}
 		ck.leader = (ck.leader + 1) % len(ck.servers)

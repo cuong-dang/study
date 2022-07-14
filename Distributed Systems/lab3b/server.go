@@ -12,7 +12,7 @@ import (
 	"../raft"
 )
 
-const Debug = 0
+const Debug = 1
 const HousekeepersSleepTime = 10 * time.Millisecond
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
@@ -23,10 +23,11 @@ func DPrintf(format string, a ...interface{}) (n int, err error) {
 }
 
 type Op struct {
-	RequestId int64
-	Name      string
-	Key       string
-	Value     string
+	LastExecutedRequestId int64
+	RequestId             int64
+	Name                  string
+	Key                   string
+	Value                 string
 }
 
 type KVServer struct {
@@ -52,7 +53,8 @@ type KVServer struct {
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 	DPrintf("%d: Received Get request %v\n", kv.me, args)
 	reply.Err = OK
-	index, term, isLeader := kv.rf.Start(Op{RequestId: args.RequestId, Name: "Get", Key: args.Key})
+	index, term, isLeader := kv.rf.Start(Op{LastExecutedRequestId: args.LastRequestId,
+		RequestId: args.RequestId, Name: "Get", Key: args.Key})
 	DPrintf("%d:%v: Submitted for index %d term %d\n", kv.me, args.RequestId, index, term)
 	kv.mu.Lock()
 	if term != kv.currentTerm {
@@ -92,7 +94,8 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 	DPrintf("%d: Received PutAppend request %v\n", kv.me, args)
 	reply.Err = OK
 	index, term, isLeader := kv.rf.Start(Op{
-		RequestId: args.RequestId, Name: args.Op,
+		LastExecutedRequestId: args.LastRequestId,
+		RequestId:             args.RequestId, Name: args.Op,
 		Key: args.Key, Value: args.Value,
 	})
 	DPrintf("%d:%v: Submitted for index %d term %d\n", kv.me, args.RequestId, index, term)
@@ -226,6 +229,9 @@ func (kv *KVServer) applyMsgHandler() {
 		if applyMsg.CommandValid {
 			cmd := applyMsg.Command.(Op)
 			DPrintf("%d:%v: Received applyMsg %v\n", kv.me, cmd.RequestId, applyMsg)
+			if cmd.LastExecutedRequestId != 0 {
+				delete(kv.requestExecuted, cmd.LastExecutedRequestId)
+			}
 			kv.executeCommand(cmd, applyMsg.CommandIndex)
 			if _, ok := kv.requestWaitCh[cmd.RequestId]; ok {
 				kv.signalWaitCh(cmd.RequestId, true)
@@ -305,21 +311,23 @@ func (kv *KVServer) maxRaftStateHandler() {
 		if kv.killed() {
 			return
 		}
-		if kv.rf.GetStateSize() >= kv.maxraftstate && kv.lastExecutedIndex != kv.snapshotIndex {
+		if kv.rf.GetStateSize() >= kv.maxraftstate {
 			kv.mu.Lock()
-			DPrintf("%d: Begin to save snapshot at log index %d\n", kv.me, kv.lastExecutedIndex)
-			w := new(bytes.Buffer)
-			e := labgob.NewEncoder(w)
-			e.Encode(kv.table)
-			DPrintf("%d: Snapshot table size %d\n", kv.me, len(w.Bytes()))
-			e.Encode(kv.requestExecuted)
-			e.Encode(kv.lastExecutedIndex)
-			DPrintf("%d: Total snapshot size %d\n", kv.me, len(w.Bytes()))
-			data := w.Bytes()
-			lastExecutedIndex := kv.lastExecutedIndex
-			kv.snapshotIndex = kv.lastExecutedIndex
-			kv.mu.Unlock()
-			kv.rf.SaveSnapshot(data, lastExecutedIndex)
+			if kv.lastExecutedIndex != kv.snapshotIndex {
+				DPrintf("%d: Begin to save snapshot at log index %d\n", kv.me, kv.lastExecutedIndex)
+				w := new(bytes.Buffer)
+				e := labgob.NewEncoder(w)
+				e.Encode(kv.table)
+				e.Encode(kv.requestExecuted)
+				e.Encode(kv.lastExecutedIndex)
+				data := w.Bytes()
+				lastExecutedIndex := kv.lastExecutedIndex
+				kv.snapshotIndex = kv.lastExecutedIndex
+				kv.mu.Unlock()
+				kv.rf.SaveSnapshot(data, lastExecutedIndex)
+			} else {
+				kv.mu.Unlock()
+			}
 		}
 		time.Sleep(HousekeepersSleepTime)
 	}

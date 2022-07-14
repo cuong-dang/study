@@ -296,13 +296,22 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			reply.ConflictIndex = len(rf.log) + rf.lastSnapshotIndex
 			reply.ConflictTerm = -1
 		} else {
-			reply.ConflictTerm = rf.log[args.PrevLogIndex-rf.lastSnapshotIndex].Term
-			for i, entry := range rf.log {
-				if entry.Term == reply.ConflictTerm {
-					reply.ConflictIndex = i + rf.lastSnapshotIndex
-					break
+			if args.PrevLogIndex == rf.lastSnapshotIndex {
+				reply.ConflictTerm = rf.lastSnapshotTerm
+				reply.ConflictIndex = rf.lastSnapshotIndex
+			} else {
+				reply.ConflictTerm = rf.log[args.PrevLogIndex-rf.lastSnapshotIndex].Term
+				for i, entry := range rf.log {
+					if entry.Term == reply.ConflictTerm {
+						reply.ConflictIndex = i + rf.lastSnapshotIndex
+						break
+					}
 				}
 			}
+		}
+		if PrintDebug {
+			log.Printf("%d: Conflict index: %d, conflict term: %d\n",
+				rf.me, reply.ConflictIndex, reply.ConflictTerm)
 		}
 	} else {
 		reply.Success = true
@@ -737,7 +746,11 @@ func (rf *Raft) sendAppendEntriesTo(peer int, term int) {
 		rf.currentTerm = reply.Term
 		rf.becomeFollower()
 	} else if reply.Term == term && !reply.Success {
-		if reply.ConflictTerm != -1 {
+		if PrintDebug {
+			log.Printf("%d: Received conflict index: %d, conflict term: %d; last snapshot index: %d\n",
+				rf.me, reply.ConflictIndex, reply.ConflictTerm, rf.lastSnapshotIndex)
+		}
+		if reply.ConflictTerm != -1 && reply.ConflictIndex > rf.lastSnapshotIndex {
 			termFound := false
 			for i, entry := range rf.log {
 				if !termFound && entry.Term == reply.ConflictTerm {
