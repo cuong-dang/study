@@ -16,7 +16,10 @@ import lib6005.parser.*;
 public interface Expression {
     
     // Datatype definition
-    //   TODO
+    // Expression = Number(n: Integer) +
+    //              Number(n: Double) +
+    //              Sum(Expression: left, Expression: right) +
+    //              Product(Expression: left, Expression: right)
     
     /**
      * Parse an expression.
