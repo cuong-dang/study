@@ -20,8 +20,15 @@ public class ExpressionTest {
     //   - Product expression with two terms (integer and double)
     //   - Sum expression with more than two terms
     //   - Product expression with more than two terms
-    //   - Product expression with groupings
-    
+    //   - Product expression with sum groupings
+    // - Test equals()
+    //   - Equal integers
+    //   - Equal doubles
+    //   - Equal integer and doubles
+    //   - Equal sums with two and more than two terms
+    //   - Equal products with two and more than two terms
+    //   - Equal products with sum groupings
+
     @Test(expected=AssertionError.class)
     public void testAssertionsEnabled() {
         assert false; // make sure assertions are enabled with VM argument: -ea
@@ -44,30 +51,71 @@ public class ExpressionTest {
     }
 
     @Test
-    public void testSumTwoTerms() {
+    public void testToStringSumTwoTerms() {
         assertEquals("1 + 1.0000", new Sum(new NumberInteger(1), new NumberDouble(1.0)).toString());
     }
 
     @Test
-    public void testProductTwoTerms() {
+    public void testToStringProductTwoTerms() {
         assertEquals("1*1.0000", new Product(new NumberInteger(1), new NumberDouble(1.0)).toString());
     }
 
     @Test
-    public void testSumMoreThanTwoTerms() {
+    public void testToStringSumMoreThanTwoTerms() {
         assertEquals("1 + 1.0000 + 2", new Sum(new NumberInteger(1), new Sum(new NumberDouble(1.0),
                 new NumberInteger(2))).toString());
     }
 
     @Test
-    public void testProductMoreThanTwoTerms() {
+    public void testToStringProductMoreThanTwoTerms() {
         assertEquals("1*1.0000*2", new Product(new NumberInteger(1), new Product(new NumberDouble(1.0),
                 new NumberInteger(2))).toString());
     }
 
     @Test
-    public void testProductExpressionWithGroupings() {
+    public void testToStringProductExpressionWithGroupings() {
         assertEquals("1*(1.0000 + 2)", new Product(new NumberInteger(1), new Sum(new NumberDouble(1.0),
                 new NumberInteger(2))).toString());
+    }
+
+    /* Test equals() */
+    @Test
+    public void testEqualsIntegers() {
+        assertEquals(new NumberInteger(1), new NumberInteger(1));
+        assertNotEquals(new NumberInteger(1), new NumberInteger(2));
+    }
+
+    @Test
+    public void testEqualsDouble() {
+        assertEquals(new NumberDouble(1.0), new NumberDouble(1.0));
+        assertNotEquals(new NumberDouble(1.0), new NumberDouble(2.0));
+    }
+
+    @Test
+    public void testEqualsIntegerAndDouble() {
+        assertEquals(new NumberInteger(1), new NumberDouble(1.0));
+        assertEquals(new NumberDouble(1.0), new NumberInteger(1));
+    }
+
+    @Test
+    public void testEqualsSums() {
+        assertEquals(new Sum(new NumberInteger(1), new NumberInteger(2)),
+                new Sum(new NumberInteger(1), new NumberInteger(2)));
+        assertEquals(new Sum(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))),
+                new Sum(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))));
+    }
+
+    @Test
+    public void testEqualsProducts() {
+        assertEquals(new Product(new NumberInteger(1), new NumberInteger(2)),
+                new Product(new NumberInteger(1), new NumberInteger(2)));
+        assertEquals(new Product(new NumberInteger(1), new Product(new NumberInteger(2), new NumberInteger(3))),
+                new Product(new NumberInteger(1), new Product(new NumberInteger(2), new NumberInteger(3))));
+    }
+
+    @Test
+    public void testEqualsProductsWithSumGroupings() {
+        assertEquals(new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))),
+                new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))));
     }
 }

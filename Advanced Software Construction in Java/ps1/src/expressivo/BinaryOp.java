@@ -8,4 +8,13 @@ abstract class BinaryOp implements Expression {
         this.left = left;
         this.right = right;
     }
+
+    @Override
+    public boolean equals(Object thatObject) {
+        if (this == thatObject) return true;
+        if (thatObject == null) return false;
+        if (this.getClass() != thatObject.getClass()) return false;
+        BinaryOp thatExpression = (BinaryOp) thatObject;
+        return this.left.equals(thatExpression.left) && this.right.equals(thatExpression.right);
+    }
 }

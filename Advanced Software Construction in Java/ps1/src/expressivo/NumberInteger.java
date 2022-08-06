@@ -1,14 +1,12 @@
 package expressivo;
 
-public class NumberInteger implements Expression {
-    private final int n;
-
+public class NumberInteger extends Number implements Expression {
     public NumberInteger(int n) {
-        this.n = n;
+        super(n);
     }
 
     @Override
     public String toString() {
-        return String.format("%d", n);
+        return String.format("%d", n.intValue());
     }
 }
