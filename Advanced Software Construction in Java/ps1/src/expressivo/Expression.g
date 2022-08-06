@@ -3,19 +3,13 @@
  */
 
 // grammar Expression;
+root ::= sum | product;
 
-/*
- *
- * You should make sure you have one rule that describes the entire input.
- * This is the "start rule". Below, "root" is the start rule.
- *
- * For more information, see the parsers reading.
- */
-root ::= sum;
 @skip whitespace{
 	sum ::= primitive ('+' primitive)*;
-	primitive ::= number | '(' sum ')';
+	product ::= primitive ('*' primitive)*;
+	primitive ::= number | '(' sum ')' | '(' product ')';
 }
-number ::= [0-9]+;
 
+number ::= [0-9]+;
 whitespace ::= [ ]+;
