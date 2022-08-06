@@ -1,5 +1,7 @@
 package expressivo;
 
+import java.util.Objects;
+
 abstract class BinaryOp implements Expression {
     protected final Expression left;
     protected final Expression right;
@@ -16,5 +18,10 @@ abstract class BinaryOp implements Expression {
         if (this.getClass() != thatObject.getClass()) return false;
         BinaryOp thatExpression = (BinaryOp) thatObject;
         return this.left.equals(thatExpression.left) && this.right.equals(thatExpression.right);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.left, this.right);
     }
 }

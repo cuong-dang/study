@@ -28,6 +28,9 @@ public class ExpressionTest {
     //   - Equal sums with two and more than two terms
     //   - Equal products with two and more than two terms
     //   - Equal products with sum groupings
+    // - Test hashCode()
+    //   - Same number hash codes
+    //   - Same sum and product hash codes
 
     @Test(expected=AssertionError.class)
     public void testAssertionsEnabled() {
@@ -117,5 +120,25 @@ public class ExpressionTest {
     public void testEqualsProductsWithSumGroupings() {
         assertEquals(new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))),
                 new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))));
+    }
+
+    /* Test hashCode() */
+    @Test
+    public void testHashCodeNumbers() {
+        assertEquals(new NumberInteger(1).hashCode(), new NumberInteger(1).hashCode());
+        assertEquals(new NumberDouble(1.0).hashCode(), new NumberDouble(1.0).hashCode());
+
+        assertEquals(new NumberInteger(1).hashCode(), new NumberDouble(1.0).hashCode());
+    }
+
+    @Test
+    public void testHashCodeSumsAndProducts() {
+        assertEquals(new Sum(new NumberInteger(1), new NumberInteger(2)).hashCode(),
+                new Sum(new NumberInteger(1), new NumberInteger(2)).hashCode());
+        assertEquals(new Product(new NumberInteger(1), new NumberInteger(2)).hashCode(),
+                new Product(new NumberInteger(1), new NumberInteger(2)).hashCode());
+
+        assertEquals(new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))).hashCode(),
+                new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))).hashCode());
     }
 }
