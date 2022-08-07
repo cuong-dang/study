@@ -65,7 +65,7 @@ public interface Expression {
     public int hashCode();
     
     /* Parser */
-    public enum ExpressionGrammar {ROOT, SUM, TERM, PRODUCT, PRIMITIVE, INTEGER, DOUBLE, WHITESPACE};
+    public enum ExpressionGrammar {ROOT, SUM, TERM, PRODUCT, PRIMITIVE, INTEGER, DOUBLE, VARIABLE, WHITESPACE};
 
     public static ParseTree<ExpressionGrammar> generateParseTree(String input)
             throws UnableToParseException, IOException {
@@ -80,6 +80,8 @@ public interface Expression {
                 return new NumberInteger(Integer.parseInt(p.getContents()));
             case DOUBLE:
                 return new NumberDouble(Double.parseDouble(p.getContents()));
+            case VARIABLE:
+                return new Variable(p.getContents());
             case PRIMITIVE:
                 if (!p.childrenByName(ExpressionGrammar.INTEGER).isEmpty()) {
                     return buildAst(p.childrenByName(ExpressionGrammar.INTEGER).get(0));
@@ -87,9 +89,13 @@ public interface Expression {
                     return buildAst(p.childrenByName(ExpressionGrammar.DOUBLE).get(0));
                 } else if (!p.childrenByName(ExpressionGrammar.SUM).isEmpty()) {
                     return buildAst(p.childrenByName(ExpressionGrammar.SUM).get(0));
-                } else {
+                } else if (!p.childrenByName(ExpressionGrammar.VARIABLE).isEmpty()) {
+                    return buildAst(p.childrenByName(ExpressionGrammar.VARIABLE).get(0));
+                } else if (!p.childrenByName(ExpressionGrammar.PRODUCT).isEmpty()) {
                     return buildAst(p.childrenByName(ExpressionGrammar.PRODUCT).get(0));
                 }
+                throw new IllegalAccessException(
+                        String.format("Unreachable code: Missing primitive case %s", p.getName()));
             case SUM:
                 return buildBinaryOp(p, Sum.class);
             case TERM:

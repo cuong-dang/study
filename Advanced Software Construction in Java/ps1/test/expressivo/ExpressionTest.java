@@ -23,6 +23,7 @@ public class ExpressionTest {
     //   - Sum expression with more than two terms
     //   - Product expression with more than two terms
     //   - Product expression with sum groupings
+    //   - Variables
     // - Test equals()
     //   - Equal integers
     //   - Equal doubles
@@ -30,6 +31,7 @@ public class ExpressionTest {
     //   - Equal sums with two and more than two terms
     //   - Equal products with two and more than two terms
     //   - Equal products with sum groupings
+    //   - Variables
     // - Test hashCode()
     //   - Same number hash codes
     //   - Same sum and product hash codes
@@ -40,6 +42,7 @@ public class ExpressionTest {
     //   - Sum/product with groupings
     //   - Sum and product together
     //   - General mixed expressions
+    //   - Variables
 
     @Test(expected=AssertionError.class)
     public void testAssertionsEnabled() {
@@ -90,6 +93,20 @@ public class ExpressionTest {
                 new NumberInteger(2))).toString());
     }
 
+    @Test
+    public void testToStringVariables() {
+        assertEquals("x", new Variable("x").toString());
+        assertEquals("x + 1", new Sum(new Variable("x"), new NumberInteger(1)).toString());
+        assertEquals("2*x", new Product(new NumberInteger(2), new Variable("x")).toString());
+        assertEquals(
+            "2*(x + 1)",
+            new Product(
+                new NumberInteger(2),
+                new Sum(new Variable("x"), new NumberInteger(1))
+            ).toString()
+        );
+    }
+
     /* Test equals() */
     @Test
     public void testEqualsIntegers() {
@@ -129,6 +146,12 @@ public class ExpressionTest {
     public void testEqualsProductsWithSumGroupings() {
         assertEquals(new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))),
                 new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))));
+    }
+
+    @Test
+    public void testEqualsVariables() {
+        assertEquals(new Variable("x"), new Variable("x"));
+        assertNotEquals(new Variable("x"), new Variable("y"));
     }
 
     /* Test hashCode() */
@@ -200,7 +223,7 @@ public class ExpressionTest {
     }
 
     @Test
-    public void testGeneralMixedExpressions() {
+    public void testParseGeneralMixedExpressions() {
         assertEquals(
             new Sum(
                 new Sum(new NumberInteger(1), new Product(new NumberInteger(2), new NumberInteger(3))),
@@ -221,6 +244,20 @@ public class ExpressionTest {
                 new NumberInteger(4)
             ),
             Expression.parse("1 * (2 + 3) * 4")
+        );
+    }
+
+    @Test
+    public void testParseVariables() {
+        assertEquals(new Variable("x"), Expression.parse("x"));
+        assertEquals(new Sum(new Variable("x"), new NumberInteger(1)), Expression.parse("x + 1"));
+        assertEquals(new Sum(new Variable("x"), new Variable("y")), Expression.parse("x + y"));
+        assertEquals(
+            new Product(
+                new Sum(new Variable("x"), new NumberInteger(1)),
+                new Variable("y")
+            ),
+            Expression.parse("(x + 1) * y")
         );
     }
 

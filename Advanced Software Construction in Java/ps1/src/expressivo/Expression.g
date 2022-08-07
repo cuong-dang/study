@@ -9,9 +9,10 @@ root ::= sum;
 	sum ::= term ('+' term)*;
 	term ::= product | primitive;
 	product ::= primitive ('*' primitive)*;
-	primitive ::= integer | double | '(' sum ')';
+	primitive ::= integer | double | variable | '(' sum ')';
 }
 
 integer ::= [0-9]+;
 double ::= [0-9]+'.'[0-9]+;
+variable ::= [a-zA-Z]+;
 whitespace ::= [ ]+;
