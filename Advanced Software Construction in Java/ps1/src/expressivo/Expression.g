@@ -3,13 +3,15 @@
  */
 
 // grammar Expression;
-root ::= sum | product;
+root ::= sum;
 
 @skip whitespace{
-	sum ::= primitive ('+' primitive)*;
+	sum ::= term ('+' term)*;
+	term ::= product | primitive;
 	product ::= primitive ('*' primitive)*;
-	primitive ::= number | '(' sum ')' | '(' product ')';
+	primitive ::= integer | double | '(' sum ')';
 }
 
-number ::= [0-9]+;
+integer ::= [0-9]+;
+double ::= [0-9]+'.'[0-9]+;
 whitespace ::= [ ]+;

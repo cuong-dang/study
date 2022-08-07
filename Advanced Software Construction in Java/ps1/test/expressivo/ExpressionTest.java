@@ -7,6 +7,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Tests for the Expression abstract data type.
  */
@@ -31,6 +33,13 @@ public class ExpressionTest {
     // - Test hashCode()
     //   - Same number hash codes
     //   - Same sum and product hash codes
+    // - Test parse()
+    //   - Integer and double numbers
+    //   - Sum/product with two terms
+    //   - Sum/product with more than two terms
+    //   - Sum/product with groupings
+    //   - Sum and product together
+    //   - General mixed expressions
 
     @Test(expected=AssertionError.class)
     public void testAssertionsEnabled() {
@@ -140,5 +149,104 @@ public class ExpressionTest {
 
         assertEquals(new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))).hashCode(),
                 new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))).hashCode());
+    }
+
+    /* Test parse() */
+    @Test
+    public void testParseNumbers() {
+        assertEquals(new NumberInteger(1), Expression.parse("1"));
+        assertEquals(new NumberInteger(1), Expression.parse("(1)"));
+        assertEquals(new NumberDouble(1.0), Expression.parse("1.0"));
+        assertEquals(new NumberDouble(1.0), Expression.parse("(1.0)"));
+        assertEquals(new NumberDouble(1.2345), Expression.parse("1.2345"));
+        assertEquals(new NumberDouble(1.234567), Expression.parse("1.234567"));
+    }
+
+    @Test
+    public void testParseBinaryOpWithTwoTerms() throws InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        testParseBinaryOpWithTwoTermsHelper(Sum.class, new NumberInteger(1), new NumberInteger(2), "1 + 2");
+        testParseBinaryOpWithTwoTermsHelper(Product.class, new NumberDouble(1.2), new NumberDouble(3.4), "1.2 * 3.4");
+    }
+
+    @Test
+    public void testParseBinaryOpWithMoreThanTwoTerms() throws InvocationTargetException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException {
+        testParseBinaryOpWithMoreThanTwoTermsHelper(Sum.class, new NumberInteger(1), new NumberInteger(2),
+                new NumberInteger(3), "1 + 2 + 3");
+        testParseBinaryOpWithMoreThanTwoTermsHelper(Sum.class, new NumberInteger(1), new NumberInteger(2),
+                new NumberInteger(3), "(1 + 2) + 3");
+        testParseBinaryOpWithMoreThanTwoTermsHelper(Product.class, new NumberDouble(1.2), new NumberDouble(3.4),
+                new NumberDouble(5.6), "1.2 * 3.4 * 5.6");
+        testParseBinaryOpWithMoreThanTwoTermsHelper(Product.class, new NumberDouble(1.2), new NumberDouble(3.4),
+                new NumberDouble(5.6), "(1.2 * 3.4) * 5.6");
+    }
+
+    @Test
+    public void testParseBinaryOpWithMoreThanTwoTermsRightGrouping() throws InvocationTargetException,
+            NoSuchMethodException, InstantiationException, IllegalAccessException {
+        testParseBinaryOpWithMoreThanTwoTermsRightGroupingHelper(Sum.class, new NumberInteger(1), new NumberInteger(2),
+                new NumberInteger(3), "1 + (2 + 3)");
+        testParseBinaryOpWithMoreThanTwoTermsRightGroupingHelper(Product.class, new NumberDouble(1.2),
+                new NumberDouble(3.4), new NumberDouble(5.6), "1.2 * (3.4 * 5.6)");
+    }
+
+    @Test
+    public void testParseSumAndProductTogether() {
+        assertEquals(new Sum(new NumberInteger(1), new Product(new NumberInteger(2), new NumberInteger(3))),
+                Expression.parse("1 + 2 * 3"));
+        assertEquals(new Product(new Sum(new NumberInteger(1), new NumberInteger(2)), new NumberInteger(3)),
+                Expression.parse("(1 + 2) * 3"));
+    }
+
+    @Test
+    public void testGeneralMixedExpressions() {
+        assertEquals(
+            new Sum(
+                new Sum(new NumberInteger(1), new Product(new NumberInteger(2), new NumberInteger(3))),
+                new NumberInteger(4)
+            ),
+            Expression.parse("1 + 2 * 3 + 4")
+        );
+        assertEquals(
+            new Sum(
+                new Product(new NumberInteger(1), new NumberInteger(2)),
+                new Product(new NumberInteger(3), new NumberInteger(4))
+            ),
+            Expression.parse("1 * 2 + 3 * 4")
+        );
+        assertEquals(
+            new Product(
+                new Product(new NumberInteger(1), new Sum(new NumberInteger(2), new NumberInteger(3))),
+                new NumberInteger(4)
+            ),
+            Expression.parse("1 * (2 + 3) * 4")
+        );
+    }
+
+    /* Helpers */
+    private void testParseBinaryOpWithTwoTermsHelper(Class<? extends BinaryOp> binOp, Number left, Number right,
+                                                     String input)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        assertEquals(binOp.getDeclaredConstructor(Expression.class, Expression.class).newInstance(left, right),
+                Expression.parse(input));
+    }
+
+    private void testParseBinaryOpWithMoreThanTwoTermsHelper(Class<? extends BinaryOp> binOp, Number left, Number mid,
+                                                             Number right, String input)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        assertEquals(binOp.getDeclaredConstructor(Expression.class, Expression.class)
+                        .newInstance(binOp.getDeclaredConstructor(Expression.class, Expression.class)
+                                .newInstance(left, mid), right),
+                Expression.parse(input));
+    }
+
+    private void testParseBinaryOpWithMoreThanTwoTermsRightGroupingHelper(Class<? extends BinaryOp> binOp, Number left,
+                                                                          Number mid, Number right, String input)
+            throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        assertEquals(binOp.getDeclaredConstructor(Expression.class, Expression.class)
+                        .newInstance(left, binOp.getDeclaredConstructor(Expression.class, Expression.class)
+                                .newInstance(mid, right)),
+                Expression.parse(input));
     }
 }

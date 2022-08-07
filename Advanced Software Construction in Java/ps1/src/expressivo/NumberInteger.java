@@ -1,6 +1,6 @@
 package expressivo;
 
-public class NumberInteger extends Number implements Expression {
+public class NumberInteger extends Number {
     public NumberInteger(int n) {
         super(n);
     }

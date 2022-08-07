@@ -1,6 +1,6 @@
 package expressivo;
 
-abstract class Number {
+abstract class Number implements Expression {
     protected final java.lang.Number n;
 
     public Number(java.lang.Number n) {

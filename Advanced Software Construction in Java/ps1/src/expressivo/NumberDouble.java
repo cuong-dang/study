@@ -1,6 +1,6 @@
 package expressivo;
 
-public class NumberDouble extends Number implements Expression {
+public class NumberDouble extends Number {
     public NumberDouble(double n) {
         super(n);
     }

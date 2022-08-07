@@ -2,6 +2,10 @@ package expressivo;
 
 import lib6005.parser.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * An immutable data type representing a polynomial expression of:
  *   + and *
@@ -28,7 +32,13 @@ public interface Expression {
      * @throws IllegalArgumentException if the expression is invalid
      */
     public static Expression parse(String input) {
-        throw new RuntimeException("unimplemented");
+        try {
+            return buildAst(generateParseTree(input));
+        } catch (UnableToParseException e) {
+            throw new IllegalArgumentException(e);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
     
     /**
@@ -54,7 +64,71 @@ public interface Expression {
     @Override
     public int hashCode();
     
-    // TODO more instance methods
+    /* Parser */
+    public enum ExpressionGrammar {ROOT, SUM, TERM, PRODUCT, PRIMITIVE, INTEGER, DOUBLE, WHITESPACE};
+
+    public static ParseTree<ExpressionGrammar> generateParseTree(String input)
+            throws UnableToParseException, IOException {
+        Parser<ExpressionGrammar> parser = GrammarCompiler.compile(new File("./src/expressivo/Expression.g"), ExpressionGrammar.ROOT);
+        return parser.parse(input);
+    }
+
+    public static Expression buildAst(ParseTree<ExpressionGrammar> p) throws
+            InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        switch (p.getName()) {
+            case INTEGER:
+                return new NumberInteger(Integer.parseInt(p.getContents()));
+            case DOUBLE:
+                return new NumberDouble(Double.parseDouble(p.getContents()));
+            case PRIMITIVE:
+                if (!p.childrenByName(ExpressionGrammar.INTEGER).isEmpty()) {
+                    return buildAst(p.childrenByName(ExpressionGrammar.INTEGER).get(0));
+                } else if (!p.childrenByName(ExpressionGrammar.DOUBLE).isEmpty()) {
+                    return buildAst(p.childrenByName(ExpressionGrammar.DOUBLE).get(0));
+                } else if (!p.childrenByName(ExpressionGrammar.SUM).isEmpty()) {
+                    return buildAst(p.childrenByName(ExpressionGrammar.SUM).get(0));
+                } else {
+                    return buildAst(p.childrenByName(ExpressionGrammar.PRODUCT).get(0));
+                }
+            case SUM:
+                return buildBinaryOp(p, Sum.class);
+            case TERM:
+                if (!p.childrenByName(ExpressionGrammar.PRODUCT).isEmpty()) {
+                    return buildBinaryOp(p.childrenByName(ExpressionGrammar.PRODUCT).get(0), Product.class);
+                } else {
+                    return buildAst(p.childrenByName(ExpressionGrammar.PRIMITIVE).get(0));
+                }
+            case PRODUCT:
+                return buildBinaryOp(p, Product.class);
+            case ROOT:
+                return buildAst(p.childrenByName(ExpressionGrammar.SUM).get(0));
+            case WHITESPACE:
+                throw new IllegalStateException("Unreachable code: buildAst > case WHITESPACE");
+        }
+        throw new IllegalStateException("Unreachable code: buildAst > end");
+    }
+
+    public static Expression buildBinaryOp(ParseTree<ExpressionGrammar> p, Class<? extends BinaryOp> cls) throws
+            NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        boolean first = true;
+        Expression result = null;
+        for (ParseTree<ExpressionGrammar> child : p.children()) {
+            if (child.getName() == ExpressionGrammar.WHITESPACE) {
+                continue;
+            }
+            if (first) {
+                result = buildAst(child);
+                first = false;
+            } else {
+                result = cls.getDeclaredConstructor(Expression.class, Expression.class)
+                        .newInstance(result, buildAst(child));
+            }
+        }
+        if (first) {
+            throw new IllegalArgumentException("Binary op with 1 term");
+        }
+        return result;
+    }
     
     /* Copyright (c) 2015-2017 MIT 6.005 course staff, all rights reserved.
      * Redistribution of original or derived work requires permission of course staff.
