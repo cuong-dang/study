@@ -1,5 +1,6 @@
 package expressivo;
 
+import java.util.Map;
 import java.util.Objects;
 
 abstract class BinaryOp implements Expression {
@@ -10,6 +11,18 @@ abstract class BinaryOp implements Expression {
         this.left = left;
         this.right = right;
     }
+
+    @Override
+    public Expression simplify(Map<String, Double> env) {
+        Expression leftSimplified = left.simplify(env), rightSimplified = right.simplify(env);
+        if (leftSimplified instanceof Number && rightSimplified instanceof Number) {
+            return evaluateOp((Number) leftSimplified, (Number) rightSimplified);
+        }
+        return construct(leftSimplified, rightSimplified);
+    }
+
+    protected abstract NumberDouble evaluateOp(Number left, Number right);
+    protected abstract BinaryOp construct(Expression left, Expression right);
 
     @Override
     public boolean equals(Object thatObject) {

@@ -1,5 +1,7 @@
 package expressivo;
 
+import java.util.Map;
+
 abstract class Number implements Expression {
     protected final java.lang.Number n;
 
@@ -10,6 +12,11 @@ abstract class Number implements Expression {
     @Override
     public Expression differentiate(Variable v) {
         return new NumberInteger(0);
+    }
+
+    @Override
+    public Expression simplify(Map<String, Double> env) {
+        return this;
     }
 
     @Override

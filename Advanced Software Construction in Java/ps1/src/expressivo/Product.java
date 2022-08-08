@@ -6,6 +6,16 @@ public class Product extends BinaryOp implements Expression {
     }
 
     @Override
+    protected NumberDouble evaluateOp(Number left, Number right) {
+        return new NumberDouble(left.n.doubleValue() * right.n.doubleValue());
+    }
+
+    @Override
+    protected BinaryOp construct(Expression left, Expression right) {
+        return new Product(left, right);
+    }
+
+    @Override
     public Expression differentiate(Variable v) {
         return new Sum(
                 new Product(left, right.differentiate(v)),

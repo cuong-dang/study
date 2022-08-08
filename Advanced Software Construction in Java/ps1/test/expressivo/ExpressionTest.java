@@ -8,6 +8,8 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Tests for the Expression abstract data type.
@@ -49,6 +51,11 @@ public class ExpressionTest {
     //   - Sums
     //   - Products
     //   - Mixed
+
+    // - Test simplify()
+    //   - Sums/products with constants
+    //   - Sums/products with variables evaluated to constants
+    //   - Sums/products with unevaluated variables
 
     @Test(expected=AssertionError.class)
     public void testAssertionsEnabled() {
@@ -290,6 +297,45 @@ public class ExpressionTest {
     @Test
     public void testDifferentiateMixed() {
         assertEquals(Expression.parse("1 + (2*1 + x*0)"), Expression.parse("x + 2*x").differentiate(new Variable("x")));
+    }
+
+    /* Test simplify() */
+    @Test
+    public void testSimplifyConstants() {
+        assertEquals(Expression.parse("1"), Expression.parse("1").simplify(new HashMap<>()));
+        assertEquals(Expression.parse("3"), Expression.parse("1 + 2").simplify(new HashMap<>()));
+        assertEquals(Expression.parse("2"), Expression.parse("1 * 2").simplify(new HashMap<>()));
+
+        assertEquals(Expression.parse("5"), Expression.parse("1*2 + 3").simplify(new HashMap<>()));
+        assertEquals(Expression.parse("11"), Expression.parse("1 + 2*3 + 4").simplify(new HashMap<>()));
+        assertEquals(Expression.parse("14"), Expression.parse("2*(3 + 4)").simplify(new HashMap<>()));
+    }
+
+    @Test
+    public void testSimplifyVariablesEvaluated() {
+        Map<String, Double> env = new HashMap<>();
+        env.put("x", 1.0);
+        env.put("y", 2.0);
+
+        assertEquals(Expression.parse("1"), Expression.parse("x").simplify(env));
+        assertEquals(Expression.parse("2"), Expression.parse("1 + x").simplify(env));
+        assertEquals(Expression.parse("2"), Expression.parse("2*x").simplify(env));
+        assertEquals(Expression.parse("4"), Expression.parse("1 + x + y").simplify(env));
+        assertEquals(Expression.parse("4"), Expression.parse("2*x*y").simplify(env));
+        assertEquals(Expression.parse("8"), Expression.parse("2*x + 3*y").simplify(env));
+    }
+
+    @Test
+    public void testSimplifyVariablesUnevaluated() {
+        Map<String, Double> env = new HashMap<>();
+        env.put("x", 1.0);
+        env.put("y", 2.0);
+
+        assertEquals(Expression.parse("1 + z"), Expression.parse("1 + z").simplify(env));
+        assertEquals(Expression.parse("2 + z"), Expression.parse("1 + x + z").simplify(env));
+        assertEquals(Expression.parse("1 + (1 + z)"), Expression.parse("1 + (x + z)").simplify(env));
+        assertEquals(Expression.parse("1 + 2*z"), Expression.parse("1*x + 2*z").simplify(env));
+        assertEquals(Expression.parse("3*z"), Expression.parse("1*(x + 2)*z").simplify(env));
     }
 
     /* Helpers */

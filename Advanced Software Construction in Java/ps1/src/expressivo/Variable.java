@@ -1,5 +1,7 @@
 package expressivo;
 
+import java.util.Map;
+
 public class Variable implements Expression {
     private final String name;
 
@@ -13,6 +15,16 @@ public class Variable implements Expression {
             return new NumberInteger(1);
         }
         return new NumberInteger(0);
+    }
+
+    @Override
+    public Expression simplify(Map<String, Double> env) {
+        Double value = env.get(name);
+        if (value == null) {
+            return this;
+        } else {
+            return new NumberDouble(value);
+        }
     }
 
     @Override

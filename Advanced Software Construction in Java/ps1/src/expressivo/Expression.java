@@ -5,6 +5,7 @@ import lib6005.parser.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 /**
  * An immutable data type representing a polynomial expression of:
@@ -70,6 +71,14 @@ public interface Expression {
      * @return Differentiated expression
      */
     public Expression differentiate(Variable v);
+
+    /**
+     * Simplify. If expression contains no variables, return only final
+     * evaluated constant.
+     * @param env Environment
+     * @return Simplified expression
+     */
+    public Expression simplify(Map<String, Double> env);
 
     /* Parser */
     public enum ExpressionGrammar {ROOT, SUM, TERM, PRODUCT, PRIMITIVE, INTEGER, DOUBLE, VARIABLE, WHITESPACE};
