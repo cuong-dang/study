@@ -6,6 +6,14 @@ public class Product extends BinaryOp implements Expression {
     }
 
     @Override
+    public Expression differentiate(Variable v) {
+        return new Sum(
+                new Product(left, right.differentiate(v)),
+                new Product(right, left.differentiate(v))
+        );
+    }
+
+    @Override
     public String toString() {
         return String.format("%s*%s", insertOptionalParentheses(left), insertOptionalParentheses(right));
     }

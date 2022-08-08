@@ -8,6 +8,11 @@ abstract class Number implements Expression {
     }
 
     @Override
+    public Expression differentiate(Variable v) {
+        return new NumberInteger(0);
+    }
+
+    @Override
     public boolean equals(Object thatObj) {
         if (this == thatObj) return true;
         if (thatObj == null) return false;

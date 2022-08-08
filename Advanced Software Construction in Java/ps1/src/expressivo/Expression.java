@@ -63,7 +63,14 @@ public interface Expression {
      */
     @Override
     public int hashCode();
-    
+
+    /**
+     * Differentiate.
+     * @param v Variable with respect to which the expression differentiates
+     * @return Differentiated expression
+     */
+    public Expression differentiate(Variable v);
+
     /* Parser */
     public enum ExpressionGrammar {ROOT, SUM, TERM, PRODUCT, PRIMITIVE, INTEGER, DOUBLE, VARIABLE, WHITESPACE};
 

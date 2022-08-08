@@ -44,6 +44,12 @@ public class ExpressionTest {
     //   - General mixed expressions
     //   - Variables
 
+    // - Test differentiate()
+    //   - Constants
+    //   - Sums
+    //   - Products
+    //   - Mixed
+
     @Test(expected=AssertionError.class)
     public void testAssertionsEnabled() {
         assert false; // make sure assertions are enabled with VM argument: -ea
@@ -259,6 +265,31 @@ public class ExpressionTest {
             ),
             Expression.parse("(x + 1) * y")
         );
+    }
+
+    /* Test differentiate() */
+    @Test
+    public void testDifferentiateNumbers() {
+        assertEquals(new NumberInteger(0), new NumberInteger(1).differentiate(new Variable("x")));
+        assertEquals(new NumberInteger(0), new NumberDouble(1.0).differentiate(new Variable("x")));
+    }
+
+    @Test
+    public void testDifferentiateSums() {
+        assertEquals(Expression.parse("1 + 0"), Expression.parse("x + 1").differentiate(new Variable("x")));
+        assertEquals(Expression.parse("1 + 0"), Expression.parse("x + y").differentiate(new Variable("x")));
+    }
+
+    @Test
+    public void testDifferentiateProducts() {
+        assertEquals(Expression.parse("2*1 + x*0"), Expression.parse("2*x").differentiate(new Variable("x")));
+        assertEquals(Expression.parse("y*1 + x*0"), Expression.parse("y*x").differentiate(new Variable("x")));
+        assertEquals(Expression.parse("2*0 + y*0"), Expression.parse("2*y").differentiate(new Variable("x")));
+    }
+
+    @Test
+    public void testDifferentiateMixed() {
+        assertEquals(Expression.parse("1 + (2*1 + x*0)"), Expression.parse("x + 2*x").differentiate(new Variable("x")));
     }
 
     /* Helpers */

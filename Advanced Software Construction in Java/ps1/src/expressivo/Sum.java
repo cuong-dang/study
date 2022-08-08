@@ -6,6 +6,11 @@ public class Sum extends BinaryOp implements Expression {
     }
 
     @Override
+    public Expression differentiate(Variable v) {
+        return new Sum(left.differentiate(v), right.differentiate(v));
+    }
+
+    @Override
     public String toString() {
         return String.format("%s + %s", left.toString(), right.toString());
     }

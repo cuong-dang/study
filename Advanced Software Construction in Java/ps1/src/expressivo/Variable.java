@@ -8,6 +8,14 @@ public class Variable implements Expression {
     }
 
     @Override
+    public Expression differentiate(Variable v) {
+        if (this.equals(v)) {
+            return new NumberInteger(1);
+        }
+        return new NumberInteger(0);
+    }
+
+    @Override
     public String toString() {
         return name;
     }
