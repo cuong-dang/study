@@ -196,6 +196,12 @@ public class ExpressionTest {
         assertEquals(new NumberDouble(1.0), Expression.parse("(1.0)"));
         assertEquals(new NumberDouble(1.2345), Expression.parse("1.2345"));
         assertEquals(new NumberDouble(1.234567), Expression.parse("1.234567"));
+        assertEquals(new NumberDouble(0.1), Expression.parse(".1"));
+    }
+
+    @Test
+    public void testParseLargeInteger() {
+        assertEquals(new NumberDouble(9007199254740992.0), Expression.parse("9007199254740992"));
     }
 
     @Test

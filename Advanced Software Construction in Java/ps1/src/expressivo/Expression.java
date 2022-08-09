@@ -93,7 +93,13 @@ public interface Expression {
             InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         switch (p.getName()) {
             case INTEGER:
-                return new NumberInteger(Integer.parseInt(p.getContents()));
+                Number n;
+                try {
+                    n = new NumberInteger(Integer.parseInt(p.getContents()));
+                } catch (NumberFormatException e) { // in case of very large integer
+                    n = new NumberDouble(Double.parseDouble(p.getContents()));
+                }
+                return n;
             case DOUBLE:
                 return new NumberDouble(Double.parseDouble(p.getContents()));
             case VARIABLE:

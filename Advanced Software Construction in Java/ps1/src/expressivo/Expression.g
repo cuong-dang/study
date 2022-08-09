@@ -13,6 +13,6 @@ root ::= sum;
 }
 
 integer ::= [0-9]+;
-double ::= [0-9]+'.'[0-9]+;
+double ::= [0-9]*'.'[0-9]+;
 variable ::= [a-zA-Z]+;
 whitespace ::= [ ]+;
