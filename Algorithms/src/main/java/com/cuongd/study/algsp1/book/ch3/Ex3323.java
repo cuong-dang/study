@@ -46,7 +46,7 @@ public class Ex3323<Key extends Comparable<Key>, Value> extends BST<Key, Value> 
     }
 
     public static void main(String[] args) {
-        int N_MAX = 1048576, N_START = 1;
+        int N_MAX = 16_780_096, N_START = 1;
         String sep = "\t\t";
 
         System.out.printf("%10s%savgPathLength%n", "n", sep);
