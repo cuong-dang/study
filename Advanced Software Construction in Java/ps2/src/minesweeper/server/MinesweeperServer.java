@@ -56,13 +56,7 @@ public class MinesweeperServer {
             Socket socket = serverSocket.accept();
 
             // handle the client
-            try {
-                handleConnection(socket);
-            } catch (IOException ioe) {
-                ioe.printStackTrace(); // but don't terminate serve()
-            } finally {
-                socket.close();
-            }
+            new Thread(new ConnectionHandler(socket)).start();
         }
     }
 
@@ -87,6 +81,7 @@ public class MinesweeperServer {
         } finally {
             out.close();
             in.close();
+            socket.close();
         }
     }
 
@@ -251,5 +246,22 @@ public class MinesweeperServer {
         
         MinesweeperServer server = new MinesweeperServer(port, debug);
         server.serve();
+    }
+
+    private class ConnectionHandler implements Runnable {
+        private final Socket socket;
+
+        private ConnectionHandler(Socket socket) {
+            this.socket = socket;
+        }
+
+        @Override
+        public void run() {
+            try {
+                handleConnection(socket);
+            } catch (IOException ioe) {
+                ioe.printStackTrace(); // but don't terminate serve()
+            }
+        }
     }
 }
