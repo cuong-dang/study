@@ -6,6 +6,7 @@ public class Square {
 
     private State state;
     private final boolean hasBomb;
+    private int numSurroundingBombs;
 
     /* Specs */
     // Abstraction function
@@ -13,19 +14,27 @@ public class Square {
     //   could contain bomb
     // Rep invariant
     //   state is not null
+    //   0 <= numSurroundingBombs <= 8
     // Rep exposure
     //   all fields are private
-    //   state and hasBomb are immutable types
+    //   state, hasBomb, numSurroundingBombs are immutable types
     // Thread safety
     //   client's responsibility
 
     /**
      * Construct a square.
      * @param hasBomb whether the square contains a bomb
+     * @param numSurroundingBombs number of bombs in surrounding squares
      */
-    public Square(boolean hasBomb) {
+    public Square(boolean hasBomb, int numSurroundingBombs) {
+        if (numSurroundingBombs < 0 || numSurroundingBombs > 8) {
+            throw new IllegalArgumentException(
+                    String.format("Illegal number of surrounding bombs: %d%n", numSurroundingBombs)
+            );
+        }
         this.state = State.UNTOUCHED;
         this.hasBomb = hasBomb;
+        this.numSurroundingBombs = numSurroundingBombs;
         checkRep();
     }
 
@@ -37,6 +46,11 @@ public class Square {
     /** @return whether square contains bomb. */
     public boolean hasBomb() {
         return hasBomb;
+    }
+
+    /** @return number of surrounding bombs. */
+    public int numSurroundingBombs() {
+        return numSurroundingBombs;
     }
 
     /**
@@ -87,5 +101,6 @@ public class Square {
 
     private void checkRep() {
         assert state != null;
+        assert 0 <= numSurroundingBombs  && numSurroundingBombs <= 8;
     }
 }
