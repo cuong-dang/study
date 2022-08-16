@@ -29,7 +29,7 @@ public class Square {
     public Square(boolean hasBomb, int numSurroundingBombs) {
         if (numSurroundingBombs < 0 || numSurroundingBombs > 8) {
             throw new IllegalArgumentException(
-                    String.format("Illegal number of surrounding bombs: %d%n", numSurroundingBombs)
+                    String.format("Illegal number of surrounding bombs: %d", numSurroundingBombs)
             );
         }
         this.state = State.UNTOUCHED;
@@ -102,5 +102,19 @@ public class Square {
     private void checkRep() {
         assert state != null;
         assert 0 <= numSurroundingBombs  && numSurroundingBombs <= 8;
+    }
+
+    @Override
+    public String toString() {
+        if (state == State.UNTOUCHED) {
+            return "_";
+        } else if (state == State.FLAGGED) {
+            return "F";
+        } else if (state == State.DUG && numSurroundingBombs == 0) {
+            return " ";
+        } else if (state == State.DUG && numSurroundingBombs != 0) {
+            return String.format("%d", numSurroundingBombs);
+        }
+        throw new IllegalStateException("Exploded bomb should not need to be represented.");
     }
 }
