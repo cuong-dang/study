@@ -11,6 +11,7 @@ public class SquareTest {
     // - Dig op
     // - Flag op
     // - Deflag op
+    // - setNumSurroundingBombs
     // - toString
 
     /* Constructor */
@@ -86,6 +87,34 @@ public class SquareTest {
         s = new Square(true, 0);
         s.dig();
         assertFalse(s.deflag());
+    }
+
+    /* setNumberOfSurroundingBombs */
+    @Test
+    public void testSetNumberOfSurroundingBombsValid() {
+        Square s = new Square(false, 0);
+        assertEquals(0, s.numSurroundingBombs());
+        s.setNumSurroundingBombs(1);
+        assertEquals(1, s.numSurroundingBombs());
+        s = new Square(true, -1);
+        s.setNumSurroundingBombs(-1);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testSetNumberOfSurroundingBombsInvalid1() {
+        Square s = new Square(false, 0);
+        s.setNumSurroundingBombs(-1);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testSetNumberOfSurroundingBombsInvalid2() {
+        Square s = new Square(true, 0);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testSetNumberOfSurroundingBombsInvalid3() {
+        Square s = new Square(true, -1);
+        s.setNumSurroundingBombs(0);
     }
 
     /* toString */

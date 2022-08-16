@@ -25,13 +25,10 @@ public class Square {
      * Construct a square.
      * @param hasBomb whether the square contains a bomb
      * @param numSurroundingBombs number of bombs in surrounding squares
+     * @throws IllegalArgumentException if invalid number of surrounding bombs
      */
     public Square(boolean hasBomb, int numSurroundingBombs) {
-        if (numSurroundingBombs < 0 || numSurroundingBombs > 8) {
-            throw new IllegalArgumentException(
-                    String.format("Illegal number of surrounding bombs: %d", numSurroundingBombs)
-            );
-        }
+        checkNumSurroundingBombs(hasBomb, numSurroundingBombs);
         this.state = State.UNTOUCHED;
         this.hasBomb = hasBomb;
         this.numSurroundingBombs = numSurroundingBombs;
@@ -99,9 +96,41 @@ public class Square {
         return result;
     }
 
+    /**
+     * Set the number of surrounding bombs.
+     * @param numSurroundingBombs number of surrounding bombs
+     * @throws IllegalStateException if invalid
+     */
+    public void setNumSurroundingBombs(int numSurroundingBombs) {
+        checkNumSurroundingBombs(hasBomb, numSurroundingBombs);
+        this.numSurroundingBombs = numSurroundingBombs;
+    }
+
+    /**
+     * Check if the number of surrounding bombs are valid.
+     *   0 <= numSurroundingBombs <= 8 ||
+     *   hasBomb && numSurroundingBombs = -1
+     * @param hasBomb whether the square contains a bomb
+     * @param numSurroundingBombs number of surrounding bombs
+     * @throws IllegalStateException if invalid
+     */
+    private void checkNumSurroundingBombs(boolean hasBomb, int numSurroundingBombs) {
+        if (hasBomb && numSurroundingBombs != -1) {
+            throw new IllegalArgumentException(
+                    String.format("Illegal number of surrounding bombs for bomb square: %d", numSurroundingBombs)
+            );
+        }
+        if (!hasBomb && (numSurroundingBombs < 0 || numSurroundingBombs > 8)) {
+            throw new IllegalArgumentException(
+                    String.format("Illegal number of surrounding bombs for non-bomb square: %d", numSurroundingBombs)
+            );
+        }
+    }
+
     private void checkRep() {
         assert state != null;
-        assert 0 <= numSurroundingBombs  && numSurroundingBombs <= 8;
+        assert (hasBomb && numSurroundingBombs == -1) ||
+                (!hasBomb && 0 <= numSurroundingBombs  && numSurroundingBombs <= 8);
     }
 
     @Override

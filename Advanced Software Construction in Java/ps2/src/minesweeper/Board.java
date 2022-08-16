@@ -5,25 +5,21 @@ package minesweeper;
 
 /** Thread-safe Minesweeper board */
 public class Board {
-    public enum OpResult { OK, ILLEGAL_STATE, BOOM, GAME_ENDED }
-    public enum State { ACTIVE, FROZEN }
+    public enum OpResult { OK, ILLEGAL_MOVE, BOOM, GAME_ENDED }
+    public enum State { ACTIVE, WON, LOST }
 
     private Square[][] board;
     private State state;
+    private final int dim;
     private int numBombsInitial;
-    private int numBombsRemaining;
+    private int numBombsUnflagged;
     private int numFlags;
 
     public Board(String file) {
         throw new RuntimeException("Unimplemented");
     }
 
-    public Board(int dim, int bombs) {
-        throw new RuntimeException("Unimplemented");
-    }
-
     /* Operations */
-
     public OpResult dig(int x, int y) {
         throw new RuntimeException("Unimplemented");
     }
@@ -37,8 +33,11 @@ public class Board {
     }
 
     /* Observers */
-
     public State state() {
+        throw new RuntimeException("Unimplemented");
+    }
+
+    public int dim() {
         throw new RuntimeException("Unimplemented");
     }
 
@@ -46,11 +45,19 @@ public class Board {
         throw new RuntimeException("Unimplemented");
     }
 
-    public int numBombsRemaining() {
+    public int numBombsUnflagged() {
         throw new RuntimeException("Unimplemented");
     }
 
     public int numFlags() {
+        throw new RuntimeException("Unimplemented");
+    }
+
+    public Square.State squareState(int x, int y) {
+        throw new RuntimeException("Unimplemented");
+    }
+
+    public int numSurroundingBombs(int x, int y) {
         throw new RuntimeException("Unimplemented");
     }
 
