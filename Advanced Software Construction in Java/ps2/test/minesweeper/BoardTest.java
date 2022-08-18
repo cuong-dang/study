@@ -4,7 +4,10 @@
 package minesweeper;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,11 +24,13 @@ public class BoardTest {
     //   - Deflag
     //   - Surrounding bombs after digging
     // - Game state
+    //   - Mid-game
+    //   - End-game
 
     private Board b;
 
     @Before
-    public void init() {
+    public void init() throws IOException {
         b = new Board("./test/boards/beginner.txt");
     }
 
@@ -40,17 +45,17 @@ public class BoardTest {
         assertEquals(Board.State.ACTIVE, b.state());
         assertEquals(8, b.dim());
         assertEquals(10, b.numBombsInitial());
-        assertEquals(0, b.numBombsUnflagged());
+        assertEquals(10, b.numBombsUnflagged());
         assertEquals(0, b.numFlags());
         assertEquals(String.format(
-                "- X X - X - - -%n" +
-                "- X - - - X X -%n" +
-                "- - - - - - - X%n" +
                 "- - - - - - - -%n" +
-                "X - - - - - - -%n" +
                 "- - - - - - - -%n" +
-                "- - - - - X - -%n" +
-                "- - - - X - - -%n"), b.toString());
+                "- - - - - - - -%n" +
+                "- - - - - - - -%n" +
+                "- - - - - - - -%n" +
+                "- - - - - - - -%n" +
+                "- - - - - - - -%n" +
+                "- - - - - - - -%n"), b.toString());
     }
 
     @Test
@@ -65,8 +70,8 @@ public class BoardTest {
                 new int[] { 0, 0, 0, 1, 2, -1, 1, 0 },
                 new int[] { 0, 0, 0, 1, -1, 2, 1, 0 },
         };
-        for (int i = 0; i < 9; ++i) {
-            for (int j = 0; j < 9; ++j) {
+        for (int i = 0; i < 8; ++i) {
+            for (int j = 0; j < 8; ++j) {
                 assertEquals(expectedSurroundingBombs[i][j], b.numSurroundingBombs(i, j));
             }
         }
@@ -75,39 +80,41 @@ public class BoardTest {
     /* Operations */
     @Test
     public void testDig() {
-        assertEquals(b.dig(0, 0), Board.OpResult.OK); // dig untouched
-        assertEquals(b.squareState(0, 0), Square.State.DUG);
-        assertEquals(b.dig(0, 0), Board.OpResult.ILLEGAL_MOVE); // dig dug
+        assertEquals(Board.OpResult.OK, b.dig(0, 0)); // dig untouched
+        assertEquals(Square.State.DUG, b.squareState(0, 0));
+        assertEquals(Board.OpResult.ILLEGAL_MOVE, b.dig(0, 0)); // dig dug
         b.flag(0, 1);
-        assertEquals(b.dig(0, 1), Board.OpResult.ILLEGAL_MOVE); // dig flagged
-        assertEquals(b.dig(0, 1), Board.OpResult.BOOM); // dig exploded
-        assertEquals(b.squareState(0, 0), Square.State.EXPLODED);
+        assertEquals(Board.OpResult.ILLEGAL_MOVE, b.dig(0, 1)); // dig flagged
+        b.deflag(0, 1);
+        assertEquals(Board.OpResult.BOOM, b.dig(0, 1)); // dig exploded
+        assertEquals(Square.State.EXPLODED, b.squareState(0, 1));
     }
 
     @Test
     public void testFlag() {
-        assertEquals(b.flag(0, 0), Board.OpResult.OK); // flag untouched
-        assertEquals(b.squareState(0, 0), Square.State.FLAGGED);
-        assertEquals(b.flag(0, 0), Board.OpResult.ILLEGAL_MOVE); // flag flagged
+        assertEquals(Board.OpResult.OK, b.flag(0, 0)); // flag untouched
+        assertEquals(Square.State.FLAGGED, b.squareState(0, 0));
+        assertEquals(Board.OpResult.ILLEGAL_MOVE, b.flag(0, 0)); // flag flagged
         b.deflag(0, 0);
         b.dig(0, 0);
-        assertEquals(b.flag(0, 0), Board.OpResult.ILLEGAL_MOVE); // flag dug
+        assertEquals(Board.OpResult.ILLEGAL_MOVE, b.flag(0, 0)); // flag dug
         b.dig(0, 1);
-        assertEquals(b.flag(0, 1), Board.OpResult.ILLEGAL_MOVE); // flag exploded
+        assertEquals(Board.OpResult.ILLEGAL_MOVE, b.flag(0, 1)); // flag exploded
     }
 
     @Test
     public void testDelag() {
-        assertEquals(b.deflag(0, 0), Board.OpResult.ILLEGAL_MOVE); // deflag untouched
+        assertEquals(Board.OpResult.ILLEGAL_MOVE, b.deflag(0, 0)); // deflag untouched
         b.flag(0, 0);
-        assertEquals(b.deflag(0, 0), Board.OpResult.OK); // deflag flagged
+        assertEquals(Board.OpResult.OK, b.deflag(0, 0)); // deflag flagged
         b.deflag(0, 0);
         b.dig(0, 0);
-        assertEquals(b.deflag(0, 0), Board.OpResult.ILLEGAL_MOVE); // deflag dug
+        assertEquals(Board.OpResult.ILLEGAL_MOVE, b.deflag(0, 0)); // deflag dug
         b.dig(0, 1);
-        assertEquals(b.deflag(0, 1), Board.OpResult.ILLEGAL_MOVE); // deflag exploded
+        assertEquals(Board.OpResult.ILLEGAL_MOVE, b.deflag(0, 1)); // deflag exploded
     }
 
+    @Ignore("We are not changing the number of surrounding bombs upon explosions for now.")
     @Test
     public void testSurroundingBombsAfterDigging() {
         assertEquals(2, b.numSurroundingBombs(0, 0));
@@ -126,10 +133,10 @@ public class BoardTest {
         assertEquals(b.state(), Board.State.ACTIVE);
         assertEquals(10, b.numBombsUnflagged());
         assertEquals(0, b.numFlags());
-        b.dig(0, 0);
+        b.flag(0, 0);
         assertEquals(10, b.numBombsUnflagged());
         assertEquals(1, b.numFlags());
-        b.dig(0, 1);
+        b.flag(0, 1);
         assertEquals(9, b.numBombsUnflagged());
         assertEquals(2, b.numFlags());
     }
@@ -148,11 +155,11 @@ public class BoardTest {
         b.flag(7, 4);
         assertEquals(0, b.numBombsUnflagged());
         assertEquals(10, b.numFlags());
-        assertEquals(Board.State.WON, b.state());
+        assertEquals(Board.State.FROZEN, b.state());
 
-        assertEquals(Board.OpResult.GAME_ENDED, b.dig(0, 0));
-        assertEquals(Board.OpResult.GAME_ENDED, b.flag(0, 0));
-        assertEquals(Board.OpResult.GAME_ENDED, b.deflag(0, 0));
+        assertEquals(Board.OpResult.GAME_OVER, b.dig(0, 0));
+        assertEquals(Board.OpResult.GAME_OVER, b.flag(0, 0));
+        assertEquals(Board.OpResult.GAME_OVER, b.deflag(0, 0));
     }
 
     @Test
@@ -167,11 +174,11 @@ public class BoardTest {
         b.dig(4, 0);
         b.dig(6, 5);
         b.dig(7, 4);
-        assertEquals(10, b.numBombsUnflagged());
-        assertEquals(Board.State.LOST, b.state());
+        assertEquals(0, b.numBombsUnflagged());
+        assertEquals(Board.State.FROZEN, b.state());
 
-        assertEquals(Board.OpResult.GAME_ENDED, b.dig(0, 0));
-        assertEquals(Board.OpResult.GAME_ENDED, b.flag(0, 0));
-        assertEquals(Board.OpResult.GAME_ENDED, b.deflag(0, 0));
+        assertEquals(Board.OpResult.GAME_OVER, b.dig(0, 0));
+        assertEquals(Board.OpResult.GAME_OVER, b.flag(0, 0));
+        assertEquals(Board.OpResult.GAME_OVER, b.deflag(0, 0));
     }
 }

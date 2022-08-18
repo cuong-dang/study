@@ -136,7 +136,7 @@ public class Square {
     @Override
     public String toString() {
         if (state == State.UNTOUCHED) {
-            return "_";
+            return "-";
         } else if (state == State.FLAGGED) {
             return "F";
         } else if (state == State.DUG && numSurroundingBombs == 0) {

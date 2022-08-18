@@ -3,66 +3,169 @@
  */
 package minesweeper;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.List;
+
+import static java.nio.file.Files.readAllLines;
+
 /** Thread-safe Minesweeper board */
 public class Board {
-    public enum OpResult { OK, ILLEGAL_MOVE, BOOM, GAME_ENDED }
-    public enum State { ACTIVE, WON, LOST }
+    public enum OpResult { OK, ILLEGAL_MOVE, BOOM, GAME_OVER }
+    public enum State { ACTIVE, FROZEN }
 
-    private Square[][] board;
+    private final Square[][] board;
     private State state;
     private final int dim;
     private int numBombsInitial;
     private int numBombsUnflagged;
     private int numFlags;
 
-    public Board(String file) {
-        throw new RuntimeException("Unimplemented");
+    public Board(String file) throws IOException {
+        List<String> lines = readAllLines(Paths.get(file), StandardCharsets.UTF_8);
+        dim = lines.size();
+        String[][] boardStr = new String[dim][dim];
+        /* Fill board's string representation */
+        int i = 0;
+        for (String line : lines) {
+            String[] squaresStr = line.split(" ");
+            int j = 0;
+            for (String squareStr : squaresStr) {
+                boardStr[i][j++] = squareStr;
+            }
+            ++i;
+        }
+        /* Fill board */
+        board = new Square[dim][dim];
+        numBombsInitial = 0;
+        for (i = 0; i < dim; ++i) {
+            for (int j = 0; j < dim; ++j) {
+                /* Calculate surrounding bombs */
+                int numSurroundingBombs = 0;
+                for (int k = -1; k < 2; ++k) {
+                    if (isInBoard(i + k)) {
+                        for (int h = -1; h < 2; ++h) {
+                            if (isInBoard(j + h)) {
+                                if ((k != 0 || h != 0) && boardStr[i+k][j+h].equals("X")) {
+                                    ++numSurroundingBombs;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (boardStr[i][j].equals("X")) {
+                    board[i][j] = new Square(true, -1);
+                    ++numBombsInitial;
+                } else {
+                    board[i][j] = new Square(false, numSurroundingBombs);
+                }
+            }
+        }
+        state = State.ACTIVE;
+        numBombsUnflagged = numBombsInitial;
+        numFlags = 0;
     }
 
     /* Operations */
     public OpResult dig(int x, int y) {
-        throw new RuntimeException("Unimplemented");
+        OpResult opResult = doOp(() -> board[x][y].dig(), x, y);
+        if (opResult != OpResult.OK) {
+            return opResult;
+        }
+        if (board[x][y].state() == Square.State.EXPLODED) {
+            --numBombsUnflagged;
+            if (numBombsUnflagged == 0) {
+                state = State.FROZEN;
+            }
+            return OpResult.BOOM;
+        }
+        return OpResult.OK;
     }
 
     public OpResult flag(int x, int y) {
-        throw new RuntimeException("Unimplemented");
+        OpResult opResult = doOp(() -> board[x][y].flag(), x, y);
+        ++numFlags;
+        if (board[x][y].hasBomb()) {
+            --numBombsUnflagged;
+            if (numBombsUnflagged == 0) {
+                state = State.FROZEN;
+            }
+        }
+        return opResult;
     }
 
     public OpResult deflag(int x, int y) {
-        throw new RuntimeException("Unimplemented");
+        OpResult opResult = doOp(() -> board[x][y].deflag(), x, y);
+        --numFlags;
+        if (board[x][y].hasBomb()) {
+            ++numBombsUnflagged;
+        }
+        return opResult;
     }
 
     /* Observers */
     public State state() {
-        throw new RuntimeException("Unimplemented");
+        return state;
     }
 
     public int dim() {
-        throw new RuntimeException("Unimplemented");
+        return dim;
     }
 
     public int numBombsInitial() {
-        throw new RuntimeException("Unimplemented");
+        return numBombsInitial;
     }
 
     public int numBombsUnflagged() {
-        throw new RuntimeException("Unimplemented");
+        return numBombsUnflagged;
     }
 
     public int numFlags() {
-        throw new RuntimeException("Unimplemented");
+        return numFlags;
     }
 
     public Square.State squareState(int x, int y) {
-        throw new RuntimeException("Unimplemented");
+        return board[x][y].state();
     }
 
     public int numSurroundingBombs(int x, int y) {
-        throw new RuntimeException("Unimplemented");
+        return board[x][y].numSurroundingBombs();
     }
 
     @Override
     public String toString() {
-        throw new RuntimeException("Unimplemented");
+        StringBuilder boardSb = new StringBuilder();
+        for (Square[] squares : board) {
+            StringBuilder lineSb = new StringBuilder();
+            for (Square sq : squares) {
+                lineSb.append(String.format("%s ", sq));
+            }
+            lineSb.replace(squares.length*2 - 1, squares.length*2, String.format("%n"));
+            boardSb.append(lineSb);
+        }
+        return boardSb.toString();
+    }
+
+    private boolean isInBoard(int i) {
+        return i >= 0 && i < dim;
+    }
+
+    private boolean isInBoard(int x, int y) {
+        return isInBoard(x) && isInBoard(y);
+    }
+
+    private OpResult doOp(SquareOp op, int x, int y) {
+        if (state == State.FROZEN) {
+            return OpResult.GAME_OVER;
+        }
+        if (!isInBoard(x, y)) {
+            return OpResult.ILLEGAL_MOVE;
+        }
+        boolean opOk = op.doOp();
+        if (!opOk) {
+            return OpResult.ILLEGAL_MOVE;
+        }
+        return OpResult.OK;
     }
 }
