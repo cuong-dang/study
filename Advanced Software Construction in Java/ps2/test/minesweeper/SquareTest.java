@@ -22,7 +22,7 @@ public class SquareTest {
         assertEquals(1, s.numSurroundingBombs());
         assertEquals(Square.State.UNTOUCHED, s.state());
 
-        Square ss = new Square(true, 0);
+        Square ss = new Square(true, -1);
         assertTrue(ss.hasBomb());
     }
 
@@ -45,7 +45,7 @@ public class SquareTest {
         s.flag();
         assertFalse(s.dig());
         /* Exploded */
-        s = new Square(true, 0);
+        s = new Square(true, -1);
         s.dig();
         assertEquals(Square.State.EXPLODED, s.state());
     }
@@ -64,7 +64,7 @@ public class SquareTest {
         s.dig();
         assertFalse(s.flag());
         /* Exploded */
-        s = new Square(true, 0);
+        s = new Square(true, -1);
         s.dig();
         assertFalse(s.flag());
     }
@@ -84,7 +84,7 @@ public class SquareTest {
         s.dig();
         assertFalse(s.deflag());
         /* Exploded */
-        s = new Square(true, 0);
+        s = new Square(true, -1);
         s.dig();
         assertFalse(s.deflag());
     }
@@ -100,18 +100,18 @@ public class SquareTest {
         s.setNumSurroundingBombs(-1);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testSetNumberOfSurroundingBombsInvalid1() {
         Square s = new Square(false, 0);
         s.setNumSurroundingBombs(-1);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testSetNumberOfSurroundingBombsInvalid2() {
         Square s = new Square(true, 0);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testSetNumberOfSurroundingBombsInvalid3() {
         Square s = new Square(true, -1);
         s.setNumSurroundingBombs(0);
@@ -121,7 +121,7 @@ public class SquareTest {
     @Test
     public void testToStringNoBombs() {
         Square s = new Square(false, 0);
-        assertEquals("_", s.toString());
+        assertEquals("-", s.toString());
         s.flag();
         assertEquals("F", s.toString());
         s.deflag();
@@ -135,7 +135,7 @@ public class SquareTest {
 
     @Test(expected = IllegalStateException.class)
     public void testToStringHasBomb() {
-        Square s = new Square(true, 0);
+        Square s = new Square(true, -1);
         s.dig();
         s.toString();
     }

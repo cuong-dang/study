@@ -105,6 +105,9 @@ public class BoardTest {
     @Test
     public void testDelag() {
         assertEquals(Board.OpResult.ILLEGAL_MOVE, b.deflag(0, 0)); // deflag untouched
+        // The following is a regression. There was a case where numFlags was
+        // decremented even though the move was illegal.
+        assertEquals(0, b.numFlags());
         b.flag(0, 0);
         assertEquals(Board.OpResult.OK, b.deflag(0, 0)); // deflag flagged
         b.deflag(0, 0);

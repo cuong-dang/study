@@ -22,6 +22,26 @@ public class Board {
     private int numBombsUnflagged;
     private int numFlags;
 
+    /* Specs */
+    // Abstraction function
+    //   represents a Minesweeper board
+    //   includes game state
+    // Rep invariant
+    //   0 <= numBombsUnflagged <= numBombsInitial
+    //   numFlags >= 0
+    //   if numBombsUnflagged == 0, state == FROZEN
+    //   else state == ACTIVE
+    // Rep exposure
+    //   all fields are private
+    //   exposed fields have immutable types
+    // Thread safety
+    //   coarse-grained where mutators and observers are synchronized
+
+    /**
+     * Construct a Minesweeper board.
+     * @param file file path to board representation
+     * @throws IOException if fail to open file
+     */
     public Board(String file) throws IOException {
         List<String> lines = readAllLines(Paths.get(file), StandardCharsets.UTF_8);
         dim = lines.size();
@@ -65,76 +85,99 @@ public class Board {
         state = State.ACTIVE;
         numBombsUnflagged = numBombsInitial;
         numFlags = 0;
+        checkRep();
     }
 
     /* Operations */
-    public OpResult dig(int x, int y) {
+    /**
+     * Dig a square.
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return an OpResult
+     */
+    public synchronized OpResult dig(int x, int y) {
         OpResult opResult = doOp(() -> board[x][y].dig(), x, y);
-        if (opResult != OpResult.OK) {
-            return opResult;
-        }
-        if (board[x][y].state() == Square.State.EXPLODED) {
+        if (opResult == OpResult.OK && board[x][y].state() == Square.State.EXPLODED) {
             --numBombsUnflagged;
             if (numBombsUnflagged == 0) {
                 state = State.FROZEN;
             }
-            return OpResult.BOOM;
+            opResult = OpResult.BOOM;
         }
-        return OpResult.OK;
-    }
-
-    public OpResult flag(int x, int y) {
-        OpResult opResult = doOp(() -> board[x][y].flag(), x, y);
-        ++numFlags;
-        if (board[x][y].hasBomb()) {
-            --numBombsUnflagged;
-            if (numBombsUnflagged == 0) {
-                state = State.FROZEN;
-            }
-        }
+        checkRep();
         return opResult;
     }
 
-    public OpResult deflag(int x, int y) {
+    /**
+     * Flag a square.
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return an OpResult
+     */
+    public synchronized OpResult flag(int x, int y) {
+        OpResult opResult = doOp(() -> board[x][y].flag(), x, y);
+        if (opResult == OpResult.OK) {
+            ++numFlags;
+        }
+        if (board[x][y].hasBomb()) {
+            --numBombsUnflagged;
+            if (numBombsUnflagged == 0) {
+                state = State.FROZEN;
+            }
+        }
+        checkRep();
+        return opResult;
+    }
+
+    /**
+     * Deflag a square.
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return an OpResult
+     */
+    public synchronized OpResult deflag(int x, int y) {
         OpResult opResult = doOp(() -> board[x][y].deflag(), x, y);
-        --numFlags;
+        if (opResult == OpResult.OK) {
+            --numFlags;
+        }
         if (board[x][y].hasBomb()) {
             ++numBombsUnflagged;
         }
+        checkRep();
         return opResult;
     }
 
     /* Observers */
-    public State state() {
+    public synchronized State state() {
         return state;
     }
 
-    public int dim() {
+    public synchronized int dim() {
         return dim;
     }
 
-    public int numBombsInitial() {
+    public synchronized int numBombsInitial() {
         return numBombsInitial;
     }
 
-    public int numBombsUnflagged() {
+    public synchronized int numBombsUnflagged() {
         return numBombsUnflagged;
     }
 
-    public int numFlags() {
+    public synchronized int numFlags() {
         return numFlags;
     }
 
-    public Square.State squareState(int x, int y) {
+    public synchronized Square.State squareState(int x, int y) {
         return board[x][y].state();
     }
 
-    public int numSurroundingBombs(int x, int y) {
+    public synchronized int numSurroundingBombs(int x, int y) {
         return board[x][y].numSurroundingBombs();
     }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         StringBuilder boardSb = new StringBuilder();
         for (Square[] squares : board) {
             StringBuilder lineSb = new StringBuilder();
@@ -167,5 +210,15 @@ public class Board {
             return OpResult.ILLEGAL_MOVE;
         }
         return OpResult.OK;
+    }
+
+    private void checkRep() {
+        assert 0 <= numBombsUnflagged && numBombsUnflagged <= numBombsInitial;
+        assert numFlags >= 0;
+        if (numBombsUnflagged == 0) {
+            assert state == State.FROZEN;
+        } else {
+            assert state == State.ACTIVE;
+        }
     }
 }
