@@ -43,7 +43,8 @@ public class BoardTest {
     @Test
     public void testConstructorBeginnerBoard() {
         assertEquals(Board.State.ACTIVE, b.state());
-        assertEquals(8, b.dim());
+        assertEquals(8, b.dimX());
+        assertEquals(8, b.dimY());
         assertEquals(10, b.numBombsInitial());
         assertEquals(10, b.numBombsUnflagged());
         assertEquals(0, b.numFlags());

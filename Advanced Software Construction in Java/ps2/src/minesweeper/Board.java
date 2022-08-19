@@ -17,7 +17,8 @@ public class Board {
 
     private final Square[][] board;
     private State state;
-    private final int dim;
+    private int dimX;
+    private int dimY;
     private int numBombsInitial;
     private int numBombsUnflagged;
     private int numFlags;
@@ -44,11 +45,19 @@ public class Board {
      */
     public Board(String file) throws IOException {
         List<String> lines = readAllLines(Paths.get(file), StandardCharsets.UTF_8);
-        dim = lines.size();
-        String[][] boardStr = new String[dim][dim];
+        String[][] boardStr = null;
         /* Fill board's string representation */
         int i = 0;
+        boolean firstLine = true;
         for (String line : lines) {
+            if (firstLine) {
+                String[] dims = line.split(" ");
+                dimX = Integer.parseInt(dims[0]);
+                dimY = Integer.parseInt(dims[1]);
+                boardStr = new String[dimX][dimY];
+                firstLine = false;
+                continue;
+            }
             String[] squaresStr = line.split(" ");
             int j = 0;
             for (String squareStr : squaresStr) {
@@ -57,24 +66,24 @@ public class Board {
             ++i;
         }
         /* Fill board */
-        board = new Square[dim][dim];
+        board = new Square[dimX][dimY];
         numBombsInitial = 0;
-        for (i = 0; i < dim; ++i) {
-            for (int j = 0; j < dim; ++j) {
+        for (i = 0; i < dimX; ++i) {
+            for (int j = 0; j < dimY; ++j) {
                 /* Calculate surrounding bombs */
                 int numSurroundingBombs = 0;
                 for (int k = -1; k < 2; ++k) {
-                    if (isInBoard(i + k)) {
+                    if (isInBound(i + k, dimX)) {
                         for (int h = -1; h < 2; ++h) {
-                            if (isInBoard(j + h)) {
-                                if ((k != 0 || h != 0) && boardStr[i+k][j+h].equals("X")) {
+                            if (isInBound(j + h, dimY)) {
+                                if ((k != 0 || h != 0) && boardStr[i+k][j+h].equals("1")) {
                                     ++numSurroundingBombs;
                                 }
                             }
                         }
                     }
                 }
-                if (boardStr[i][j].equals("X")) {
+                if (boardStr[i][j].equals("1")) {
                     board[i][j] = new Square(true, -1);
                     ++numBombsInitial;
                 } else {
@@ -152,8 +161,12 @@ public class Board {
         return state;
     }
 
-    public synchronized int dim() {
-        return dim;
+    public synchronized int dimX() {
+        return dimX;
+    }
+
+    public synchronized int dimY() {
+        return dimY;
     }
 
     public synchronized int numBombsInitial() {
@@ -190,19 +203,15 @@ public class Board {
         return boardSb.toString();
     }
 
-    private boolean isInBoard(int i) {
+    private boolean isInBound(int i, int dim) {
         return i >= 0 && i < dim;
-    }
-
-    private boolean isInBoard(int x, int y) {
-        return isInBoard(x) && isInBoard(y);
     }
 
     private OpResult doOp(SquareOp op, int x, int y) {
         if (state == State.FROZEN) {
             return OpResult.GAME_OVER;
         }
-        if (!isInBoard(x, y)) {
+        if (!isInBound(x, dimX) || !isInBound(y, dimY)) {
             return OpResult.ILLEGAL_MOVE;
         }
         boolean opOk = op.doOp();
