@@ -143,7 +143,9 @@ public class Square {
             return " ";
         } else if (state == State.DUG && numSurroundingBombs != 0) {
             return String.format("%d", numSurroundingBombs);
+        } else if (state == State.EXPLODED) {
+            return "X";
         }
-        throw new IllegalStateException("Exploded bomb should not need to be represented.");
+        throw new RuntimeException(String.format("Unknown square state %s", state));
     }
 }

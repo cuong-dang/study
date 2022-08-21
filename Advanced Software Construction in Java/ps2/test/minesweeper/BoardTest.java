@@ -78,6 +78,14 @@ public class BoardTest {
         }
     }
 
+    @Test
+    public void testConstructRandomSizeBoard() {
+        assertEquals(String.format(
+                "- - -%n" +
+                "- - -%n"), (new Board(2, 3)).toString()
+        );
+    }
+
     /* Operations */
     @Test
     public void testDig() {

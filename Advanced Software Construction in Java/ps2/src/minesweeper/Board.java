@@ -3,10 +3,12 @@
  */
 package minesweeper;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Random;
 
 import static java.nio.file.Files.readAllLines;
 
@@ -15,7 +17,7 @@ public class Board {
     public enum OpResult { OK, ILLEGAL_MOVE, BOOM, GAME_OVER }
     public enum State { ACTIVE, FROZEN }
 
-    private final Square[][] board;
+    private Square[][] board;
     private State state;
     private int dimX;
     private int dimY;
@@ -39,14 +41,27 @@ public class Board {
     //   coarse-grained where mutators and observers are synchronized
 
     /**
-     * Construct a Minesweeper board.
+     * Construct a Minesweeper board from file.
+     * @param filePath file path to board representation
+     * @throws IOException if fail to open file
+     */
+    public Board(String filePath) throws IOException {
+        construct(Paths.get(filePath).toFile());
+    }
+
+    /**
+     * Construct a Minesweeper board from file.
      * @param file file path to board representation
      * @throws IOException if fail to open file
      */
-    public Board(String file) throws IOException {
-        List<String> lines = readAllLines(Paths.get(file), StandardCharsets.UTF_8);
+    public Board(File file) throws IOException {
+        construct(file);
+    }
+
+    private void construct(File file) throws IOException {
+        List<String> lines = readAllLines(file.toPath(), StandardCharsets.UTF_8);
         String[][] boardStr = null;
-        /* Fill board's string representation */
+        /* Make board's string representation */
         int i = 0;
         boolean firstLine = true;
         for (String line : lines) {
@@ -65,35 +80,35 @@ public class Board {
             }
             ++i;
         }
-        /* Fill board */
-        board = new Square[dimX][dimY];
+        initBoard(boardStr);
+        checkRep();
+    }
+
+    /**
+     * Construct a Minesweeper board given board dimensions. Bombs are
+     * placed randomly in each square with a probability of .25.
+     * @param dimX number of rows
+     * @param dimY number of columns
+     */
+    public Board(int dimX, int dimY) {
+        /* Make board's string representation */
+        this.dimX = dimX;
+        this.dimY = dimY;
+        String[][] boardStr = new String[dimX][dimY];
+        Random r = new Random();
+        final double BOMB_CHANCE = .25;
         numBombsInitial = 0;
-        for (i = 0; i < dimX; ++i) {
+        for (int i = 0; i < dimX; ++i) {
             for (int j = 0; j < dimY; ++j) {
-                /* Calculate surrounding bombs */
-                int numSurroundingBombs = 0;
-                for (int k = -1; k < 2; ++k) {
-                    if (isInBound(i + k, dimX)) {
-                        for (int h = -1; h < 2; ++h) {
-                            if (isInBound(j + h, dimY)) {
-                                if ((k != 0 || h != 0) && boardStr[i+k][j+h].equals("1")) {
-                                    ++numSurroundingBombs;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (boardStr[i][j].equals("1")) {
-                    board[i][j] = new Square(true, -1);
+                if (r.nextDouble() < BOMB_CHANCE) {
+                    boardStr[i][j] = "1";
                     ++numBombsInitial;
                 } else {
-                    board[i][j] = new Square(false, numSurroundingBombs);
+                    boardStr[i][j] = "0";
                 }
             }
         }
-        state = State.ACTIVE;
-        numBombsUnflagged = numBombsInitial;
-        numFlags = 0;
+        initBoard(boardStr);
         checkRep();
     }
 
@@ -161,15 +176,15 @@ public class Board {
         return state;
     }
 
-    public synchronized int dimX() {
+    public int dimX() {
         return dimX;
     }
 
-    public synchronized int dimY() {
+    public int dimY() {
         return dimY;
     }
 
-    public synchronized int numBombsInitial() {
+    public int numBombsInitial() {
         return numBombsInitial;
     }
 
@@ -203,6 +218,37 @@ public class Board {
         return boardSb.toString();
     }
 
+    private void initBoard(String[][] boardStr) {
+        board = new Square[dimX][dimY];
+        numBombsInitial = 0;
+        for (int i = 0; i < dimX; ++i) {
+            for (int j = 0; j < dimY; ++j) {
+                /* Calculate surrounding bombs */
+                int numSurroundingBombs = 0;
+                for (int k = -1; k < 2; ++k) {
+                    if (isInBound(i + k, dimX)) {
+                        for (int h = -1; h < 2; ++h) {
+                            if (isInBound(j + h, dimY)) {
+                                if ((k != 0 || h != 0) && boardStr[i+k][j+h].equals("1")) {
+                                    ++numSurroundingBombs;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (boardStr[i][j].equals("1")) {
+                    board[i][j] = new Square(true, -1);
+                    ++numBombsInitial;
+                } else {
+                    board[i][j] = new Square(false, numSurroundingBombs);
+                }
+            }
+        }
+        state = State.ACTIVE;
+        numBombsUnflagged = numBombsInitial;
+        numFlags = 0;
+    }
+
     private boolean isInBound(int i, int dim) {
         return i >= 0 && i < dim;
     }
@@ -222,6 +268,7 @@ public class Board {
     }
 
     private void checkRep() {
+        assert dimX > 0 && dimY > 0;
         assert 0 <= numBombsUnflagged && numBombsUnflagged <= numBombsInitial;
         assert numFlags >= 0;
         if (numBombsUnflagged == 0) {
