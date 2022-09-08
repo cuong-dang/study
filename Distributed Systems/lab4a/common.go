@@ -1,5 +1,12 @@
 package shardmaster
 
+import (
+	"crypto/sha1"
+	"fmt"
+	"io"
+	"time"
+)
+
 //
 // Master shard server: assigns shards to replication groups.
 //
@@ -23,51 +30,74 @@ const NShards = 10
 // A configuration -- an assignment of shards to groups.
 // Please don't change this.
 type Config struct {
-        Num    int              // config number
-        Shards [NShards]int     // shard -> gid
-        Groups map[int][]string // gid -> servers[]
+	Num    int              // config number
+	Shards [NShards]int     // shard -> gid
+	Groups map[int][]string // gid -> servers[]
 }
 
 const (
-        OK = "OK"
+	OK = "OK"
 )
 
 type Err string
 
+// RequestCommon contains requests' common data.
+type RequestCommon struct {
+	RequestId int64
+}
+
+// JoinArgs contains arguments for Join request.
 type JoinArgs struct {
-        Servers map[int][]string // new GID -> servers mappings
+	RequestCommon
+	Servers map[int][]string // new GID -> servers mappings
 }
 
 type JoinReply struct {
-        WrongLeader bool
-        Err         Err
+	WrongLeader bool
+	Err         Err
 }
 
+// LeaveArgs contains arguments for Leave requests.
 type LeaveArgs struct {
-        GIDs []int
+	RequestCommon
+	GIDs []int
 }
 
 type LeaveReply struct {
-        WrongLeader bool
-        Err         Err
+	WrongLeader bool
+	Err         Err
 }
 
+// MoveArgs contains arguments for Move requests.
 type MoveArgs struct {
-        Shard int
-        GID   int
+	RequestCommon
+	Shard int
+	GID   int
 }
 
 type MoveReply struct {
-        WrongLeader bool
-        Err         Err
+	WrongLeader bool
+	Err         Err
 }
 
+// QueryArgs contains arguments for Query requests.
 type QueryArgs struct {
-        Num int // desired config number
+	RequestCommon
+	Num int // desired config number
 }
 
+// QueryReply contains Query reply data from Shard Master servers.
 type QueryReply struct {
-        WrongLeader bool
-        Err         Err
-        Config      Config
+	WrongLeader bool
+	Err         Err
+	Config      Config
+}
+
+// GenProcessId generates a simple uuid to identify processes. This is only
+// for debug purposes.
+func GenProcessId() string {
+	const IdLen = 7
+	h := sha1.New()
+	io.WriteString(h, time.Now().String())
+	return string([]rune(fmt.Sprint(h.Sum(nil)))[:IdLen])
 }
