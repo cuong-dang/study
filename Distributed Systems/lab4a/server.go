@@ -209,7 +209,9 @@ func (sm *ShardMaster) Query(args *QueryArgs, reply *QueryReply) {
 //
 func (sm *ShardMaster) Kill() {
 	sm.rf.Kill()
+	sm.mu.Lock()
 	sm.isKilled = true
+	sm.mu.Unlock()
 }
 
 // needed by shardkv tester
@@ -247,14 +249,17 @@ func StartServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister)
 // them.
 func (sm *ShardMaster) applyChProcessor() {
 	for {
+		sm.mu.Lock()
 		if sm.isKilled {
+			sm.mu.Unlock()
 			return
 		}
+		sm.mu.Unlock()
 		msg := <-sm.applyCh
+		sm.mu.Lock()
 		if msg.CommandValid {
 			op := msg.Command.(Op)
 			DPrintf("%d:%v: Received %v applyMsg %v\n", sm.me, op.RequestId, op.Name, msg)
-			sm.mu.Lock()
 			if sm.executedRequests[op.RequestId] {
 				DPrintf("%d:%v: Request already executed\n", sm.me, op.RequestId)
 				sm.mu.Unlock()
@@ -272,8 +277,8 @@ func (sm *ShardMaster) applyChProcessor() {
 			if _, ok := sm.openRequests[op.RequestId]; ok {
 				sm.signalRequestCh(op.RequestId, true)
 			}
-			sm.mu.Unlock()
 		}
+		sm.mu.Unlock()
 	}
 }
 
@@ -453,12 +458,13 @@ func MakeMapping(mappingSlice []int) map[int][]int {
 // lost leadership. If yes, the function closes all open requests.
 func (sm *ShardMaster) leaderShipChangePoller() {
 	for {
+		_, stillLeader := sm.rf.GetState()
+		sm.mu.Lock()
 		if sm.isKilled {
+			sm.mu.Unlock()
 			return
 		}
-		sm.mu.Lock()
 		if sm.isLeader {
-			_, stillLeader := sm.rf.GetState()
 			if !stillLeader {
 				DPrintf("%v: Lost leadership\n", sm.me)
 				sm.closeOpenRequests()
