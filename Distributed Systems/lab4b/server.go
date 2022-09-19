@@ -26,8 +26,22 @@ type Op struct {
 	LastExecutedRequestId int64
 	RequestId             int64
 	Name                  string
-	Key                   string
-	Value                 string
+
+	Shard int
+	Key   string
+	Value string
+
+	Config  shardmaster.Config
+	KvTable map[int]map[string]string
+}
+
+type RequestShardArgs struct {
+	Shard int
+}
+
+type RequestShardReply struct {
+	ShardKvTable map[string]string
+	Err          Err
 }
 
 type ShardKV struct {
@@ -40,13 +54,12 @@ type ShardKV struct {
 	masters      []*labrpc.ClientEnd
 	maxraftstate int // snapshot if log grows this big
 
-	kvTable          map[string]string
+	kvTable          map[int]map[string]string
 	dead             int32
 	isLeader         bool
 	openRequests     map[int64]chan bool
 	executedRequests map[int64]bool
-	knownShardConfig int
-	shardsOwned      map[int]bool
+	config           shardmaster.Config
 
 	lastExecutedIndex int
 	snapshotIndex     int
@@ -55,25 +68,26 @@ type ShardKV struct {
 }
 
 func (kv *ShardKV) Get(args *GetArgs, reply *GetReply) {
-	keyShard := key2shard(args.Key)
-	DPrintf("%v: Received Get request for shard %d\n", kv.me, keyShard)
+	shard := key2shard(args.Key)
+	DPrintf("%v-%v: Received Get request for shard %d\n", kv.gid, kv.me, shard)
 	kv.mu.Lock()
-	if _, ok := kv.shardsOwned[keyShard]; !ok {
-		DPrintf("%d:%v: Wrong shards; owned shards: %v\n", kv.me, args.RequestId, kv.shardsOwned)
+	DPrintf("%v-%v: Shard config %v\n", kv.gid, kv.me, kv.config.Shards)
+	if !kv.isLeader {
+		DPrintf("%v-%v:%v: Not leader\n", kv.gid, kv.me, args.RequestId)
+		reply.Err = ErrWrongLeader
+		kv.mu.Unlock()
+		return
+	}
+	if kv.gid != kv.config.Shards[shard] {
+		DPrintf("%v-%v:%v: ShardKvTable not owned\n", kv.gid, kv.me, args.RequestId)
 		reply.Err = ErrWrongGroup
 		kv.mu.Unlock()
 		return
 	}
 	reply.Err = OK
-	index, term, isLeader := kv.rf.Start(Op{LastExecutedRequestId: args.LastRequestId,
-		RequestId: args.RequestId, Name: "Get", Key: args.Key})
-	DPrintf("%v:%v: Submitted for index %d term %d\n", kv.me, args.RequestId, index, term)
-	if !isLeader {
-		DPrintf("%d:%v: Not leader\n", kv.me, args.RequestId)
-		reply.Err = ErrWrongLeader
-		kv.mu.Unlock()
-		return
-	}
+	index, term, _ := kv.rf.Start(Op{LastExecutedRequestId: args.LastRequestId,
+		RequestId: args.RequestId, Name: "Get", Shard: shard, Key: args.Key})
+	DPrintf("%v-%v:%v: Submitted for index %d term %d\n", kv.gid, kv.me, args.RequestId, index, term)
 	kv.isLeader = true
 	kv.openRequests[args.RequestId] = make(chan bool)
 	requestCh := kv.openRequests[args.RequestId]
@@ -81,37 +95,43 @@ func (kv *ShardKV) Get(args *GetArgs, reply *GetReply) {
 	ok := <-requestCh
 	kv.mu.Lock()
 	if !ok {
-		DPrintf("%d:%v: Failed to process request\n", kv.me, args.RequestId)
+		DPrintf("%v-%v:%v: Failed to process request\n", kv.gid, kv.me, args.RequestId)
 		reply.Err = ErrWrongLeader
 		kv.mu.Unlock()
 		return
 	}
-	DPrintf("%d:%v: OK\n", kv.me, args.RequestId)
-	reply.Value = kv.kvTable[args.Key]
+	if kv.gid != kv.config.Shards[shard] {
+		DPrintf("%v-%v:%v: ShardKvTable not owned\n", kv.gid, kv.me, args.RequestId)
+		reply.Err = ErrWrongGroup
+		kv.mu.Unlock()
+		return
+	}
+	DPrintf("%v-%v:%v: OK\n", kv.gid, kv.me, args.RequestId)
+	reply.Value = kv.kvTable[shard][args.Key]
 	kv.mu.Unlock()
 	return
 }
 
 func (kv *ShardKV) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
-	keyShard := key2shard(args.Key)
-	DPrintf("%v: Received PutAppend request for shard %d\n", kv.me, keyShard)
+	shard := key2shard(args.Key)
+	DPrintf("%v-%v: Received PutAppend request for shard %d\n", kv.gid, kv.me, shard)
 	kv.mu.Lock()
-	if _, ok := kv.shardsOwned[keyShard]; !ok {
-		DPrintf("%d:%v: Wrong shards; owned shards: %v\n", kv.me, args.RequestId, kv.shardsOwned)
+	if !kv.isLeader {
+		DPrintf("%v-%v:%v: Not leader\n", kv.gid, kv.me, args.RequestId)
+		reply.Err = ErrWrongLeader
+		kv.mu.Unlock()
+		return
+	}
+	if kv.gid != kv.config.Shards[shard] {
+		DPrintf("%v-%v:%v: ShardKvTable not owned\n", kv.gid, kv.me, args.RequestId)
 		reply.Err = ErrWrongGroup
 		kv.mu.Unlock()
 		return
 	}
 	reply.Err = OK
-	index, term, isLeader := kv.rf.Start(Op{LastExecutedRequestId: args.LastRequestId,
-		RequestId: args.RequestId, Name: args.Op, Key: args.Key, Value: args.Value})
-	DPrintf("%v:%v: Submitted for index %d term %d\n", kv.me, args.RequestId, index, term)
-	if !isLeader {
-		DPrintf("%d:%v: Not leader\n", kv.me, args.RequestId)
-		reply.Err = ErrWrongLeader
-		kv.mu.Unlock()
-		return
-	}
+	index, term, _ := kv.rf.Start(Op{LastExecutedRequestId: args.LastRequestId,
+		RequestId: args.RequestId, Name: args.Op, Shard: shard, Key: args.Key, Value: args.Value})
+	DPrintf("%v-%v:%v: Submitted for index %d term %d\n", kv.gid, kv.me, args.RequestId, index, term)
 	kv.isLeader = true
 	kv.openRequests[args.RequestId] = make(chan bool)
 	requestCh := kv.openRequests[args.RequestId]
@@ -119,12 +139,34 @@ func (kv *ShardKV) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 	ok := <-requestCh
 	kv.mu.Lock()
 	if !ok {
-		DPrintf("%d:%v: Failed to process request\n", kv.me, args.RequestId)
+		DPrintf("%v-%v:%v: Failed to process request\n", kv.gid, kv.me, args.RequestId)
 		reply.Err = ErrWrongLeader
 		kv.mu.Unlock()
 		return
 	}
-	DPrintf("%d:%v: OK\n", kv.me, args.RequestId)
+	if kv.gid != kv.config.Shards[shard] {
+		DPrintf("%v-%v:%v: ShardKvTable not owned\n", kv.gid, kv.me, args.RequestId)
+		reply.Err = ErrWrongGroup
+		kv.mu.Unlock()
+		return
+	}
+	DPrintf("%v-%v:%v: OK\n", kv.gid, kv.me, args.RequestId)
+	kv.mu.Unlock()
+	return
+}
+
+func (kv *ShardKV) RequestShard(args *RequestShardArgs, reply *RequestShardReply) {
+	DPrintf("%v-%v: Received RequestShard request for shard %d\n", kv.gid, kv.me, args.Shard)
+	reply.Err = OK
+	kv.mu.Lock()
+	if !kv.isLeader {
+		DPrintf("%v-%v: Not leader\n", kv.gid, kv.me)
+		reply.Err = ErrWrongLeader
+		kv.mu.Unlock()
+		return
+	}
+	reply.ShardKvTable = kv.kvTable[args.Shard]
+	kv.config.Shards[args.Shard] = 0 // stop serving immediately
 	kv.mu.Unlock()
 	return
 }
@@ -186,11 +228,10 @@ func StartServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister,
 	kv.gid = gid
 	kv.masters = masters
 
-	kv.kvTable = make(map[string]string)
+	kv.kvTable = make(map[int]map[string]string)
 	kv.openRequests = make(map[int64]chan bool)
 	kv.executedRequests = make(map[int64]bool)
-	kv.knownShardConfig = 0
-	kv.shardsOwned = make(map[int]bool)
+	kv.config = shardmaster.Config{Num: 0}
 	kv.lastExecutedIndex = 0
 	kv.snapshotIndex = 0
 
@@ -215,9 +256,9 @@ func (kv *ShardKV) applyChProcessor() {
 		kv.mu.Lock()
 		if msg.CommandValid {
 			op := msg.Command.(Op)
-			DPrintf("%d:%v: Received %v applyMsg %v\n", kv.me, op.RequestId, op.Name, msg)
+			DPrintf("%v-%v:%v: Received %v applyMsg %v\n", kv.gid, kv.me, op.RequestId, op.Name, msg)
 			if kv.executedRequests[op.RequestId] {
-				DPrintf("%d:%v: Request already executed\n", kv.me, op.RequestId)
+				DPrintf("%v-%v:%v: Request already executed\n", kv.gid, kv.me, op.RequestId)
 				kv.mu.Unlock()
 				return
 			}
@@ -226,10 +267,27 @@ func (kv *ShardKV) applyChProcessor() {
 			}
 			switch op.Name {
 			case "Put":
-				kv.kvTable[op.Key] = op.Value
+				kv.kvTable[op.Shard][op.Key] = op.Value
 			case "Append":
-				kv.kvTable[op.Key] = kv.kvTable[op.Key] + op.Value
+				kv.kvTable[op.Shard][op.Key] = kv.kvTable[op.Shard][op.Key] + op.Value
+			case "ApplyNewConfig":
+				// The following check is necessary to guard against a few cases where
+				// multiple new config apply messages for the same config are submitted
+				// into Raft log.
+				// - The most obvious case is where a leader submits the message for config
+				//   number N but soon checks again for the same config. This could be
+				//   mitigated by remembering which apply configs have been submitted.
+				// - The trickier case is when there is a leadership change while apply
+				//   messages are pending. There is no straightforward way to transfer the
+				//   submitted state from old leader to new.
+				if op.Config.Num == kv.config.Num+1 {
+					for shard, kvTable := range op.KvTable {
+						kv.kvTable[shard] = copyKvTable(kvTable)
+					}
+					kv.config = op.Config
+				}
 			}
+			DPrintf("%v-%v:%v: kv table after %v\n", kv.gid, kv.me, op.RequestId, kv.kvTable)
 			kv.executedRequests[op.RequestId] = true
 			kv.lastExecutedIndex = msg.CommandIndex
 			if _, ok := kv.openRequests[op.RequestId]; ok {
@@ -245,22 +303,53 @@ func (kv *ShardKV) configurationChangeDetector() {
 		if kv.killed() {
 			return
 		}
-		shardConfig := kv.mck.Query(-1)
+		newConfig := kv.mck.Query(kv.config.Num + 1)
 		kv.mu.Lock()
-		if shardConfig.Num > kv.knownShardConfig {
-			DPrintf("%v: Detected new shard config %v, old shards owned: %v\n", kv.me, shardConfig.Shards, kv.shardsOwned)
-			kv.shardsOwned = make(map[int]bool)
-			for shard, gid := range shardConfig.Shards {
-				if gid == kv.gid {
-					kv.shardsOwned[shard] = true
-				}
-			}
-			kv.knownShardConfig = shardConfig.Num
-			DPrintf("%v: Detected new shard config, new shards owned: %v\n", kv.me, kv.shardsOwned)
+		if kv.isLeader && newConfig.Num == kv.config.Num+1 {
+			DPrintf("%v-%v: Apply new shard config num %v %v, old shard config: %v\n",
+				kv.gid, kv.me, newConfig.Num, newConfig.Shards, kv.config.Shards)
+			kvTableToApply := kv.prepKvTableToApply(newConfig)
+			DPrintf("%v-%v: kv table to be applied %v\n", kv.gid, kv.me, kvTableToApply)
+			kv.mu.Unlock()
+			requestId := nrand()
+			index, term, _ := kv.rf.Start(Op{RequestId: requestId, Name: "ApplyNewConfig",
+				Config: newConfig, KvTable: kvTableToApply})
+			DPrintf("%v-%v: Submit ApplyNewConfig %v index %v term %d\n", kv.gid, kv.me, requestId, index, term)
+		} else {
+			kv.mu.Unlock()
 		}
-		kv.mu.Unlock()
 		time.Sleep(HouseKeepersSleepTime)
 	}
+}
+
+func (kv *ShardKV) prepKvTableToApply(newConfig shardmaster.Config) map[int]map[string]string {
+	kvTableToApply := make(map[int]map[string]string)
+	for shard, gid := range newConfig.Shards {
+		prevOwner := kv.config.Shards[shard]
+		if kv.gid == gid && prevOwner == 0 {
+			// New shard without previous owner
+			kvTableToApply[shard] = make(map[string]string)
+		} else if kv.gid == gid && prevOwner != kv.gid {
+			// New shard with previous owner
+			kvTableToApply[shard] = kv.requestShard(prevOwner, shard)
+		}
+	}
+	return kvTableToApply
+}
+
+func (kv *ShardKV) requestShard(gid int, shard int) map[string]string {
+	args := RequestShardArgs{Shard: shard}
+	if servers, ok := kv.config.Groups[gid]; ok {
+		for si := 0; si < len(servers); si++ {
+			srv := kv.make_end(servers[si])
+			var reply RequestShardReply
+			ok := srv.Call("ShardKV.RequestShard", &args, &reply)
+			if ok && reply.Err == OK {
+				return reply.ShardKvTable
+			}
+		}
+	}
+	return make(map[string]string) // unreachable
 }
 
 func (kv *ShardKV) leadershipChangeDetector() {
@@ -270,11 +359,11 @@ func (kv *ShardKV) leadershipChangeDetector() {
 		}
 		_, stillLeader := kv.rf.GetState()
 		kv.mu.Lock()
-		if kv.isLeader {
-			if !stillLeader {
-				DPrintf("%v: Lost leadership\n", kv.me)
-				kv.closeOpenRequests()
-			}
+		if !kv.isLeader && stillLeader {
+			kv.isLeader = true
+		} else if kv.isLeader && !stillLeader {
+			DPrintf("%v-%v: Lost leadership\n", kv.gid, kv.me)
+			kv.closeOpenRequests()
 		}
 		kv.mu.Unlock()
 		time.Sleep(HouseKeepersSleepTime)
@@ -288,7 +377,15 @@ func (kv *ShardKV) closeOpenRequests() {
 }
 
 func (kv *ShardKV) signalRequestCh(requestId int64, value bool) {
-	DPrintf("%v:%v: Signal %v to open request channel\n", kv.me, requestId, value)
+	DPrintf("%v-%v:%v: Signal %v to open request channel\n", kv.gid, kv.me, requestId, value)
 	kv.openRequests[requestId] <- value
 	delete(kv.openRequests, requestId)
+}
+
+func copyKvTable(src map[string]string) map[string]string {
+	dst := make(map[string]string)
+	for k, v := range src {
+		dst[k] = v
+	}
+	return dst
 }
