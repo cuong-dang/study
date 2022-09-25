@@ -2,6 +2,7 @@ package shardkv
 
 import (
 	"../shardmaster"
+	"bytes"
 	"log"
 	"sync/atomic"
 	"time"
@@ -35,13 +36,14 @@ type Op struct {
 	KvTable map[int]map[string]string
 }
 
-type RequestShardArgs struct {
-	Shard int
+type GiveShardArgs struct {
+	ConfigNum int
+	Shard     int
+	KvTable   map[string]string
 }
 
-type RequestShardReply struct {
-	ShardKvTable map[string]string
-	Err          Err
+type GiveShardReply struct {
+	Err Err
 }
 
 type ShardKV struct {
@@ -54,12 +56,14 @@ type ShardKV struct {
 	masters      []*labrpc.ClientEnd
 	maxraftstate int // snapshot if log grows this big
 
-	kvTable          map[int]map[string]string
-	dead             int32
-	isLeader         bool
-	openRequests     map[int64]chan bool
-	executedRequests map[int64]bool
-	config           shardmaster.Config
+	kvTable            map[int]map[string]string
+	dead               int32
+	isLeader           bool
+	openRequests       map[int64]chan bool
+	executedRequests   map[int64]bool
+	config             shardmaster.Config
+	submittedConfigNum int
+	newConfigKvTable   map[int]map[string]string
 
 	lastExecutedIndex int
 	snapshotIndex     int
@@ -71,7 +75,7 @@ func (kv *ShardKV) Get(args *GetArgs, reply *GetReply) {
 	shard := key2shard(args.Key)
 	DPrintf("%v-%v: Received Get request for shard %d\n", kv.gid, kv.me, shard)
 	kv.mu.Lock()
-	DPrintf("%v-%v: Shard config %v\n", kv.gid, kv.me, kv.config.Shards)
+	DPrintf("%v-%v: Shard config num %v %v\n", kv.gid, kv.me, kv.config.Num, kv.config.Shards)
 	if !kv.isLeader {
 		DPrintf("%v-%v:%v: Not leader\n", kv.gid, kv.me, args.RequestId)
 		reply.Err = ErrWrongLeader
@@ -155,8 +159,8 @@ func (kv *ShardKV) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 	return
 }
 
-func (kv *ShardKV) RequestShard(args *RequestShardArgs, reply *RequestShardReply) {
-	DPrintf("%v-%v: Received RequestShard request for shard %d\n", kv.gid, kv.me, args.Shard)
+func (kv *ShardKV) GiveShard(args *GiveShardArgs, reply *GiveShardReply) {
+	DPrintf("%v-%v: Received GiveShard request for shard %d\n", kv.gid, kv.me, args.Shard)
 	reply.Err = OK
 	kv.mu.Lock()
 	if !kv.isLeader {
@@ -165,8 +169,15 @@ func (kv *ShardKV) RequestShard(args *RequestShardArgs, reply *RequestShardReply
 		kv.mu.Unlock()
 		return
 	}
-	reply.ShardKvTable = kv.kvTable[args.Shard]
-	kv.config.Shards[args.Shard] = 0 // stop serving immediately
+	if args.ConfigNum != kv.config.Num+1 {
+		DPrintf("%v-%v: Wrong config num, expected %v actual %v\n",
+			kv.gid, kv.me, kv.config.Num+1, args.ConfigNum)
+		reply.Err = ErrWrongConfigNum
+		kv.mu.Unlock()
+		return
+	}
+	kv.newConfigKvTable[args.Shard] = args.KvTable
+	DPrintf("%v-%v: Saved shard %v\n", kv.gid, kv.me, args.Shard)
 	kv.mu.Unlock()
 	return
 }
@@ -232,6 +243,7 @@ func StartServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister,
 	kv.openRequests = make(map[int64]chan bool)
 	kv.executedRequests = make(map[int64]bool)
 	kv.config = shardmaster.Config{Num: 0}
+	kv.newConfigKvTable = make(map[int]map[string]string)
 	kv.lastExecutedIndex = 0
 	kv.snapshotIndex = 0
 
@@ -240,9 +252,14 @@ func StartServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister,
 	kv.applyCh = make(chan raft.ApplyMsg)
 	kv.rf = raft.Make(servers, me, persister, kv.applyCh)
 
+	kv.restoreSnapshot(kv.rf.GetSavedSnapshot())
+
 	go kv.applyChProcessor()
-	go kv.configurationChangeDetector()
-	go kv.leadershipChangeDetector()
+	go kv.configurationChangeHandler()
+	go kv.leadershipChangeHandler()
+	if maxraftstate != -1 {
+		go kv.maxRaftStateHandler()
+	}
 
 	return kv
 }
@@ -284,6 +301,7 @@ func (kv *ShardKV) applyChProcessor() {
 					for shard, kvTable := range op.KvTable {
 						kv.kvTable[shard] = copyKvTable(kvTable)
 					}
+					kv.newConfigKvTable = make(map[int]map[string]string)
 					kv.config = op.Config
 				}
 			}
@@ -293,66 +311,83 @@ func (kv *ShardKV) applyChProcessor() {
 			if _, ok := kv.openRequests[op.RequestId]; ok {
 				kv.signalRequestCh(op.RequestId, true)
 			}
+		} else if msg.IsSnapshot {
+			kv.restoreSnapshot(msg.Data)
+			kv.lastExecutedIndex = msg.CommandIndex
 		}
 		kv.mu.Unlock()
 	}
 }
 
-func (kv *ShardKV) configurationChangeDetector() {
+func (kv *ShardKV) configurationChangeHandler() {
 	for {
 		if kv.killed() {
 			return
 		}
 		newConfig := kv.mck.Query(kv.config.Num + 1)
 		kv.mu.Lock()
-		if kv.isLeader && newConfig.Num == kv.config.Num+1 {
+		if kv.isLeader && newConfig.Num == kv.config.Num+1 && newConfig.Num != kv.submittedConfigNum {
 			DPrintf("%v-%v: Apply new shard config num %v %v, old shard config: %v\n",
 				kv.gid, kv.me, newConfig.Num, newConfig.Shards, kv.config.Shards)
-			kvTableToApply := kv.prepKvTableToApply(newConfig)
-			DPrintf("%v-%v: kv table to be applied %v\n", kv.gid, kv.me, kvTableToApply)
+			for shard, gid := range newConfig.Shards {
+				prevOwner := kv.config.Shards[shard]
+				if kv.gid == gid && prevOwner == 0 {
+					// First owner
+					kv.newConfigKvTable[shard] = make(map[string]string)
+				} else if kv.gid == prevOwner && kv.gid != gid {
+					// Lose shard
+					kv.giveShard(newConfig.Num, newConfig.Groups, gid, shard)
+					// Stop serving immediately
+					kv.config.Shards[shard] = 0
+				} else if kv.gid == gid && kv.gid != prevOwner {
+					// Gain shard
+					for {
+						DPrintf("%v-%v: Wait for shard %v\n", kv.gid, kv.me, shard)
+						if _, ok := kv.newConfigKvTable[shard]; ok {
+							DPrintf("%v-%v: Received shard %v\n", kv.gid, kv.me, shard)
+							break
+						}
+						kv.mu.Unlock()
+						// Wait until shard received
+						time.Sleep(HouseKeepersSleepTime)
+						kv.mu.Lock()
+					}
+				}
+			}
+			newConfigKvTable := make(map[int]map[string]string)
+			for shard, kvTable := range kv.newConfigKvTable {
+				newConfigKvTable[shard] = copyKvTable(kvTable)
+			}
 			kv.mu.Unlock()
-			requestId := nrand()
-			index, term, _ := kv.rf.Start(Op{RequestId: requestId, Name: "ApplyNewConfig",
-				Config: newConfig, KvTable: kvTableToApply})
-			DPrintf("%v-%v: Submit ApplyNewConfig %v index %v term %d\n", kv.gid, kv.me, requestId, index, term)
-		} else {
-			kv.mu.Unlock()
+			index, term, _ := kv.rf.Start(Op{RequestId: nrand(), Name: "ApplyNewConfig", Config: newConfig, KvTable: newConfigKvTable})
+			DPrintf("%v-%v: Submitted ApplyNewConfig for index %v term %v\n", kv.gid, kv.me, index, term)
+			kv.mu.Lock()
+			kv.submittedConfigNum = newConfig.Num
 		}
+		kv.mu.Unlock()
 		time.Sleep(HouseKeepersSleepTime)
 	}
 }
 
-func (kv *ShardKV) prepKvTableToApply(newConfig shardmaster.Config) map[int]map[string]string {
-	kvTableToApply := make(map[int]map[string]string)
-	for shard, gid := range newConfig.Shards {
-		prevOwner := kv.config.Shards[shard]
-		if kv.gid == gid && prevOwner == 0 {
-			// New shard without previous owner
-			kvTableToApply[shard] = make(map[string]string)
-		} else if kv.gid == gid && prevOwner != kv.gid {
-			// New shard with previous owner
-			kvTableToApply[shard] = kv.requestShard(prevOwner, shard)
-		}
-	}
-	return kvTableToApply
-}
-
-func (kv *ShardKV) requestShard(gid int, shard int) map[string]string {
-	args := RequestShardArgs{Shard: shard}
-	if servers, ok := kv.config.Groups[gid]; ok {
+func (kv *ShardKV) giveShard(configNum int, groups map[int][]string, gid int, shard int) {
+	DPrintf("%v-%v: Give shard %v to gid %v\n", kv.gid, kv.me, shard, gid)
+	args := GiveShardArgs{ConfigNum: configNum, Shard: shard, KvTable: kv.kvTable[shard]}
+	servers := groups[gid]
+	for {
 		for si := 0; si < len(servers); si++ {
 			srv := kv.make_end(servers[si])
-			var reply RequestShardReply
-			ok := srv.Call("ShardKV.RequestShard", &args, &reply)
+			var reply GiveShardReply
+			kv.mu.Unlock()
+			ok := srv.Call("ShardKV.GiveShard", &args, &reply)
+			kv.mu.Lock()
 			if ok && reply.Err == OK {
-				return reply.ShardKvTable
+				return
 			}
 		}
 	}
-	return make(map[string]string) // unreachable
 }
 
-func (kv *ShardKV) leadershipChangeDetector() {
+func (kv *ShardKV) leadershipChangeHandler() {
 	for {
 		if kv.killed() {
 			return
@@ -388,4 +423,57 @@ func copyKvTable(src map[string]string) map[string]string {
 		dst[k] = v
 	}
 	return dst
+}
+
+func (kv *ShardKV) maxRaftStateHandler() {
+	for {
+		if kv.killed() {
+			return
+		}
+		if kv.rf.GetStateSize() >= kv.maxraftstate {
+			kv.mu.Lock()
+			if kv.lastExecutedIndex != kv.snapshotIndex {
+				DPrintf("%v-%v: Begin to save snapshot at log index %d\n", kv.gid, kv.me, kv.lastExecutedIndex)
+				w := new(bytes.Buffer)
+				e := labgob.NewEncoder(w)
+				e.Encode(kv.kvTable)
+				e.Encode(kv.executedRequests)
+				e.Encode(kv.lastExecutedIndex)
+				e.Encode(kv.config)
+				e.Encode(kv.newConfigKvTable)
+				data := w.Bytes()
+				lastExecutedIndex := kv.lastExecutedIndex
+				kv.snapshotIndex = kv.lastExecutedIndex
+				kv.mu.Unlock()
+				kv.rf.SaveSnapshot(data, lastExecutedIndex)
+			} else {
+				kv.mu.Unlock()
+			}
+		}
+		time.Sleep(HouseKeepersSleepTime)
+	}
+}
+
+func (kv *ShardKV) restoreSnapshot(data []byte) {
+	if data == nil || len(data) < 1 {
+		return
+	}
+	r := bytes.NewBuffer(data)
+	d := labgob.NewDecoder(r)
+	var kvTable map[int]map[string]string
+	var executedRequests map[int64]bool
+	var lastExecutedIndex int
+	var config shardmaster.Config
+	var newConfigKvTable map[int]map[string]string
+	if d.Decode(&kvTable) != nil || d.Decode(&executedRequests) != nil || d.Decode(&lastExecutedIndex) != nil ||
+		d.Decode(&config) != nil || d.Decode(&newConfigKvTable) != nil {
+		DPrintf("%d: Failed to restore snapshot\n", kv.me)
+		return
+	} else {
+		kv.kvTable = kvTable
+		kv.executedRequests = executedRequests
+		kv.lastExecutedIndex = lastExecutedIndex
+		kv.config = config
+		kv.newConfigKvTable = newConfigKvTable
+	}
 }
