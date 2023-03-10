@@ -1,5 +1,3 @@
-package com.cuongd.study.leetcode.lc0010
-
 import scala.collection.mutable
 
 object Lc0003FF {
