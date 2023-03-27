@@ -7,19 +7,18 @@
 
 #include <stdio.h>
 
-
-#define assertEqual(...)               \
-do {                                            \
+#define assertEqual(...)                         \
+do {                                             \
     if( !( __VA_ARGS__ ) ) {                     \
-        std::cerr << "Unit test assert [ " \
-        << ( #__VA_ARGS__ )             \
-        << " ] failed in line [ "       \
-        << __LINE__                     \
-        << " ] file [ "                 \
-        << __FILE__ << " ]"             \
-        << std::endl;                     \
-        err_code = 1;                           \
+        fprintf(stderr, "Unit test assert [ ");  \
+        fprintf(stderr, #__VA_ARGS__);           \
+        fprintf(stderr, " ] failed in line [ "); \
+        fprintf(stderr, "%d", __LINE__);         \
+        fprintf(stderr, " ] file [ ");           \
+        fprintf(stderr, __FILE__);               \
+        fprintf(stderr, " ]\n");                 \
+        err_code = 1;                            \
     }                                            \
-} while( false )
+} while( 0 )
 
 #endif //CONCURRENT_DS_ASSERT_MACRO_H

@@ -1,4 +1,4 @@
-#include <sys/time.h>
+#include "timex.h"
 
 struct timeval diff(struct timeval start, struct timeval end) {
     struct timeval result;
