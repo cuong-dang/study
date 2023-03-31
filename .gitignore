@@ -10,6 +10,7 @@
 .vscode
 a.out
 bin
+build
 cmake-build-debug
 my-grader-report.xml
 my-submission.zip
