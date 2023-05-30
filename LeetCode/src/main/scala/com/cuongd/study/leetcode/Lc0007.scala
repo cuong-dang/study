@@ -1,3 +1,5 @@
+package com.cuongd.study.leetcode
+
 import scala.annotation.tailrec
 
 object Lc0007 {

@@ -1,3 +1,5 @@
+package com.cuongd.study.leetcode
+
 object LC0004 {
   def findMedianSortedArrays(nums1: Array[Int], nums2: Array[Int]): Double = {
     val n = nums1.length + nums2.length

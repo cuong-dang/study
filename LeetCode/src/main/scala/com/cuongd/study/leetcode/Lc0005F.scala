@@ -1,3 +1,5 @@
+package com.cuongd.study.leetcode
+
 object Lc0005F {
   def longestPalindrome(s: String): String = {
     val m = Array.ofDim[Boolean](s.length, s.length)

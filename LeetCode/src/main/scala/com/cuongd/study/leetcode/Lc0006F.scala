@@ -1,3 +1,5 @@
+package com.cuongd.study.leetcode
+
 object Lc0006F {
   def convert(s: String, numRows: Int): String = {
     if (numRows == 1) return s

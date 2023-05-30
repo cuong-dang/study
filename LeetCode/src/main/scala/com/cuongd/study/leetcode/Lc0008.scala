@@ -1,3 +1,5 @@
+package com.cuongd.study.leetcode
+
 object Lc0008 {
   def myAtoi(s: String): Int = {
     def iter(s: String, ans: Double, isNeg: Boolean, firstChar: Boolean): Double = {

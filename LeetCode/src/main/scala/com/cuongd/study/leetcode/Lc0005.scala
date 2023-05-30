@@ -1,3 +1,5 @@
+package com.cuongd.study.leetcode
+
 object Lc0005 {
   def longestPalindrome(s: String): String = {
     s.indices

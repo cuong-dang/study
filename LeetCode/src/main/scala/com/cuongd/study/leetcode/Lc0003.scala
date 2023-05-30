@@ -1,3 +1,5 @@
+package com.cuongd.study.leetcode
+
 import scala.collection.mutable
 import scala.util.control.Breaks.{break, breakable}
 
