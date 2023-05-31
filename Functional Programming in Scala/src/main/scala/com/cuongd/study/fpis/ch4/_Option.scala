@@ -2,13 +2,13 @@ package com.cuongd.study.fpis.ch4
 
 sealed trait _Option[+A] {
   def map[B](f: A => B): _Option[B] = this match {
-    case _Some(a) => _Some(f(a))
+    case _Some(a)          => _Some(f(a))
     case _None: _Option[B] => _None
   }
 
   def getOrElse[B >: A](default: => B): B = this match {
     case _Some(a) => a
-    case _ => default
+    case _        => default
   }
 
   def flatMap[B](f: A => _Option[B]): _Option[B] = map(f) getOrElse _None
@@ -22,3 +22,13 @@ sealed trait _Option[+A] {
 
 case class _Some[+A](get: A) extends _Option[A]
 case object _None extends _Option[Nothing]
+
+object _Option {
+  def mean(xs: Seq[Double]): _Option[Double] = xs match {
+    case Seq() => _None
+    case xs    => _Some(xs.sum / xs.length)
+  }
+
+  def variance(xs: Seq[Double]): _Option[Double] =
+    mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
+}
