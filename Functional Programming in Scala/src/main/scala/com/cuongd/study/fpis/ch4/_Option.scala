@@ -1,5 +1,7 @@
 package com.cuongd.study.fpis.ch4
 
+import scala.annotation.tailrec
+
 sealed trait _Option[+A] {
   def map[B](f: A => B): _Option[B] = this match {
     case _Some(a)          => _Some(f(a))
@@ -34,4 +36,17 @@ object _Option {
 
   def map2[A, B, C](a: _Option[A], b: _Option[B])(f: (A, B) => C): _Option[C] =
     a.flatMap(aa => b.map(bb => f(aa, bb)))
+
+  def sequence[A](as: List[_Option[A]]): _Option[List[A]] = as match {
+    case Nil    => _Some(Nil)
+    case h :: t => h.flatMap(a => sequence(t).map(a :: _))
+  }
+
+  def sequence2[A](as: List[_Option[A]]): _Option[List[A]] =
+    as.foldRight[_Option[List[A]]](_Some(Nil))((oa, r) =>
+      oa.flatMap(a => r.map(a :: _))
+    )
+
+  def sequence3[A](as: List[_Option[A]]): _Option[List[A]] =
+    as.foldRight[_Option[List[A]]](_Some(Nil))((oa, r) => map2(oa, r)(_ :: _))
 }
