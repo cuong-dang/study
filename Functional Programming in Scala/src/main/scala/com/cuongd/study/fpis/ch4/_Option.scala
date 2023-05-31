@@ -24,11 +24,14 @@ case class _Some[+A](get: A) extends _Option[A]
 case object _None extends _Option[Nothing]
 
 object _Option {
-  def mean(xs: Seq[Double]): _Option[Double] = xs match {
-    case Seq() => _None
-    case xs    => _Some(xs.sum / xs.length)
-  }
+  def mean(xs: Seq[Double]): _Option[Double] =
+    if (xs.isEmpty) _None else _Some(xs.sum / xs.length)
 
   def variance(xs: Seq[Double]): _Option[Double] =
     mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
+
+  def lift[A, B](f: A => B): _Option[A] => _Option[B] = _.map(f)
+
+  def map2[A, B, C](a: _Option[A], b: _Option[B])(f: (A, B) => C): _Option[C] =
+    a.flatMap(aa => b.map(bb => f(aa, bb)))
 }
