@@ -49,4 +49,14 @@ object _Option {
 
   def sequence3[A](as: List[_Option[A]]): _Option[List[A]] =
     as.foldRight[_Option[List[A]]](_Some(Nil))((oa, r) => map2(oa, r)(_ :: _))
+
+  def _Try[A](a: => A): _Option[A] =
+    try _Some(a)
+    catch { case _: Exception => _None }
+
+  def traverse[A, B](a: List[A])(f: A => _Option[B]): _Option[List[B]] =
+    a.foldRight[_Option[List[B]]](_Some(Nil))((aa, r) => map2(f(aa), r)(_ :: _))
+
+  def sequence4[A](as: List[_Option[A]]): _Option[List[A]] =
+    traverse(as)(a => a)
 }
