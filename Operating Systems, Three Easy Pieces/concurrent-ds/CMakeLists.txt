@@ -7,6 +7,7 @@ add_subdirectory(src/lib/ccounter)
 add_subdirectory(src/lib/acounter)
 add_subdirectory(src/lib/glinkedlist)
 add_subdirectory(src/lib/util)
+add_subdirectory(src/lib/zem)
 
 add_executable(q2 src/q2.c)
 target_link_libraries(q2 PUBLIC timex ccounter)
