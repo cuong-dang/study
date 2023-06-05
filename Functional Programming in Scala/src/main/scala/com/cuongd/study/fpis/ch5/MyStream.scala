@@ -1,5 +1,7 @@
 package com.cuongd.study.fpis.ch5
 
+import com.cuongd.study.fpis.ch5.MyStream.{cons, empty}
+
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
@@ -26,6 +28,16 @@ sealed trait MyStream[+A] {
     }
 
     go(this)
+  }
+
+  def take(n: Int): MyStream[A] = this match {
+    case Cons(h, t) if n > 1 => cons(h(), t().take(n - 1))
+    case _ => empty
+  }
+
+  def drop(n: Int): MyStream[A] = this match {
+    case Cons(_, t) if n > 0 => t().drop(n - 1)
+    case _ => this
   }
 }
 case object Empty extends MyStream[Nothing]
