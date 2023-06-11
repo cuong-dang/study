@@ -37,5 +37,9 @@ add_executable(ch31_4 src/ch31_4.c)
 target_link_libraries(ch31_4 PUBLIC zem)
 target_include_directories(ch31_4 PUBLIC "${PROJECT_SOURCE_DIR}/src/includes")
 
+add_executable(ch31_5_1 src/ch31_5_1.c)
+target_link_libraries(ch31_5_1 PUBLIC zem)
+target_include_directories(ch31_5_1 PUBLIC "${PROJECT_SOURCE_DIR}/src/includes")
+
 enable_testing()
 add_subdirectory(test)
