@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "util.h"
 #include "zem.h"
 
 //
@@ -129,10 +130,24 @@ int main(int argc, char *argv[])
     printf("begin\n");
 
     int i;
-    for (i = 0; i < num_readers; i++)
+    for (i = 0; i < MIN(num_readers, num_writers); i++)
+    {
         pthread_create(&pr[i], NULL, reader, NULL);
-    for (i = 0; i < num_writers; i++)
         pthread_create(&pw[i], NULL, writer, NULL);
+    }
+
+    int more_readers = num_writers < num_readers ? 1 : 0;
+    for (; i < MAX(num_readers, num_writers); i++)
+    {
+        if (more_readers)
+        {
+            pthread_create(&pw[i], NULL, reader, NULL);
+        }
+        else
+        {
+            pthread_create(&pw[i], NULL, writer, NULL);
+        }
+    }
 
     for (i = 0; i < num_readers; i++)
         pthread_join(pr[i], NULL);
