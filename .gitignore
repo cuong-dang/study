@@ -2,6 +2,7 @@
 .DS_Store
 .bsp
 .classpath
+.cmake
 .grader
 .idea
 .metals
@@ -10,6 +11,7 @@
 .vscode
 a.out
 bin
+build
 cmake-build-debug
 my-grader-report.xml
 my-submission.zip
