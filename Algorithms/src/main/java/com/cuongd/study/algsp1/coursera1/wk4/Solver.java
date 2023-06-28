@@ -1,4 +1,4 @@
-package com.cuongd.study.algsp1.coursera.wk4;
+package com.cuongd.study.algsp1.coursera1.wk4;
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;

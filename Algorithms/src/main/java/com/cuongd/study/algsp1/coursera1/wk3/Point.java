@@ -7,7 +7,7 @@
  *  For use on Coursera, Algorithms Part I programming assignment.
  *
  ******************************************************************************/
-package com.cuongd.study.algsp1.coursera.wk3;
+package com.cuongd.study.algsp1.coursera1.wk3;
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;

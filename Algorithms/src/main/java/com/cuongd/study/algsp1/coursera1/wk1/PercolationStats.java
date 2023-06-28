@@ -1,4 +1,4 @@
-package com.cuongd.study.algsp1.coursera.wk1;
+package com.cuongd.study.algsp1.coursera1.wk1;
 
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;

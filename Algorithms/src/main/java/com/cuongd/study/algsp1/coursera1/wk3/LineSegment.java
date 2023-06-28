@@ -9,7 +9,7 @@
  *  DO NOT MODIFY THIS CODE.
  *
  *************************************************************************/
-package com.cuongd.study.algsp1.coursera.wk3;
+package com.cuongd.study.algsp1.coursera1.wk3;
 
 public class LineSegment {
     private final Point p;   // one endpoint of this line segment

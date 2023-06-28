@@ -1,4 +1,4 @@
-package com.cuongd.study.algsp1.coursera.wk4;
+package com.cuongd.study.algsp1.coursera1.wk4;
 
 import org.junit.Before;
 import org.junit.Test;
