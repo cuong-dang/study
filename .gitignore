@@ -1,13 +1,14 @@
-*.o
-.DS_Store
 .bsp
 .classpath
+.cmake
+.DS_Store
 .grader
 .idea
 .metals
 .project
 .settings
 .vscode
+*.o
 a.out
 bin
 build

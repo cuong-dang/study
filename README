@@ -35,3 +35,5 @@ courses, or MOOC, in that order. For further supporting material links
   + book: https://pages.cs.wisc.edu/~remzi/OSTEP
 - fpis: Functional Programming in Scala
   + book: https://a.co/d/bYkovN1
+- lc: LeetCode
+  + web: https://leetcode.com/
