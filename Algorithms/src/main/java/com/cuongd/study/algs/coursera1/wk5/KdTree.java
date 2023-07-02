@@ -20,10 +20,16 @@ public final class KdTree {
     }
 
     public void insert(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
         root = put(root, p, true);
     }
 
     public boolean contains(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
         return get(root, p, true) != null;
     }
 
@@ -32,12 +38,18 @@ public final class KdTree {
     }
 
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) {
+            throw new IllegalArgumentException();
+        }
         List<Point2D> rv = new ArrayList<>();
         range(rv, rect, root, true, 0, 1, 0, 1);
         return rv;
     }
 
     public Point2D nearest(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
         if (root == null) {
             return null;
         }
@@ -57,7 +69,12 @@ public final class KdTree {
 
         int cmp = cmp(p, h.p, comparingX);
         if (cmp < 0) h.left = put(h.left, p, !comparingX);
-        else if (cmp > 0) h.right = put(h.right, p, !comparingX);
+        else {
+            if (p.equals(h.p)) {
+                return h;
+            }
+            h.right = put(h.right, p, !comparingX);
+        }
 
         h.n = size(h.left) + size(h.right) + 1;
         return h;
@@ -67,8 +84,12 @@ public final class KdTree {
         if (x == null) return null;
         int cmp = cmp(p, x.p, comparingX);
         if (cmp < 0) return get(x.left, p, !comparingX);
-        if (cmp > 0) return get(x.right, p, !comparingX);
-        return x;
+        else {
+            if (p.equals(x.p)) {
+                return x;
+            }
+            return get(x.right, p, !comparingX);
+        }
     }
 
     private void draw(Node x, boolean drawingVertical,
@@ -136,7 +157,15 @@ public final class KdTree {
     private Point2D nearest(Point2D p, Node x, Point2D currNearest,
                             double currDist, boolean isVert, double xMin,
                             double xMax, double yMin, double yMax) {
-        if (x == null || (x.left == null && x.right == null)) {
+        if (x == null) {
+            return currNearest;
+        }
+        double thisDist = p.distanceSquaredTo(x.p);
+        if (thisDist < currDist) {
+            currNearest = x.p;
+            currDist = thisDist;
+        }
+        if (x.left == null && x.right == null) {
             return currNearest;
         }
         List<RectHV> leftRightRects = leftRightRects(x, isVert,
@@ -145,7 +174,7 @@ public final class KdTree {
         RectHV rightRect = leftRightRects.get(1);
         Node tryFirst, tryLater;
         RectHV tryFirstRect, tryLaterRect;
-        if (leftRect.contains(p)) {
+        if ((isVert && x.p.x() > p.x()) || (!isVert && x.p.y() > p.y())) {
             tryFirst = x.left;
             tryLater = x.right;
             tryFirstRect = leftRect;
@@ -153,39 +182,37 @@ public final class KdTree {
         } else {
             tryFirst = x.right;
             tryLater = x.left;
-            tryFirstRect = leftRect;
-            tryLaterRect = rightRect;
+            tryFirstRect = rightRect;
+            tryLaterRect = leftRect;
         }
         if (tryFirst == null || tryLater == null) {
             Node oneTry = tryFirst == null ? tryLater : tryFirst;
             RectHV oneTryRect = tryFirst == null ? tryLaterRect : tryFirstRect;
-            if (currDist < oneTryRect.distanceSquaredTo(p)) {
+            if (currDist <= oneTryRect.distanceSquaredTo(p)) {
                 return currNearest;
             }
-            Point2D newNearest = nearest(p, oneTry, oneTry.p,
-                    p.distanceSquaredTo(oneTry.p), !isVert,
+            Point2D newNearest = nearest(p, oneTry, oneTry.p, currDist, !isVert,
                     oneTryRect.xmin(), oneTryRect.xmax(),
                     oneTryRect.ymin(), oneTryRect.ymax());
             return p.distanceSquaredTo(newNearest) < currDist ?
                     newNearest : currNearest;
         }
-        Point2D newNearest = nearest(p, tryFirst, tryFirst.p,
-                p.distanceSquaredTo(tryFirst.p), !isVert,
-                tryFirstRect.xmin(), tryFirstRect.xmax(),
+        Point2D newNearest = nearest(p, tryFirst, currNearest, currDist,
+                !isVert, tryFirstRect.xmin(), tryFirstRect.xmax(),
                 tryFirstRect.ymin(), tryFirstRect.ymax());
         double newNearestDist = p.distanceSquaredTo(newNearest);
-        if (newNearestDist <= tryLaterRect.distanceSquaredTo(p)) {
+        if (newNearestDist < currDist) {
+            currNearest = newNearest;
+            currDist = newNearestDist;
+        }
+        if (currDist <= tryLaterRect.distanceSquaredTo(p)) {
             return newNearest;
         }
-        Point2D newNearest2 = nearest(p, tryLater, tryLater.p,
-                p.distanceSquaredTo(tryLater.p), !isVert,
-                tryLaterRect.xmin(), tryLaterRect.xmax(),
+        Point2D newNearest2 = nearest(p, tryLater, currNearest, currDist,
+                !isVert, tryLaterRect.xmin(), tryLaterRect.xmax(),
                 tryLaterRect.ymin(), tryLaterRect.ymax());
         double newNearest2Dist = p.distanceSquaredTo(newNearest2);
-        Point2D finalNewNearest = newNearestDist < newNearest2Dist ?
-                newNearest : newNearest2;
-        double finalNewNearestDist = Math.min(newNearestDist, newNearest2Dist);
-        return finalNewNearestDist < currDist ? finalNewNearest : currNearest;
+        return newNearest2Dist < currDist ? newNearest2 : currNearest;
     }
 
     private List<RectHV> leftRightRects(Node x, boolean isVert, double xMin,
@@ -198,15 +225,19 @@ public final class KdTree {
             leftXMax = x.p.x();
             rightXMin = x.p.x();
             rightXMax = xMax;
-            leftYMin = rightYMin = yMin;
-            leftYMax = rightYMax = yMax;
+            leftYMin = yMin;
+            rightYMin = yMin;
+            leftYMax = yMax;
+            rightYMax = yMax;
         } else {
             leftYMin = yMin;
             leftYMax = x.p.y();
             rightYMin = x.p.y();
             rightYMax = yMax;
-            leftXMin = rightXMin = xMin;
-            leftXMax = rightXMax = xMax;
+            leftXMin = xMin;
+            rightXMin = xMin;
+            leftXMax = xMax;
+            rightXMax = xMax;
         }
         RectHV leftRect = new RectHV(leftXMin, leftYMin, leftXMax, leftYMax);
         RectHV rightRect = new RectHV(rightXMin, rightYMin,
@@ -228,28 +259,69 @@ public final class KdTree {
     }
 
     public static void main(String[] args) {
-        Point2D a, b, c, d, e;
+        StdDraw.setPenRadius(0.005);
+        Point2D a, b, c, d, e, f, g, h, i, j;
+        /* Test set 1 */
+        KdTree t = new KdTree();
         a = new Point2D(0.7, 0.2);
         b = new Point2D(0.5, 0.4);
         c = new Point2D(0.2, 0.3);
         d = new Point2D(0.4, 0.7);
         e = new Point2D(0.9, 0.6);
-        KdTree t = new KdTree();
-        StdDraw.setPenRadius(0.005);
         t.insert(a);
         t.insert(b);
         t.insert(c);
         t.insert(d);
         t.insert(e);
         t.draw();
-
         RectHV rect = new RectHV(0.1, 0.1, 0.6, 0.8);
         List<Point2D> expected = new ArrayList<>();
         expected.add(b);
         expected.add(c);
         expected.add(d);
         assert (t.range(rect).equals(expected));
-
         assert (t.nearest(new Point2D(0.1, 0.1)).equals(c));
+        StdDraw.clear();
+
+        /* Test set 2 */
+        t = new KdTree();
+        a = new Point2D(0.5, 0.5);
+        b = new Point2D(0.25, 0.625);
+        c = new Point2D(0.5, 0.375);
+        t.insert(a);
+        t.insert(b);
+        t.insert(c);
+        t.insert(a);
+        t.draw();
+        assert (t.size() == 3);
+        assert (t.contains(a));
+        assert (!t.contains(new Point2D(0.2, 0.625)));
+        StdDraw.clear();
+
+        /* Test set 2 */
+        t = new KdTree();
+        a = new Point2D(0.375, 0.1875);
+        b = new Point2D(0.25, 1);
+        c = new Point2D(1.0, 0.9375);
+        d = new Point2D(0.1875, 0.125);
+        e = new Point2D(0.8125, 0.625);
+        f = new Point2D(0.5, 0.875);
+        g = new Point2D(0.4375, 0.5);
+        h = new Point2D(0.125, 0.4375);
+        i = new Point2D(0.9375, 0.8125);
+        j = new Point2D(0.75, 0.25);
+        t.insert(a);
+        t.insert(b);
+        t.insert(c);
+        t.insert(d);
+        t.insert(e);
+        t.insert(f);
+        t.insert(g);
+        t.insert(h);
+        t.insert(i);
+        t.insert(j);
+        t.draw();
+        (new Point2D(0.5625, 0.0625)).draw();
+        assert (t.nearest(new Point2D(0.5625, 0.0625)).equals(a));
     }
 }
