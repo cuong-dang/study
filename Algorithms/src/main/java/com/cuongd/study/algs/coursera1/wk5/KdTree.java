@@ -4,11 +4,9 @@ import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public final class KdTree {
     private Node root;
@@ -34,7 +32,7 @@ public final class KdTree {
     }
 
     public Iterable<Point2D> range(RectHV rect) {
-        Set<Point2D> rv = new HashSet<>();
+        List<Point2D> rv = new ArrayList<>();
         range(rv, rect, root, true, 0, 1, 0, 1);
         return rv;
     }
@@ -43,7 +41,8 @@ public final class KdTree {
         if (root == null) {
             return null;
         }
-        return nearest(p, root, root.p, p.distanceTo(root.p), true, 0, 1, 0, 1);
+        return nearest(p, root, root.p, p.distanceSquaredTo(root.p),
+                true, 0, 1, 0, 1);
     }
 
     private int size(Node x) {
@@ -110,7 +109,7 @@ public final class KdTree {
         return Double.compare(x.y(), y.y());
     }
 
-    private void range(Set<Point2D> rv, RectHV rect, Node x, boolean isVert,
+    private void range(List<Point2D> rv, RectHV rect, Node x, boolean isVert,
                        double xMin, double xMax, double yMin, double yMax) {
         if (x == null) {
             return;
@@ -160,29 +159,29 @@ public final class KdTree {
         if (tryFirst == null || tryLater == null) {
             Node oneTry = tryFirst == null ? tryLater : tryFirst;
             RectHV oneTryRect = tryFirst == null ? tryLaterRect : tryFirstRect;
-            if (currDist < oneTryRect.distanceTo(p)) {
+            if (currDist < oneTryRect.distanceSquaredTo(p)) {
                 return currNearest;
             }
             Point2D newNearest = nearest(p, oneTry, oneTry.p,
-                    p.distanceTo(oneTry.p), !isVert,
+                    p.distanceSquaredTo(oneTry.p), !isVert,
                     oneTryRect.xmin(), oneTryRect.xmax(),
                     oneTryRect.ymin(), oneTryRect.ymax());
-            return p.distanceTo(newNearest) < currDist ?
+            return p.distanceSquaredTo(newNearest) < currDist ?
                     newNearest : currNearest;
         }
         Point2D newNearest = nearest(p, tryFirst, tryFirst.p,
-                p.distanceTo(tryFirst.p), !isVert,
+                p.distanceSquaredTo(tryFirst.p), !isVert,
                 tryFirstRect.xmin(), tryFirstRect.xmax(),
                 tryFirstRect.ymin(), tryFirstRect.ymax());
-        double newNearestDist = p.distanceTo(newNearest);
-        if (newNearestDist <= tryLaterRect.distanceTo(p)) {
+        double newNearestDist = p.distanceSquaredTo(newNearest);
+        if (newNearestDist <= tryLaterRect.distanceSquaredTo(p)) {
             return newNearest;
         }
         Point2D newNearest2 = nearest(p, tryLater, tryLater.p,
-                p.distanceTo(tryLater.p), !isVert,
+                p.distanceSquaredTo(tryLater.p), !isVert,
                 tryLaterRect.xmin(), tryLaterRect.xmax(),
                 tryLaterRect.ymin(), tryLaterRect.ymax());
-        double newNearest2Dist = p.distanceTo(newNearest2);
+        double newNearest2Dist = p.distanceSquaredTo(newNearest2);
         Point2D finalNewNearest = newNearestDist < newNearest2Dist ?
                 newNearest : newNearest2;
         double finalNewNearestDist = Math.min(newNearestDist, newNearest2Dist);
@@ -245,7 +244,7 @@ public final class KdTree {
         t.draw();
 
         RectHV rect = new RectHV(0.1, 0.1, 0.6, 0.8);
-        Set<Point2D> expected = new HashSet<>();
+        List<Point2D> expected = new ArrayList<>();
         expected.add(b);
         expected.add(c);
         expected.add(d);

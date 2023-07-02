@@ -64,7 +64,7 @@ public class PointSET {
             if (rv == null) {
                 rv = pp;
             } else {
-                if (pp.distanceTo(p) < rv.distanceTo(p)) {
+                if (pp.distanceSquaredTo(p) < rv.distanceSquaredTo(p)) {
                     rv = pp;
                 }
             }
