@@ -1,49 +1,50 @@
-#include <time.h>
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
 #include <unistd.h>
-#include <stdlib.h>
 
-#define RUN_SECS 4
-#define BUF_SIZE 1
+#define BUFSIZE 1
+#define CHECK_EVERY 512
 
 int main() {
-    int xcount, pipe0[2], pipe1[2], pid, i;
-    char buf[BUF_SIZE];
-    clock_t begin, end;
-    int elapsed_time;
+    int count, pipe1[2], pipe2[2], pid, num_passes;
+    char buf[BUFSIZE];
+    time_t start, end;
+    double diff;
 
-    pipe(pipe0);
     pipe(pipe1);
+    pipe(pipe2);
     pid = fork();
+
     if (pid == 0) {
-        close(pipe0[1]);
-        close(pipe1[0]);
-        while (read(pipe0[0], buf, BUF_SIZE) > 0)
-            write(pipe1[1], buf, BUF_SIZE);
-        close(pipe0[0]);
         close(pipe1[1]);
-        exit(0);
-    }
-    close(pipe0[0]);
-    close(pipe1[1]);
-    xcount = 0;
-    begin = clock();
-    for (i = 0; i < RUN_SECS; ) {
-        write(pipe0[1], buf, BUF_SIZE);
-        read(pipe1[0], buf, BUF_SIZE);
-        xcount += 2;
-        end = clock();
-        elapsed_time = (int)(double)(end - begin) / CLOCKS_PER_SEC;
-        if (elapsed_time >= 1) {
-            i += elapsed_time;
-            printf("Number of exchanges in the last second: %.0f\n",
-                    round(xcount / elapsed_time));
-            xcount = 0;
-            begin = clock();
+        close(pipe2[0]);
+        while (1) {
+            read(pipe1[0], buf, BUFSIZE);
+            write(pipe2[1], buf, BUFSIZE);
         }
     }
-    close(pipe0[1]);
+
     close(pipe1[0]);
-    exit(0);
+    close(pipe2[1]);
+    while (1) {
+        num_passes = 1;
+        count = 0;
+        time(&start);
+        while (1) {
+            write(pipe1[1], buf, BUFSIZE);
+            read(pipe2[0], buf, BUFSIZE);
+            count += 1;
+            if (count > num_passes * CHECK_EVERY) {
+                time(&end);
+                diff = difftime(end, start);
+                if (diff > 1) {
+                    printf("Number of bytes per sec: %.0f\n",
+                           round(2 * BUFSIZE * count / diff));
+                    break;
+                }
+                num_passes += 1;
+            }
+        }
+    }
 }
