@@ -128,8 +128,10 @@ __attribute__((noreturn)) void runcmd(struct cmd *cmd) {
   exit(0);
 }
 
-int getcmd(char *buf, int nbuf) {
-  fprintf(2, "$ ");
+int getcmd(char *buf, int nbuf, int is_shredir) {
+  if (!is_shredir) {
+    fprintf(2, "$ ");
+  }
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
   if (buf[0] == 0) // EOF
@@ -137,7 +139,7 @@ int getcmd(char *buf, int nbuf) {
   return 0;
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
   static char buf[100];
   int fd;
 
@@ -150,7 +152,7 @@ int main(void) {
   }
 
   // Read and run input commands.
-  while (getcmd(buf, sizeof(buf)) >= 0) {
+  while (getcmd(buf, sizeof(buf), argv[1] != 0) >= 0) {
     if (buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' ') {
       // Chdir must be called by the parent, not the child.
       buf[strlen(buf) - 1] = 0; // chop \n
@@ -407,6 +409,11 @@ struct cmd *parseexec(char **ps, char *es) {
   }
   cmd->argv[argc] = 0;
   cmd->eargv[argc] = 0;
+  // sh <
+  if (cmd->argv[0][0] == 's' && cmd->argv[0][1] == 'h' && ret->type == REDIR &&
+      ((struct redircmd *)ret)->fd == 0) {
+    cmd->argv[1] = "<";
+  }
   return ret;
 }
 
