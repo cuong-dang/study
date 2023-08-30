@@ -81,3 +81,12 @@ uint64 sys_trace(void) {
     return -1;
   return 0;
 }
+
+uint64 sys_sysinfo(void) {
+  uint64 s;
+
+  if (argaddr(0, &s) < 0) {
+    return -1;
+  }
+  return sysinfo(s);
+}
