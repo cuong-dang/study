@@ -13,7 +13,7 @@
       fprintf(stderr, " ] file [ ");                                           \
       fprintf(stderr, __FILE__);                                               \
       fprintf(stderr, " ]\n");                                                 \
-      errcode = 1;                                                             \
+      ec = 1;                                                                  \
     }                                                                          \
   } while (0)
 

@@ -2,7 +2,9 @@ create_test_sourcelist(ch1_tests
         ch1_tests.c
         test_ex114.c
         test_ex115.c
-        test_ex1110.c)
+        test_ex1110.c
+        test_ex1111.c
+        test_ex1111b.c)
 
 add_executable(ch1_tests ${ch1_tests})
 target_link_libraries(ch1_tests PUBLIC ch1)

@@ -2,7 +2,7 @@
 #include "ch1.h"
 
 int test_ex114(int argc, char **argv) {
-  int errcode = 0;
+  int ec = 0;
 
   assertEqual(ex114(1) == 1);
   assertEqual(ex114(2) == 1);
@@ -14,5 +14,5 @@ int test_ex114(int argc, char **argv) {
 
   assertEqual(ex114(13) == 3);
   assertEqual(ex114(16) == 4);
-  return errcode;
+  return ec;
 }

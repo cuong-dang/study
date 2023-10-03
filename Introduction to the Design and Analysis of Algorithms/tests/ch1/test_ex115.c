@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 int test_ex115(int argc, char **argv) {
-  int errcode = 0, t;
+  int ec = 0, t;
   int a[] = {2, 5, 5, 5}, b[] = {2, 2, 3, 5, 5, 7};
   int *c = malloc(3 * sizeof(int));
 
@@ -12,5 +12,5 @@ int test_ex115(int argc, char **argv) {
   assertEqual(c[0] == 2);
   assertEqual(c[1] == 5);
   assertEqual(c[2] == 5);
-  return errcode;
+  return ec;
 }
