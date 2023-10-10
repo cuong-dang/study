@@ -8,7 +8,7 @@ int largest_(int a[], int lo, int hi) {
   m = (lo + hi) / 2;
   i = largest_(a, lo, m);
   j = largest_(a, m, hi);
-  if (a[i] < a[j])
+  if (a[j] > a[i])
     return j;
   else
     return i;
@@ -21,9 +21,11 @@ int main() {
   int b[] = {0, 1};
   int c[] = {0, 1, 2};
   int d[] = {3, 5, 7, 6, 8, 9, 1, 2, 0, 4};
+  int e[] = {0, 1, 1, 3, 2, 3};
 
   assert(largest(a, 1) == 0);
   assert(largest(b, 2) == 1);
   assert(largest(c, 3) == 2);
   assert(largest(d, 10) == 5);
+  assert(largest(e, 6) == 3);
 }
