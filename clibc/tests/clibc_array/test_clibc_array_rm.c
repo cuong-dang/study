@@ -23,5 +23,6 @@ int test_clibc_array_rm() {
     clibc_array_rm(a, i);
   }
   assert(a->cap == oldcap);
+  clibc_array_free(a);
   return 0;
 }

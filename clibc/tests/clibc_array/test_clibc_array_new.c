@@ -7,5 +7,6 @@ int test_clibc_array_new() {
   assert(a->cap == 32);
   assert(a->elem_sz == sizeof(int));
   assert(a->size == 0);
+  clibc_array_free(a);
   return 0;
 }

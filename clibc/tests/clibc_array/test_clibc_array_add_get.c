@@ -18,5 +18,6 @@ int test_clibc_array_add_get() {
   oldcap = a->cap;
   clibc_array_add(a, &i);
   assert(a->cap == 2 * oldcap);
+  clibc_array_free(a);
   return 0;
 }
