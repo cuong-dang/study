@@ -1,6 +1,7 @@
 create_test_sourcelist(clibc_array_tests
     clibc_array_tests.c
-    test_clibc_array_make.c)
+    test_clibc_array_new.c
+    test_clibc_array_add_get.c)
 
 add_executable(clibc_array_tests ${clibc_array_tests})
 target_link_libraries(clibc_array_tests PUBLIC clibc_array)

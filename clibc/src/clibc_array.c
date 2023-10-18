@@ -1,20 +1,35 @@
 #include "clibc_array.h"
 #include <stdlib.h>
+#include <string.h>
 
-#define DEFAULT_CAP 128
+#define DEFAULT_CAP 32
 
-clibc_array *clibc_array_make(size_t elem_sz) {
-  clibc_array *rv;
+void grow(clibc_array *a);
 
-  if ((rv = (clibc_array *)malloc(sizeof(clibc_array))) == NULL) {
-    return NULL;
+clibc_array *clibc_array_new(size_t elem_sz) {
+  clibc_array *a;
+
+  a = malloc(sizeof(clibc_array));
+  a->cap = DEFAULT_CAP;
+  a->elem_sz = elem_sz;
+  a->size = 0;
+  a->data = malloc(a->cap * a->elem_sz);
+  return a;
+}
+
+void clibc_array_add(clibc_array *a, void *elem) {
+  if (a->size == a->cap) {
+    grow(a);
   }
-  rv->cap = DEFAULT_CAP;
-  rv->elem_sz = elem_sz;
-  rv->size = 0;
-  if ((rv->data = (void *)malloc(sizeof(rv->cap * elem_sz))) == NULL) {
-    free(rv);
-    return NULL;
-  }
-  return rv;
+  memcpy((char *)a->data + a->size * a->elem_sz, elem, a->elem_sz);
+  a->size++;
+}
+
+void *clibc_array_get(clibc_array *a, size_t i) {
+  return (char *)a->data + i * a->elem_sz;
+}
+
+void grow(clibc_array *a) {
+  a->cap *= 2;
+  a->data = reallocarray(a->data, a->cap, a->elem_sz);
 }

@@ -9,6 +9,8 @@ typedef struct {
   void *data;
 } clibc_array;
 
-clibc_array *clibc_array_make(size_t elem_sz);
+clibc_array *clibc_array_new(size_t elem_sz);
+void clibc_array_add(clibc_array *a, void *elem);
+void *clibc_array_get(clibc_array *a, size_t i);
 
 #endif
