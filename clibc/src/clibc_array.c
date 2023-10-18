@@ -5,6 +5,7 @@
 #define DEFAULT_CAP 32
 
 void grow(clibc_array *a);
+void shrink(clibc_array *a);
 
 clibc_array *clibc_array_new(size_t elem_sz) {
   clibc_array *a;
@@ -29,7 +30,25 @@ void *clibc_array_get(clibc_array *a, size_t i) {
   return (char *)a->data + i * a->elem_sz;
 }
 
+void clibc_array_rm(clibc_array *a, size_t i) {
+  int j;
+
+  for (j = i; j < a->size - 1; j++) {
+    memcpy((char *)a->data + j * a->elem_sz,
+           (char *)a->data + (j + 1) * a->elem_sz, a->elem_sz);
+  }
+  a->size--;
+  if (a->size == a->cap / 2 && a->cap > DEFAULT_CAP) {
+    shrink(a);
+  }
+}
+
 void grow(clibc_array *a) {
   a->cap *= 2;
+  a->data = reallocarray(a->data, a->cap, a->elem_sz);
+}
+
+void shrink(clibc_array *a) {
+  a->cap /= 2;
   a->data = reallocarray(a->data, a->cap, a->elem_sz);
 }
