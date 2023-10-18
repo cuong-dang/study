@@ -13,5 +13,6 @@ clibc_array *clibc_array_new(size_t elem_sz);
 void clibc_array_add(clibc_array *a, void *elem);
 void *clibc_array_get(clibc_array *a, size_t i);
 void clibc_array_rm(clibc_array *a, size_t i);
+void clibc_array_free(clibc_array *a);
 
 #endif

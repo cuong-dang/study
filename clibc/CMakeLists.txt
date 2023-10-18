@@ -4,6 +4,8 @@ set(CMAKE_C_STANDARD 90)
 
 add_library(clibc_array src/clibc_array.c)
 target_include_directories(clibc_array PUBLIC src/includes)
+add_library(clibc_linkedlist src/clibc_linkedlist.c)
+target_include_directories(clibc_linkedlist PUBLIC src/includes)
 
 enable_testing()
 add_subdirectory(tests)

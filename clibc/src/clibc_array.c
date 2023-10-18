@@ -43,6 +43,11 @@ void clibc_array_rm(clibc_array *a, size_t i) {
   }
 }
 
+void clibc_array_free(clibc_array *a) {
+  free(a->data);
+  free(a);
+}
+
 void grow(clibc_array *a) {
   a->cap *= 2;
   a->data = reallocarray(a->data, a->cap, a->elem_sz);
