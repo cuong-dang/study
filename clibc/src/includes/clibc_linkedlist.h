@@ -5,11 +5,11 @@
 typedef struct node {
   void *data;
   struct node *next;
-} clibc_node;
+} clibc_linkedlist_node;
 
 typedef struct linkedlist {
   size_t elem_sz;
-  clibc_node *head;
+  clibc_linkedlist_node *head;
 } clibc_linkedlist;
 
 clibc_linkedlist *clibc_linkedlist_new(size_t elem_sz);

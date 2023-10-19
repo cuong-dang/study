@@ -5,7 +5,7 @@ create_test_sourcelist(clibc_array_tests
     test_clibc_array_rm.c)
 
 add_executable(clibc_array_tests ${clibc_array_tests})
-target_link_libraries(clibc_array_tests PUBLIC clibc_array)
+target_link_libraries(clibc_array_tests PUBLIC clibc)
 target_include_directories(clibc_array_tests PUBLIC
     ${PROJECT_SOURCE_DIR}/src/includes)
 

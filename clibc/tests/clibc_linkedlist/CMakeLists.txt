@@ -4,7 +4,7 @@ create_test_sourcelist(clibc_linkedlist_tests
     test_clibc_linkedlist_add.c)
 
 add_executable(clibc_linkedlist_tests ${clibc_linkedlist_tests})
-target_link_libraries(clibc_linkedlist_tests PUBLIC clibc_linkedlist)
+target_link_libraries(clibc_linkedlist_tests PUBLIC clibc)
 target_include_directories(clibc_linkedlist_tests PUBLIC
     ${PROJECT_SOURCE_DIR}/src/includes)
 
