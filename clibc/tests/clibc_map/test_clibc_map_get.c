@@ -26,5 +26,6 @@ int test_clibc_map_get() {
   assert(*(int *)clibc_map_get(m, "C") == 4);
   assert(*(int *)clibc_map_get(m, "H") == 5);
 
+  clibc_map_free(m);
   return 0;
 }

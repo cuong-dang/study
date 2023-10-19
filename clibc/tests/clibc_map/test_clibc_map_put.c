@@ -51,6 +51,7 @@ int test_clibc_map_put() {
   assert_node(m->root->right->left, "R", 3, 0);
   assert_leaf(m->root->right->left);
 
+  clibc_map_free(m);
   return 0;
 }
 

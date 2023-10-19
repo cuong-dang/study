@@ -11,5 +11,6 @@ int test_clibc_map_new() {
   assert(m->val_sz == sizeof(int));
   assert(m->cmp_fn == cmp);
   assert(m->root == NULL);
+  clibc_map_free(m);
   return 0;
 }

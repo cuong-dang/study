@@ -13,6 +13,7 @@ clibc_map_node *rotate_left(clibc_map_node *h);
 clibc_map_node *rotate_right(clibc_map_node *h);
 void flip_colors(clibc_map_node *h);
 void *get(clibc_map *m, clibc_map_node *x, void *key);
+void node_free(clibc_map_node *n);
 
 clibc_map *clibc_map_new(size_t key_sz, size_t val_sz, cmp_fn *cmp_fn) {
   clibc_map *m = malloc(sizeof(clibc_map));
@@ -30,6 +31,11 @@ void clibc_map_put(clibc_map *m, void *key, void *val) {
 }
 
 void *clibc_map_get(clibc_map *m, void *key) { return get(m, m->root, key); }
+
+void clibc_map_free(clibc_map *m) {
+  node_free(m->root);
+  free(m);
+}
 
 clibc_map_node *put(clibc_map *m, clibc_map_node *h, void *key, void *val) {
   int cmp;
@@ -119,4 +125,14 @@ void *get(clibc_map *m, clibc_map_node *x, void *key) {
     return get(m, x->right, key);
   }
   return x->val;
+}
+
+void node_free(clibc_map_node *n) {
+  if (n == NULL) {
+    return;
+  }
+  free(n->key);
+  free(n->val);
+  node_free(n->left);
+  node_free(n->right);
 }
