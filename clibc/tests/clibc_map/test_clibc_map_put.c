@@ -1,6 +1,5 @@
 #include "clibc_map.h"
 #include <assert.h>
-#include <string.h>
 
 int cmp(void *key1, void *key2);
 void assert_node(clibc_map_node *n, void *key, int val,

@@ -1,7 +1,8 @@
 create_test_sourcelist(clibc_map_tests
     clibc_map_tests.c
     test_clibc_map_new.c
-    test_clibc_map_put.c)
+    test_clibc_map_put.c
+    test_clibc_map_get.c)
 
 add_executable(clibc_map_tests ${clibc_map_tests})
 target_link_libraries(clibc_map_tests PUBLIC clibc)
