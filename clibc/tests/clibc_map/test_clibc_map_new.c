@@ -10,5 +10,6 @@ int test_clibc_map_new() {
   assert(m->key_sz == sizeof(char *));
   assert(m->val_sz == sizeof(int));
   assert(m->cmp_fn == cmp);
+  assert(m->root == NULL);
   return 0;
 }
