@@ -48,17 +48,21 @@ void clibc_graph_free(clibc_graph *g) {
   clibc_graph_vert *v;
   clibc_graph_edge **ep;
 
-  vert_labels = clibc_map_keys(g->verts);
+  vert_labels = clibc_array_new(sizeof(char *));
+  clibc_map_keys(g->verts, vert_labels);
   for (i = 0; i < vert_labels->size; i++) {
     v = *(clibc_graph_vert **)clibc_map_get(g->verts,
                                             clibc_array_get(vert_labels, i));
-    edge_ps = clibc_map_keys(v->out_edges);
+    edge_ps = clibc_array_new(sizeof(clibc_graph_edge *));
+    clibc_map_keys(v->out_edges, edge_ps);
     for (j = 0; j < edge_ps->size; j++) {
       ep = clibc_array_get(edge_ps, j);
       free(*ep);
     }
+    clibc_array_free(edge_ps);
     free(v);
   }
+  clibc_array_free(vert_labels);
   free(g);
 }
 

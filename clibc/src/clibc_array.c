@@ -43,6 +43,8 @@ void clibc_array_rm(clibc_array *a, size_t i) {
   }
 }
 
+void clibc_array_clear(clibc_array *a) { a->size = 0; }
+
 void clibc_array_free(clibc_array *a) {
   free(a->data);
   free(a);
