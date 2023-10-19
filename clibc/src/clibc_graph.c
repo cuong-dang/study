@@ -30,13 +30,14 @@ clibc_graph_edge *clibc_graph_edge_new(char *label, int weight,
                                        clibc_graph_vert *src_vert,
                                        clibc_graph_vert *dst_vert) {
   clibc_graph_edge *e = malloc(sizeof(clibc_graph_edge));
+  static void *v = NULL;
 
   e->label = label;
   e->weight = weight;
   e->src_vert = src_vert;
   e->dst_vert = dst_vert;
-  clibc_map_put(src_vert->out_edges, &e, NULL);
-  clibc_map_put(dst_vert->in_edges, &e, NULL);
+  clibc_map_put(src_vert->out_edges, &e, &v);
+  clibc_map_put(dst_vert->in_edges, &e, &v);
   return e;
 }
 

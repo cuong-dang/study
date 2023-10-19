@@ -1,7 +1,8 @@
 create_test_sourcelist(clibc_graph_tests
     clibc_graph_tests.c
     test_clibc_graph_new.c
-    test_clibc_graph_vert_new.c)
+    test_clibc_graph_vert_new.c
+    test_clibc_graph_edge_new.c)
 
 add_executable(clibc_graph_tests ${clibc_graph_tests})
 target_link_libraries(clibc_graph_tests PUBLIC clibc)
