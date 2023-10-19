@@ -12,9 +12,9 @@ clibc_linkedlist *clibc_linkedlist_new(size_t elem_sz) {
 }
 
 void clibc_linkedlist_add(clibc_linkedlist *ll, void *elem) {
-  clibc_node *n;
+  clibc_linkedlist_node *n;
 
-  n = malloc(sizeof(clibc_node));
+  n = malloc(sizeof(clibc_linkedlist_node));
   n->data = malloc(ll->elem_sz);
   memcpy(n->data, elem, ll->elem_sz);
   n->next = ll->head;
@@ -22,7 +22,7 @@ void clibc_linkedlist_add(clibc_linkedlist *ll, void *elem) {
 }
 
 void clibc_linkedlist_free(clibc_linkedlist *ll) {
-  clibc_node *x, *next;
+  clibc_linkedlist_node *x, *next;
 
   for (x = ll->head; x != NULL; x = next) {
     next = x->next;
