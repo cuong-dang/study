@@ -1,4 +1,5 @@
 #include "clibc_map.h"
+#include "clibc_array.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -13,6 +14,7 @@ clibc_map_node *rotate_left(clibc_map_node *n);
 clibc_map_node *rotate_right(clibc_map_node *n);
 void flip_colors(clibc_map_node *n);
 void *get(clibc_map *m, clibc_map_node *n, void *key);
+void add_keys(clibc_array *keys, clibc_map_node *n);
 void node_free(clibc_map_node *n);
 
 clibc_map *clibc_map_new(size_t key_sz, size_t val_sz, cmp_fn *cmp_fn) {
@@ -31,6 +33,13 @@ void clibc_map_put(clibc_map *m, void *key, void *val) {
 }
 
 void *clibc_map_get(clibc_map *m, void *key) { return get(m, m->root, key); }
+
+clibc_array *clibc_map_keys(clibc_map *m) {
+  clibc_array *keys = clibc_array_new(m->key_sz);
+
+  add_keys(keys, m->root);
+  return keys;
+}
 
 void clibc_map_free(clibc_map *m) {
   node_free(m->root);
@@ -125,6 +134,15 @@ void *get(clibc_map *m, clibc_map_node *n, void *key) {
     return get(m, n->right, key);
   }
   return n->val;
+}
+
+void add_keys(clibc_array *keys, clibc_map_node *n) {
+  if (n == NULL) {
+    return;
+  }
+  add_keys(keys, n->left);
+  clibc_array_add(keys, n->key);
+  add_keys(keys, n->right);
 }
 
 void node_free(clibc_map_node *n) {
