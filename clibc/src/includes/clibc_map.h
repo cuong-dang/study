@@ -1,5 +1,6 @@
 #ifndef CLIBC_MAP
 #define CLIBC_MAP
+#include "clibc_array.h"
 #include <stddef.h>
 
 typedef int clibc_map_node_color;
@@ -24,6 +25,7 @@ typedef struct {
 clibc_map *clibc_map_new(size_t key_sz, size_t val_sz, cmp_fn *cmp_fn);
 void clibc_map_put(clibc_map *m, void *key, void *val);
 void *clibc_map_get(clibc_map *m, void *key);
+clibc_array *clibc_map_keys(clibc_map *m);
 void clibc_map_free(clibc_map *m);
 
 #endif
