@@ -49,5 +49,7 @@ int test_clibc_graph_edge_new() {
   assert(clibc_map_keys(d->out_edges)->size == 0);
   assert(*(clibc_graph_edge **)clibc_array_get(clibc_map_keys(d->in_edges),
                                                0) == ad);
+
+  clibc_graph_free(g);
   return 0;
 }

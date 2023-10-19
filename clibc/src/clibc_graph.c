@@ -1,4 +1,5 @@
 #include "clibc_graph.h"
+#include "clibc_array.h"
 #include "clibc_map.h"
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +40,26 @@ clibc_graph_edge *clibc_graph_edge_new(char *label, int weight,
   clibc_map_put(src_vert->out_edges, &e, &v);
   clibc_map_put(dst_vert->in_edges, &e, &v);
   return e;
+}
+
+void clibc_graph_free(clibc_graph *g) {
+  int i, j;
+  clibc_array *vert_labels, *edge_ps;
+  clibc_graph_vert *v;
+  clibc_graph_edge **ep;
+
+  vert_labels = clibc_map_keys(g->verts);
+  for (i = 0; i < vert_labels->size; i++) {
+    v = *(clibc_graph_vert **)clibc_map_get(g->verts,
+                                            clibc_array_get(vert_labels, i));
+    edge_ps = clibc_map_keys(v->out_edges);
+    for (j = 0; j < edge_ps->size; j++) {
+      ep = clibc_array_get(edge_ps, j);
+      free(*ep);
+    }
+    free(v);
+  }
+  free(g);
 }
 
 int clibc_graph_label_cmp(void *label1, void *label2) {

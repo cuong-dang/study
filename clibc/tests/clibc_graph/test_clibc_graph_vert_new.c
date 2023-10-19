@@ -14,5 +14,7 @@ int test_clibc_graph_vert_new() {
   assert(strcmp(v2->label, "b") == 0);
   assert(*(clibc_graph_vert **)clibc_map_get(g->verts, "b") == v2);
   assert(clibc_map_keys(g->verts)->size == 2);
+
+  clibc_graph_free(g);
   return 0;
 }
