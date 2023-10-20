@@ -3,6 +3,6 @@
 #include "clibc_array.h"
 #include "clibc_graph.h"
 
-clibc_array *prim_min_spanning_tree(clibc_graph *g);
+void prim_min_spanning_tree(clibc_graph *g, clibc_array *ms_tree);
 
 #endif

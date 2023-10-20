@@ -24,7 +24,7 @@ clibc_graph_vert *clibc_graph_vert_new(clibc_graph *g, char *label) {
                               clibc_graph_edge_cmp);
   v->out_edges = clibc_map_new(sizeof(clibc_graph_edge *), sizeof(void *),
                                clibc_graph_edge_cmp);
-  clibc_map_put(g->verts, label, &v);
+  clibc_map_put(g->verts, &label, &v);
   return v;
 }
 
@@ -73,7 +73,7 @@ void clibc_graph_free(clibc_graph *g) {
 }
 
 int clibc_graph_label_cmp(void *label1, void *label2) {
-  return strcmp(label1, label2);
+  return strcmp(*(char **)label1, *(char **)label2);
 }
 
 int clibc_graph_edge_cmp(void *e1, void *e2) {

@@ -6,7 +6,8 @@ add_library(clibc
     src/array.c
     src/linkedlist.c
     src/map.c
-    src/graph.c)
+    src/graph.c
+    src/algs/graph.c)
 target_include_directories(clibc PUBLIC src/includes)
 
 enable_testing()
