@@ -34,11 +34,8 @@ void clibc_map_put(clibc_map *m, void *key, void *val) {
 
 void *clibc_map_get(clibc_map *m, void *key) { return get(m, m->root, key); }
 
-clibc_array *clibc_map_keys(clibc_map *m) {
-  clibc_array *keys = clibc_array_new(m->key_sz);
-
+void clibc_map_keys(clibc_map *m, clibc_array *keys) {
   add_keys(keys, m->root);
-  return keys;
 }
 
 void clibc_map_free(clibc_map *m) {
