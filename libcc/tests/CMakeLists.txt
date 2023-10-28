@@ -1,0 +1,7 @@
+add_subdirectory(array)
+add_subdirectory(linkedlist)
+add_subdirectory(rbtree)
+add_subdirectory(set)
+add_subdirectory(pqueue)
+add_subdirectory(graph)
+add_subdirectory(algs/graph)
