@@ -7,8 +7,7 @@
 #define BLACK 1
 
 cc_rbtree_node *add(cc_rbtree *t, cc_rbtree_node *n, void *key, void *val);
-cc_rbtree_node *new(cc_rbtree *t, void *key, void *val,
-                    cc_rbtree_node_color color);
+cc_rbtree_node *new(cc_rbtree *t, void *key, void *val, int color);
 int is_red(cc_rbtree_node *n);
 cc_rbtree_node *rotate_left(cc_rbtree_node *n);
 cc_rbtree_node *rotate_right(cc_rbtree_node *n);
@@ -87,8 +86,7 @@ cc_rbtree_node *add(cc_rbtree *t, cc_rbtree_node *n, void *key, void *val) {
   return n;
 }
 
-cc_rbtree_node *new(cc_rbtree *t, void *key, void *val,
-                    cc_rbtree_node_color color) {
+cc_rbtree_node *new(cc_rbtree *t, void *key, void *val, int color) {
   cc_rbtree_node *n = malloc(sizeof(cc_rbtree_node));
 
   n->key = malloc(t->key_sz);

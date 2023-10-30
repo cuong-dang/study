@@ -3,11 +3,10 @@
 #include "cc_array.h"
 #include <stddef.h>
 
-typedef int cc_rbtree_node_color;
 typedef struct node {
   void *key;
   void *val;
-  cc_rbtree_node_color color;
+  int color;
 
   struct node *left;
   struct node *right;

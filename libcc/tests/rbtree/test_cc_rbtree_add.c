@@ -3,8 +3,7 @@
 
 int new_cmp(void *key1, void *key2);
 void add_add(cc_rbtree *t, char *key, int val);
-void add_assert_node(cc_rbtree_node *n, void *key, int val,
-                     cc_rbtree_node_color color);
+void add_assert_node(cc_rbtree_node *n, void *key, int val, int color);
 void add_assert_leaf(cc_rbtree_node *n);
 
 int test_cc_rbtree_add() {
@@ -53,8 +52,7 @@ int test_cc_rbtree_add() {
 
 void add_add(cc_rbtree *t, char *key, int val) { cc_rbtree_add(t, &key, &val); }
 
-void add_assert_node(cc_rbtree_node *n, void *key, int val,
-                     cc_rbtree_node_color color) {
+void add_assert_node(cc_rbtree_node *n, void *key, int val, int color) {
   assert(new_cmp(n->key, &key) == 0);
   assert(*(int *)n->val == val);
   assert(n->color == color);
