@@ -9,7 +9,8 @@ add_library(cc
     src/set.c
     src/pqueue.c
     src/graph.c
-    src/algs/graph.c)
+    src/algs/graph.c
+    src/algs/str.c)
 target_include_directories(cc PUBLIC src/includes)
 
 enable_testing()
