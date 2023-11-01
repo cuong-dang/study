@@ -63,3 +63,27 @@ int nqueens_is_safe(int n, int *board, int i, int j) {
   }
   return 1;
 }
+
+int subset_sum(int sum, int *a, int n, int *out) {
+  int i;
+
+  for (i = 0; i < n; i++) {
+    out[i] = 0;
+  }
+  return subset_sum_solve(sum, a, n, out, 0, 0);
+}
+
+int subset_sum_solve(int sum, int *a, int n, int *out, int i, int acc) {
+  if (acc == sum) {
+    return 1;
+  }
+  if (i == n || acc + a[i] > sum) {
+    return 0;
+  }
+  out[i] = 1;
+  if (subset_sum_solve(sum, a, n, out, i + 1, acc + a[i])) {
+    return 1;
+  }
+  out[i] = 0;
+  return subset_sum_solve(sum, a, n, out, i + 1, acc);
+}

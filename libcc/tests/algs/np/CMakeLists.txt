@@ -1,6 +1,7 @@
 create_test_sourcelist(cc_algs_np_tests
     cc_algs_np_tests.c
-    test_cc_algs_np_nqueens.c)
+    test_cc_algs_np_nqueens.c
+    test_cc_algs_np_subset_sum.c)
 
 add_executable(cc_algs_np_tests ${cc_algs_np_tests})
 target_link_libraries(cc_algs_np_tests PUBLIC cc)
