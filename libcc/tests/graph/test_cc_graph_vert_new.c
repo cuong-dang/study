@@ -10,11 +10,11 @@ int test_cc_graph_vert_new() {
   char *key;
 
   key = "a";
-  v1 = cc_graph_vert_new(g, key);
+  v1 = cc_graph_add_vert(g, key);
   assert(strcmp(v1->label, key) == 0);
   assert(*(cc_graph_vert **)cc_rbtree_get(g->verts, &key) == v1);
   key = "b";
-  v2 = cc_graph_vert_new(g, key);
+  v2 = cc_graph_add_vert(g, key);
   assert(strcmp(v2->label, key) == 0);
   assert(*(cc_graph_vert **)cc_rbtree_get(g->verts, &key) == v2);
   graph_labels = cc_array_new(sizeof(char *));
@@ -28,7 +28,7 @@ int test_cc_graph_vert_new() {
      character of the label (char *) instead. Thus, it was not failing if the
      label length is less than 8. */
   key = "12345678";
-  v3 = cc_graph_vert_new(g, key);
+  v3 = cc_graph_add_vert(g, key);
   assert(*(cc_graph_vert **)cc_rbtree_get(g->verts, &key) == v3);
 
   cc_array_free(graph_labels);

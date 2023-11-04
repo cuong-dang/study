@@ -26,11 +26,11 @@ void cc_array_add(cc_array *a, void *elem) {
   a->size++;
 }
 
-void *cc_array_get(cc_array *a, size_t i) {
+void *cc_array_get(cc_array *a, int i) {
   return (char *)a->data + i * a->elem_sz;
 }
 
-void cc_array_rm(cc_array *a, size_t i) {
+void cc_array_rm(cc_array *a, int i) {
   int j;
 
   for (j = i; j < a->size - 1; j++) {
@@ -43,7 +43,7 @@ void cc_array_rm(cc_array *a, size_t i) {
   }
 }
 
-void cc_array_swap(cc_array *a, size_t i, size_t j) {
+void cc_array_swap(cc_array *a, int i, int j) {
   void *t;
 
   t = malloc(a->elem_sz);

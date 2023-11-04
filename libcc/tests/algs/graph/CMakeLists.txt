@@ -1,6 +1,7 @@
 create_test_sourcelist(cc_algs_graph_tests
     cc_algs_graph_tests.c
-    test_cc_algs_graph_prim_mstree.c)
+    test_cc_algs_graph_prim_mstree.c
+    test_cc_algs_graph_hamiltonian_cc.c)
 
 add_executable(cc_algs_graph_tests ${cc_algs_graph_tests})
 target_link_libraries(cc_algs_graph_tests PUBLIC cc)

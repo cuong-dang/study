@@ -4,5 +4,6 @@
 #include "cc_graph.h"
 
 void prim_mstree(cc_graph *g, cc_array *ms_tree);
+int hamiltonian_cc(cc_graph *g, cc_array *cc);
 
 #endif

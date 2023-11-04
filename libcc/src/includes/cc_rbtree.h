@@ -3,11 +3,11 @@
 #include "cc_array.h"
 #include <stddef.h>
 
-typedef int cc_rbtree_node_color;
 typedef struct node {
   void *key;
   void *val;
-  cc_rbtree_node_color color;
+  int color;
+  int n;
 
   struct node *left;
   struct node *right;
@@ -18,11 +18,11 @@ typedef struct {
   size_t key_sz;
   size_t val_sz;
   cc_rbtree_node *root;
-
   cmpfn *cmpfn;
 } cc_rbtree;
 
 cc_rbtree *cc_rbtree_new(size_t key_sz, size_t val_sz, cmpfn *cmpfn);
+int cc_rbtree_size(cc_rbtree *t);
 void cc_rbtree_add(cc_rbtree *t, void *key, void *val);
 void *cc_rbtree_get(cc_rbtree *t, void *key);
 void cc_rbtree_rm_min(cc_rbtree *t, void *keyout, void *valout);

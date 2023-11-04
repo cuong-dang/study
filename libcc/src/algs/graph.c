@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* prim_mstree */
 int label_cmp(void *, void *);
 int edge_cmp(void *, void *);
 cc_graph_edge *get_nx_edge(cc_set *seen_vx, cc_pqueue *edges);
@@ -90,4 +91,79 @@ void add_next_edges(cc_pqueue *nx_edges, cc_array *id_edges, cc_set *seen_vx) {
       cc_pqueue_add(nx_edges, &e);
     }
   }
+}
+
+/* hamiltonian_cc */
+int hamiltonian_cc_solve(cc_array *cc, cc_graph_vert *start_vert,
+                         cc_graph_vert *this_vert, cc_array *seen_verts,
+                         int num_verts);
+int has_not_seen_(cc_array *seen_verts, cc_graph_vert *v);
+
+int hamiltonian_cc(cc_graph *g, cc_array *cc) {
+  cc_array *verts, *seen_verts;
+  char *v_label;
+  int i;
+
+  verts = cc_array_new(sizeof(char *));
+  seen_verts = cc_array_new(sizeof(cc_graph_vert *));
+  cc_graph_vert_labels(g, verts);
+  for (i = 0; i < verts->size; i++) {
+    v_label = *(char **)cc_array_get(verts, i);
+    if (hamiltonian_cc_solve(
+            cc, *(cc_graph_vert **)cc_rbtree_get(g->verts, &v_label), NULL,
+            seen_verts, verts->size)) {
+      cc_array_free(seen_verts);
+      cc_array_free(verts);
+      return 1;
+    }
+  }
+  cc_array_free(seen_verts);
+  cc_array_free(verts);
+  return 0;
+}
+
+int hamiltonian_cc_solve(cc_array *cc, cc_graph_vert *start_vert,
+                         cc_graph_vert *this_vert, cc_array *seen_verts,
+                         int num_verts) {
+  cc_array *adj_verts;
+  cc_graph_vert *v;
+  int i;
+
+  if (this_vert == start_vert && cc->size == num_verts + 1) {
+    return 1;
+  }
+  if (start_vert == this_vert) {
+    return 0;
+  }
+  adj_verts = cc_array_new(sizeof(cc_graph_vert *));
+  if (this_vert == NULL) {
+    cc_array_add(cc, &start_vert);
+  }
+  cc_graph_adj_verts(this_vert == NULL ? start_vert : this_vert, adj_verts);
+  for (i = 0; i < adj_verts->size; i++) {
+    v = *(cc_graph_vert **)cc_array_get(adj_verts, i);
+    if (has_not_seen_(seen_verts, v)) {
+      cc_array_add(cc, &v);
+      cc_array_add(seen_verts, &v);
+      if (hamiltonian_cc_solve(cc, start_vert, v, seen_verts, num_verts)) {
+        cc_array_free(adj_verts);
+        return 1;
+      }
+      cc_array_rm(cc, cc->size - 1);
+      cc_array_rm(seen_verts, seen_verts->size - 1);
+    }
+  }
+  cc_array_free(adj_verts);
+  return 0;
+}
+
+int has_not_seen_(cc_array *seen_verts, cc_graph_vert *v) {
+  int i;
+
+  for (i = 0; i < seen_verts->size; i++) {
+    if (*(cc_graph_vert **)cc_array_get(seen_verts, i) == v) {
+      return 0;
+    }
+  }
+  return 1;
 }
