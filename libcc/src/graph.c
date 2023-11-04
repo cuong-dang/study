@@ -16,7 +16,9 @@ cc_graph *cc_graph_new() {
   return g;
 }
 
-cc_graph_vert *cc_graph_vert_new(cc_graph *g, char *label) {
+int cc_graph_num_verts(cc_graph *g) { return cc_rbtree_size(g->verts); }
+
+cc_graph_vert *cc_graph_add_vert(cc_graph *g, char *label) {
   cc_graph_vert *v = malloc(sizeof(cc_graph_vert));
 
   v->label = label;
@@ -28,7 +30,7 @@ cc_graph_vert *cc_graph_vert_new(cc_graph *g, char *label) {
   return v;
 }
 
-cc_graph_edge *cc_graph_edge_new(char *label, int weight,
+cc_graph_edge *cc_graph_add_edge(char *label, int weight,
                                  cc_graph_vert *src_vert,
                                  cc_graph_vert *dst_vert) {
   cc_graph_edge *e = malloc(sizeof(cc_graph_edge));
@@ -41,6 +43,25 @@ cc_graph_edge *cc_graph_edge_new(char *label, int weight,
   cc_rbtree_add(src_vert->out_edges, &e, &v);
   cc_rbtree_add(dst_vert->in_edges, &e, &v);
   return e;
+}
+
+void cc_graph_vert_labels(cc_graph *g, cc_array *verts) {
+  cc_rbtree_keys(g->verts, verts);
+}
+
+void cc_graph_adj_verts(cc_graph_vert *v, cc_array *adj_verts) {
+  cc_array *tmp;
+  cc_graph_vert *dst_v;
+  int i;
+
+  cc_array_clear(adj_verts);
+  tmp = cc_array_new(sizeof(cc_graph_edge *));
+  cc_rbtree_keys(v->out_edges, tmp);
+  for (i = 0; i < tmp->size; i++) {
+    dst_v = (*(cc_graph_edge **)cc_array_get(tmp, i))->dst_vert;
+    cc_array_add(adj_verts, &dst_v);
+  }
+  cc_array_free(tmp);
 }
 
 void cc_graph_incd_edges(cc_graph_vert *v, cc_array *incd_edges) {

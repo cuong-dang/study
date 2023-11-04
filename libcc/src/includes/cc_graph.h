@@ -22,10 +22,13 @@ typedef struct {
 } cc_graph;
 
 cc_graph *cc_graph_new();
-cc_graph_vert *cc_graph_vert_new(cc_graph *g, char *label);
-cc_graph_edge *cc_graph_edge_new(char *label, int weight,
+int cc_graph_num_verts(cc_graph *g);
+cc_graph_vert *cc_graph_add_vert(cc_graph *g, char *label);
+cc_graph_edge *cc_graph_add_edge(char *label, int weight,
                                  cc_graph_vert *src_vert,
                                  cc_graph_vert *dst_vert);
+void cc_graph_vert_labels(cc_graph *g, cc_array *verts);
+void cc_graph_adj_verts(cc_graph_vert *v, cc_array *adj_verts);
 void cc_graph_incd_edges(cc_graph_vert *v, cc_array *incd_edges);
 void cc_graph_free(cc_graph *g);
 #endif

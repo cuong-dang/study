@@ -6,6 +6,7 @@
 #define RED 0
 #define BLACK 1
 
+int size(cc_rbtree_node *n);
 cc_rbtree_node *add(cc_rbtree *t, cc_rbtree_node *n, void *key, void *val);
 cc_rbtree_node *new(cc_rbtree *t, void *key, void *val, int color);
 int is_red(cc_rbtree_node *n);
@@ -29,6 +30,8 @@ cc_rbtree *cc_rbtree_new(size_t key_sz, size_t val_sz, cmpfn *cmpfn) {
   t->root = NULL;
   return t;
 }
+
+int cc_rbtree_size(cc_rbtree *t) { return size(t->root); }
 
 void cc_rbtree_add(cc_rbtree *t, void *key, void *val) {
   t->root = add(t, t->root, key, val);
@@ -59,6 +62,13 @@ void cc_rbtree_free(cc_rbtree *t) {
   free(t);
 }
 
+int size(cc_rbtree_node *n) {
+  if (n == NULL) {
+    return 0;
+  }
+  return n->n;
+}
+
 cc_rbtree_node *add(cc_rbtree *t, cc_rbtree_node *n, void *key, void *val) {
   int cmp;
 
@@ -83,6 +93,8 @@ cc_rbtree_node *add(cc_rbtree *t, cc_rbtree_node *n, void *key, void *val) {
   if (is_red(n->left) && is_red(n->right)) {
     flip_colors(n);
   }
+
+  n->n = size(n->left) + size(n->right) + 1;
   return n;
 }
 
@@ -96,6 +108,7 @@ cc_rbtree_node *new(cc_rbtree *t, void *key, void *val, int color) {
   n->color = color;
   n->left = NULL;
   n->right = NULL;
+  n->n = 1;
   return n;
 }
 
@@ -113,6 +126,8 @@ cc_rbtree_node *rotate_left(cc_rbtree_node *n) {
   nn->left = n;
   nn->color = n->color;
   n->color = RED;
+  nn->n = n->n;
+  n->n = size(n->left) + size(n->right) + 1;
   return nn;
 }
 
@@ -123,6 +138,8 @@ cc_rbtree_node *rotate_right(cc_rbtree_node *n) {
   nn->right = n;
   nn->color = n->color;
   n->color = RED;
+  nn->n = n->n;
+  n->n = size(n->left) + size(n->right) + 1;
   return nn;
 }
 
@@ -144,6 +161,7 @@ cc_rbtree_node *rm_min(cc_rbtree *t, cc_rbtree_node *n, void *keyout,
     n = mv_red_left(n);
   }
   n->left = rm_min(t, n->left, keyout, valout);
+  n->n = size(n->left) + size(n->right) + 1;
   return balance(n);
 }
 

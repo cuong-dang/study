@@ -3,6 +3,7 @@ create_test_sourcelist(cc_graph_tests
     test_cc_graph_new.c
     test_cc_graph_vert_new.c
     test_cc_graph_edge_new.c
+    test_cc_graph_adj_verts.c
     test_cc_graph_incd_edges.c)
 
 add_executable(cc_graph_tests ${cc_graph_tests})
