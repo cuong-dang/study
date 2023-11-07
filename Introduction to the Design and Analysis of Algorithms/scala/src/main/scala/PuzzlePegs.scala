@@ -1,11 +1,9 @@
-package puzzle_pegs
-
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 case class Pos(x: Int, y: Int)
 
-class Board(val numRows: Int, val startPos: Pos) {
+class PuzzlePegs(val numRows: Int, val startPos: Pos) {
   private case class Peg(pos: Pos, var isEmpty: Boolean)
 
   case class Move(from: Pos, to: Pos)
@@ -92,8 +90,8 @@ class Board(val numRows: Int, val startPos: Pos) {
   }
 }
 
-object Board {
+object PuzzlePegs {
   def main(args: Array[String]): Unit = {
-    println(new Board(5, Pos(0, 0)).solve(true))
+    println(new PuzzlePegs(5, Pos(0, 0)).solve(true))
   }
 }
