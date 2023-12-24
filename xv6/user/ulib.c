@@ -115,7 +115,8 @@ void *memcpy(void *dst, const void *src, uint n) {
 
 // syscall wrappers
 void fatal(char *cause) {
-  printf("%s failed\n", cause);
+  write(2, cause, strlen(cause));
+  write(2, " failed\n", 8);
   exit(1);
 }
 
