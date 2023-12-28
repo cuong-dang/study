@@ -3,7 +3,6 @@
 
 #define N 35
 
-// TODO: Debug why there is a final failed close.
 int main(void) {
   int i, left[2], n, p = 0, right[2];
 
@@ -29,7 +28,9 @@ int main(void) {
       }
     }
     close_(left[0]);
-    close_(right[1]);
+    if (p != 0) {
+      close_(right[1]);
+    }
     wait((int *)0);
   } else {
     close_(left[0]);
