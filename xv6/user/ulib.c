@@ -146,3 +146,12 @@ int pipe_(int *p) {
   }
   return rv;
 }
+
+int write_(int fd, const void *buf, int n) {
+  int nn;
+
+  if ((nn = write(fd, buf, n)) != n) {
+    fatal("write");
+  }
+  return nn;
+}

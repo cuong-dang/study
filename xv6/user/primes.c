@@ -9,7 +9,7 @@ int main(void) {
 
   pipe_(left);
   for (i = 2; i <= N; i++) {
-    write(left[1], &i, sizeof(int));
+    write_(left[1], &i, sizeof(int));
   }
   if (fork_() == 0) {
     close_(left[1]);
@@ -25,7 +25,7 @@ int main(void) {
           left[0] = right[0];
         }
       } else if (n % p != 0) {
-        write(right[1], &n, sizeof(int));
+        write_(right[1], &n, sizeof(int));
       }
     }
     close_(left[0]);

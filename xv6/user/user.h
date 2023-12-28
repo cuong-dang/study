@@ -45,3 +45,4 @@ void *memcpy(void *, const void *, uint);
 int close_(int);
 int fork_(void);
 int pipe_(int *);
+int write_(int, const void *, int);
