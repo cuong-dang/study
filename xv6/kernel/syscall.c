@@ -92,6 +92,7 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_wait(void);
 extern uint64 sys_write(void);
 extern uint64 sys_uptime(void);
+extern uint64 sys_trace(void);
 
 static uint64 (*syscalls[])(void) = {
     [SYS_fork] sys_fork,   [SYS_exit] sys_exit,     [SYS_wait] sys_wait,
@@ -101,6 +102,18 @@ static uint64 (*syscalls[])(void) = {
     [SYS_sleep] sys_sleep, [SYS_uptime] sys_uptime, [SYS_open] sys_open,
     [SYS_write] sys_write, [SYS_mknod] sys_mknod,   [SYS_unlink] sys_unlink,
     [SYS_link] sys_link,   [SYS_mkdir] sys_mkdir,   [SYS_close] sys_close,
+    [SYS_trace] sys_trace,
+};
+
+char *syscall_names[] = {
+    [SYS_fork] "fork",   [SYS_exit] "exit",     [SYS_wait] "wait",
+    [SYS_pipe] "pipe",   [SYS_read] "read",     [SYS_kill] "kill",
+    [SYS_exec] "exec",   [SYS_fstat] "fstat",   [SYS_chdir] "chdir",
+    [SYS_dup] "dup",     [SYS_getpid] "getpid", [SYS_sbrk] "sbrk",
+    [SYS_sleep] "sleep", [SYS_uptime] "uptime", [SYS_open] "open",
+    [SYS_write] "write", [SYS_mknod] "mknod",   [SYS_unlink] "unlink",
+    [SYS_link] "link",   [SYS_mkdir] "mkdir",   [SYS_close] "close",
+    [SYS_trace] "trace",
 };
 
 void syscall(void) {
@@ -110,6 +123,11 @@ void syscall(void) {
   num = p->trapframe->a7;
   if (num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     p->trapframe->a0 = syscalls[num]();
+    // Trace syscalls.
+    if (p->syscall_trace & (1 << num)) {
+      printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num],
+             p->trapframe->a0);
+    }
   } else {
     printf("%d %s: unknown sys call %d\n", p->pid, p->name, num);
     p->trapframe->a0 = -1;

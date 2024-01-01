@@ -19,6 +19,7 @@ int open(const char *, int);
 int pipe(int *);
 int read(int, void *, int);
 int sleep(int);
+int trace(int);
 int unlink(const char *);
 int uptime(void);
 int wait(int *);
