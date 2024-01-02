@@ -149,17 +149,14 @@ UPROGS=\
 	$U/_sh\
 	$U/_sleep\
 	$U/_stressfs\
+	$U/_trace\
 	$U/_usertests\
 	$U/_wc\
 	$U/_xargs\
 	$U/_zombie\
+	$U/_sysinfotest\
 
 
-ifeq ($(LAB),syscall)
-UPROGS += \
-	$U/_trace\
-	$U/_sysinfotest
-endif
 
 ifeq ($(LAB),trap)
 UPROGS += \
