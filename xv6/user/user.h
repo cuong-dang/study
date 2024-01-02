@@ -1,5 +1,6 @@
 struct stat;
 struct rtcdate;
+struct sysinfo;
 
 // system calls
 char *sbrk(int);
@@ -24,6 +25,7 @@ int unlink(const char *);
 int uptime(void);
 int wait(int *);
 int write(int, const void *, int);
+int sysinfo(struct sysinfo *);
 
 // ulib.c
 int stat(const char *, struct stat *);

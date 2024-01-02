@@ -37,3 +37,4 @@ entry("unlink");
 entry("uptime");
 entry("wait");
 entry("write");
+entry("sysinfo");
