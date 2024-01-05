@@ -15,6 +15,32 @@ extern char etext[]; // kernel.ld sets this to end of kernel code.
 
 extern char trampoline[]; // trampoline.S
 
+void kvmmaps(pagetable_t kpagetable) {
+  // uart registers
+  kvmmap(kpagetable, UART0, UART0, PGSIZE, PTE_R | PTE_W);
+
+  // virtio mmio disk interface
+  kvmmap(kpagetable, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
+
+  // CLINT
+  kvmmap(kpagetable, CLINT, CLINT, 0x10000, PTE_R | PTE_W);
+
+  // PLIC
+  kvmmap(kpagetable, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
+
+  // map kernel text executable and read-only.
+  kvmmap(kpagetable, KERNBASE, KERNBASE, (uint64)etext - KERNBASE,
+         PTE_R | PTE_X);
+
+  // map kernel data and the physical RAM we'll make use of.
+  kvmmap(kpagetable, (uint64)etext, (uint64)etext, PHYSTOP - (uint64)etext,
+         PTE_R | PTE_W);
+
+  // map the trampoline for trap entry/exit to
+  // the highest virtual address in the kernel.
+  kvmmap(kpagetable, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
+}
+
 /*
  * create a direct-map page table for the kernel.
  */
@@ -22,27 +48,7 @@ void kvminit() {
   kernel_pagetable = (pagetable_t)kalloc();
   memset(kernel_pagetable, 0, PGSIZE);
 
-  // uart registers
-  kvmmap(UART0, UART0, PGSIZE, PTE_R | PTE_W);
-
-  // virtio mmio disk interface
-  kvmmap(VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
-
-  // CLINT
-  kvmmap(CLINT, CLINT, 0x10000, PTE_R | PTE_W);
-
-  // PLIC
-  kvmmap(PLIC, PLIC, 0x400000, PTE_R | PTE_W);
-
-  // map kernel text executable and read-only.
-  kvmmap(KERNBASE, KERNBASE, (uint64)etext - KERNBASE, PTE_R | PTE_X);
-
-  // map kernel data and the physical RAM we'll make use of.
-  kvmmap((uint64)etext, (uint64)etext, PHYSTOP - (uint64)etext, PTE_R | PTE_W);
-
-  // map the trampoline for trap entry/exit to
-  // the highest virtual address in the kernel.
-  kvmmap(TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
+  kvmmaps(kernel_pagetable);
 }
 
 // Switch h/w page table register to the kernel's page table,
@@ -82,10 +88,7 @@ pte_t *walk(pagetable_t pagetable, uint64 va, int alloc) {
   return &pagetable[PX(0, va)];
 }
 
-// Look up a virtual address, return the physical address,
-// or 0 if not mapped.
-// Can only be used to look up user pages.
-uint64 walkaddr(pagetable_t pagetable, uint64 va) {
+uint64 _walkaddr(pagetable_t pagetable, uint64 va, int is_userpage) {
   pte_t *pte;
   uint64 pa;
 
@@ -97,17 +100,25 @@ uint64 walkaddr(pagetable_t pagetable, uint64 va) {
     return 0;
   if ((*pte & PTE_V) == 0)
     return 0;
-  if ((*pte & PTE_U) == 0)
+  if (is_userpage && ((*pte & PTE_U) == 0))
     return 0;
   pa = PTE2PA(*pte);
   return pa;
 }
 
-// add a mapping to the kernel page table.
-// only used when booting.
-// does not flush TLB or enable paging.
-void kvmmap(uint64 va, uint64 pa, uint64 sz, int perm) {
-  if (mappages(kernel_pagetable, va, sz, pa, perm) != 0)
+// Look up a virtual address, return the physical address,
+// or 0 if not mapped.
+// Can only be used to look up user pages.
+uint64 walkaddr(pagetable_t pagetable, uint64 va) {
+  return _walkaddr(pagetable, va, 1);
+}
+
+uint64 kwalkaddr(pagetable_t pagetable, uint64 va) {
+  return _walkaddr(pagetable, va, 0);
+}
+
+void kvmmap(pagetable_t pg, uint64 va, uint64 pa, uint64 sz, int perm) {
+  if (mappages(pg, va, sz, pa, perm) != 0)
     panic("kvmmap");
 }
 
@@ -247,23 +258,27 @@ uint64 uvmdealloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz) {
   return newsz;
 }
 
-// Recursively free page-table pages.
-// All leaf mappings must already have been removed.
-void freewalk(pagetable_t pagetable) {
+void _freewalk(pagetable_t pagetable, int freeing_leaves) {
   // there are 2^9 = 512 PTEs in a page table.
   for (int i = 0; i < 512; i++) {
     pte_t pte = pagetable[i];
     if ((pte & PTE_V) && (pte & (PTE_R | PTE_W | PTE_X)) == 0) {
       // this PTE points to a lower-level page table.
       uint64 child = PTE2PA(pte);
-      freewalk((pagetable_t)child);
+      _freewalk((pagetable_t)child, freeing_leaves);
       pagetable[i] = 0;
-    } else if (pte & PTE_V) {
+    } else if (freeing_leaves && (pte & PTE_V)) {
       panic("freewalk: leaf");
     }
   }
   kfree((void *)pagetable);
 }
+
+// Recursively free page-table pages.
+// All leaf mappings must already have been removed.
+void freewalk(pagetable_t pagetable) { _freewalk(pagetable, 1); }
+
+void kfreewalk(pagetable_t pagetable) { _freewalk(pagetable, 0); }
 
 // Free user memory pages,
 // then free page-table pages.
