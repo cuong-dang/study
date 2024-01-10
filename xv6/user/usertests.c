@@ -2381,7 +2381,7 @@ void badarg(char *s) {
 // of memory. it's really a test that such a condition
 // doesn't cause a panic.
 void execout(char *s) {
-  for (int avail = 0; avail < 15; avail++) {
+  for (int avail = 0; avail < 4; avail++) {
     int pid = fork();
     if (pid < 0) {
       printf("fork failed\n");

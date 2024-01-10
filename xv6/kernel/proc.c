@@ -107,17 +107,12 @@ found:
 
   // An empty user and kernel page tables.
   p->pagetable = proc_pagetable(p);
-  p->kpagetable = uvmcreate();
+  p->kpagetable = proc_kpagetable(p);
   if (p->pagetable == 0 || p->kpagetable == 0) {
     freeproc(p);
     release(&p->lock);
     return 0;
   }
-  // Set up kernel page table mappings.
-  kvmmaps(p->kpagetable);
-  // Set up kernel stack mapping.
-  kvmmap(p->kpagetable, p->kstack, kwalkaddr(kernel_pagetable, p->kstack),
-         PGSIZE, PTE_R | PTE_W);
 
   // Set up new context to start executing at forkret,
   // which returns to user space.
@@ -138,7 +133,7 @@ static void freeproc(struct proc *p) {
   if (p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
   if (p->kpagetable) {
-    kfreewalk(p->kpagetable);
+    free_kpagetable(p->kpagetable);
   }
   p->pagetable = 0;
   p->sz = 0;
@@ -182,6 +177,20 @@ pagetable_t proc_pagetable(struct proc *p) {
   return pagetable;
 }
 
+pagetable_t proc_kpagetable(struct proc *p) {
+  pagetable_t kpagetable;
+
+  if ((kpagetable = uvmcreate()) == 0) {
+    return 0;
+  }
+  // Set up kernel page table mappings.
+  kvmmaps(kpagetable);
+  // Set up kernel stack mapping.
+  kvmmap(kpagetable, p->kstack, kwalkaddr(kernel_pagetable, p->kstack), PGSIZE,
+         PTE_R | PTE_W);
+  return kpagetable;
+}
+
 // Free a process's page table, and free the
 // physical memory it refers to.
 void proc_freepagetable(pagetable_t pagetable, uint64 sz) {
@@ -208,7 +217,7 @@ void userinit(void) {
 
   // allocate one user page and copy init's instructions
   // and data into it.
-  uvminit(p->pagetable, initcode, sizeof(initcode));
+  uvminit(p->pagetable, initcode, sizeof(initcode), p->kpagetable);
   p->sz = PGSIZE;
 
   // prepare for the very first "return" from kernel to user.
@@ -230,12 +239,15 @@ int growproc(int n) {
   struct proc *p = myproc();
 
   sz = p->sz;
+  if (sz + n >= PLIC) {
+    return -1;
+  }
   if (n > 0) {
-    if ((sz = uvmalloc(p->pagetable, sz, sz + n)) == 0) {
+    if ((sz = uvmalloc(p->pagetable, sz, sz + n, p->kpagetable)) == 0) {
       return -1;
     }
   } else if (n < 0) {
-    sz = uvmdealloc(p->pagetable, sz, sz + n);
+    sz = uvmdealloc(p->pagetable, sz, sz + n, p->kpagetable);
   }
   p->sz = sz;
   return 0;
@@ -254,7 +266,7 @@ int fork(void) {
   }
 
   // Copy user memory from parent to child.
-  if (uvmcopy(p->pagetable, np->pagetable, p->sz) < 0) {
+  if (uvmcopy(p->pagetable, np->pagetable, p->sz, np->kpagetable) < 0) {
     freeproc(np);
     release(&np->lock);
     return -1;
@@ -463,6 +475,7 @@ void scheduler(void) {
       }
       release(&p->lock);
     }
+    // User kernel pagetable when no process is running.
     w_satp(MAKE_SATP(kernel_pagetable));
     sfence_vma();
 #if !defined(LAB_FS)
