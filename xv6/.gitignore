@@ -9,6 +9,7 @@ _*
 *.o
 *.sym
 *~
+barrier
 bootblock
 entryother
 initcode
@@ -17,6 +18,7 @@ kernel/kernel
 kernelmemfs
 mkfs
 myapi.key
+ph
 submissions/
 user/usys.S
 vectors.S
