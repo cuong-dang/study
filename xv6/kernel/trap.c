@@ -67,8 +67,56 @@ void usertrap(void) {
     exit(-1);
 
   // give up the CPU if this is a timer interrupt.
-  if (which_dev == 2)
+  if (which_dev == 2) {
+    if (p->sigalarm_ticks != 0 && p->sigalarm_remaining != 0) {
+      p->sigalarm_remaining--;
+    }
+    if (p->sigalarm_remaining == 0 && p->sigalarm_handling == 0) {
+      p->sigalarm_remaining = p->sigalarm_ticks;
+
+      p->sigalarm_saved->epc = p->trapframe->epc;
+      // 1 saved
+      p->sigalarm_saved->ra = p->trapframe->ra;
+      p->sigalarm_saved->sp = p->trapframe->sp;
+      p->sigalarm_saved->gp = p->trapframe->gp;
+      p->sigalarm_saved->tp = p->trapframe->tp;
+      p->sigalarm_saved->t0 = p->trapframe->t0;
+      p->sigalarm_saved->t1 = p->trapframe->t1;
+      p->sigalarm_saved->t2 = p->trapframe->t2;
+      p->sigalarm_saved->s0 = p->trapframe->s0;
+      p->sigalarm_saved->s1 = p->trapframe->s1;
+      p->sigalarm_saved->a0 = p->trapframe->a0;
+      // 11 saved
+      p->sigalarm_saved->a1 = p->trapframe->a1;
+      p->sigalarm_saved->a2 = p->trapframe->a2;
+      p->sigalarm_saved->a3 = p->trapframe->a3;
+      p->sigalarm_saved->a4 = p->trapframe->a4;
+      p->sigalarm_saved->a5 = p->trapframe->a5;
+      p->sigalarm_saved->a6 = p->trapframe->a6;
+      p->sigalarm_saved->a7 = p->trapframe->a7;
+      p->sigalarm_saved->s2 = p->trapframe->s2;
+      p->sigalarm_saved->s3 = p->trapframe->s3;
+      p->sigalarm_saved->s4 = p->trapframe->s4;
+      // 21 saved
+      p->sigalarm_saved->s5 = p->trapframe->s5;
+      p->sigalarm_saved->s6 = p->trapframe->s6;
+      p->sigalarm_saved->s7 = p->trapframe->s7;
+      p->sigalarm_saved->s8 = p->trapframe->s8;
+      p->sigalarm_saved->s9 = p->trapframe->s9;
+      p->sigalarm_saved->s10 = p->trapframe->s10;
+      p->sigalarm_saved->s11 = p->trapframe->s11;
+      p->sigalarm_saved->t3 = p->trapframe->t3;
+      p->sigalarm_saved->t4 = p->trapframe->t4;
+      p->sigalarm_saved->t5 = p->trapframe->t5;
+      p->sigalarm_saved->t6 = p->trapframe->t6;
+      // 32 saved
+
+      p->trapframe->epc = p->sigalarm_fn;
+
+      p->sigalarm_handling = 1;
+    }
     yield();
+  }
 
   usertrapret();
 }
