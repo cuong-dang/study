@@ -118,12 +118,6 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
-  // sigalarm
-  if ((p->sigalarm_saved = (struct trapframe *)kalloc()) == 0) {
-    release(&p->lock);
-    return 0;
-  }
-  p->sigalarm_ticks = 0;
   return p;
 }
 
@@ -438,9 +432,12 @@ void scheduler(void) {
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
 
-    int found = 0;
+    int nproc = 0;
     for (p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
+      if (p->state != UNUSED) {
+        nproc++;
+      }
       if (p->state == RUNNABLE) {
         // Switch to chosen process.  It is the process's job
         // to release its lock and then reacquire it
@@ -452,19 +449,13 @@ void scheduler(void) {
         // Process is done running for now.
         // It should have changed its p->state before coming back.
         c->proc = 0;
-
-        found = 1;
       }
       release(&p->lock);
     }
-#if !defined(LAB_FS)
-    if (found == 0) {
+    if (nproc <= 2) { // only init and sh exist
       intr_on();
       asm volatile("wfi");
     }
-#else
-    ;
-#endif
   }
 }
 
