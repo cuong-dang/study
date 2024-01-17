@@ -27,13 +27,20 @@ uint64 sys_wait(void) {
 }
 
 uint64 sys_sbrk(void) {
-  int oldsz;
   int n;
+  uint64 oldsz;
 
   if (argint(0, &n) < 0)
     return -1;
   oldsz = myproc()->sz;
-  myproc()->sz += n;
+  if (n < 0 && myproc()->sz + n > myproc()->sz) {
+    myproc()->sz = 0;
+  } else {
+    myproc()->sz += n;
+  }
+  if (myproc()->sz < oldsz) {
+    uvmdealloc(myproc()->pagetable, oldsz, myproc()->sz);
+  }
   return oldsz;
 }
 
