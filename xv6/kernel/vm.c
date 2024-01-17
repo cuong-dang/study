@@ -5,6 +5,8 @@
 #include "riscv.h"
 #include "defs.h"
 #include "fs.h"
+#include "spinlock.h"
+#include "proc.h"
 
 /*
  * the kernel's page table.
@@ -322,13 +324,28 @@ void uvmclear(pagetable_t pagetable, uint64 va) {
 // Copy len bytes from src to virtual address dstva in a given page table.
 // Return 0 on success, -1 on error.
 int copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len) {
-  uint64 n, va0, pa0;
+  uint64 n, va0, pa0, newpa;
+  struct proc *p = myproc();
 
   while (len > 0) {
     va0 = PGROUNDDOWN(dstva);
     pa0 = walkaddr(pagetable, va0);
-    if (pa0 == 0)
-      return -1;
+    if (pa0 == 0) {
+      if (dstva > p->trapframe->sp && dstva < p->sz) {
+        if ((newpa = (uint64)kalloc()) == 0) {
+          return -1;
+        }
+        memset((void *)newpa, 0, PGSIZE);
+        if (mappages(pagetable, va0, PGSIZE, (uint64)newpa,
+                     PTE_U | PTE_R | PTE_W | PTE_X) != 0) {
+          kfree((void *)newpa);
+          return -1;
+        }
+        pa0 = walkaddr(pagetable, va0);
+      } else {
+        return -1;
+      }
+    }
     n = PGSIZE - (dstva - va0);
     if (n > len)
       n = len;
@@ -345,13 +362,28 @@ int copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len) {
 // Copy len bytes to dst from virtual address srcva in a given page table.
 // Return 0 on success, -1 on error.
 int copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len) {
-  uint64 n, va0, pa0;
+  uint64 n, va0, pa0, newpa;
+  struct proc *p = myproc();
 
   while (len > 0) {
     va0 = PGROUNDDOWN(srcva);
     pa0 = walkaddr(pagetable, va0);
-    if (pa0 == 0)
-      return -1;
+    if (pa0 == 0) {
+      if (srcva > p->trapframe->sp && srcva < p->sz) {
+        if ((newpa = (uint64)kalloc()) == 0) {
+          return -1;
+        }
+        memset((void *)newpa, 0, PGSIZE);
+        if (mappages(pagetable, va0, PGSIZE, (uint64)newpa,
+                     PTE_U | PTE_R | PTE_W | PTE_X) != 0) {
+          kfree((void *)newpa);
+          return -1;
+        }
+        pa0 = walkaddr(pagetable, va0);
+      } else {
+        return -1;
+      }
+    }
     n = PGSIZE - (srcva - va0);
     if (n > len)
       n = len;

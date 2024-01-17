@@ -28,7 +28,6 @@ void trapinithart(void) { w_stvec((uint64)kernelvec); }
 void usertrap(void) {
   int which_dev = 0;
   uint64 va, pa;
-  pte_t *pte;
 
   if ((r_sstatus() & SSTATUS_SPP) != 0)
     panic("usertrap: not from user mode");
@@ -59,11 +58,12 @@ void usertrap(void) {
     syscall();
   } else if ((which_dev = devintr()) != 0) {
     // ok
-  } else if (r_scause() == 15) {
+  } else if (r_scause() == 15 || r_scause() == 13) {
     // lazy alloc page fault
     va = r_stval();
-    pte = walk(p->pagetable, va, 0);
-    if (va > p->sz || (pte != 0 && *pte == ~PTE_U) ||
+    if (va > p->sz ||
+        (va <= p->trapframe->sp - PGSIZE &&
+         va > p->trapframe->sp - 2 * PGSIZE) ||
         (pa = (uint64)kalloc()) == 0) {
       p->killed = 1;
     } else {
