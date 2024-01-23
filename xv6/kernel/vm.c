@@ -17,6 +17,8 @@ extern char etext[]; // kernel.ld sets this to end of kernel code.
 
 extern char trampoline[]; // trampoline.S
 
+extern int refcount[(PHYSTOP - KERNBASE) / PGSIZE];
+
 /*
  * create a direct-map page table for the kernel.
  */
@@ -145,7 +147,7 @@ int mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa,
   for (;;) {
     if ((pte = walk(pagetable, a, 1)) == 0)
       return -1;
-    if (*pte & PTE_V)
+    if (*pte & PTE_V && (*pte & PTE_RSW) == 0)
       panic("remap");
     *pte = PA2PTE(pa) | perm | PTE_V;
     if (a == last)
@@ -168,12 +170,14 @@ void uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free) {
 
   for (a = va; a < va + npages * PGSIZE; a += PGSIZE) {
     if ((pte = walk(pagetable, a, 0)) == 0)
-      continue;
+      panic("uvmunmap: walk");
     if ((*pte & PTE_V) == 0)
-      continue;
+      panic("uvmunmap: not mapped");
     if (PTE_FLAGS(*pte) == PTE_V)
       panic("uvmunmap: not a leaf");
-    if (do_free) {
+    if (do_free && (--refcount[REFCOUNT_IDX(PTE2PA(*pte))] == 0)) {
+      // printf("Unmapping va=%p pa=%p, refcount=%d\n", va, PTE2PA(*pte),
+      //        refcount[REFCOUNT_IDX(PTE2PA(*pte))]);
       uint64 pa = PTE2PA(*pte);
       kfree((void *)pa);
     }
@@ -285,22 +289,27 @@ int uvmcopy(pagetable_t old, pagetable_t new, uint64 sz) {
   pte_t *pte;
   uint64 pa, i;
   uint flags;
-  char *mem;
+  // char *mem;
 
   for (i = 0; i < sz; i += PGSIZE) {
     if ((pte = walk(old, i, 0)) == 0)
-      continue;
+      panic("uvmcopy: pte should exist");
     if ((*pte & PTE_V) == 0)
-      continue;
+      panic("uvmcopy: page not present");
     pa = PTE2PA(*pte);
+    *pte &= ~PTE_W;
+    *pte |= PTE_RSW;
     flags = PTE_FLAGS(*pte);
-    if ((mem = kalloc()) == 0)
-      goto err;
-    memmove(mem, (char *)pa, PGSIZE);
-    if (mappages(new, i, PGSIZE, (uint64)mem, flags) != 0) {
-      kfree(mem);
+    // if ((mem = kalloc()) == 0)
+    //   goto err;
+    // memmove(mem, (char *)pa, PGSIZE);
+    if (mappages(new, i, PGSIZE, (uint64)pa, flags) != 0) {
+      // kfree(mem);
       goto err;
     }
+    ++refcount[REFCOUNT_IDX(PGROUNDDOWN(pa))];
+    // printf("Increased refcount @ %p = %d\n", PGROUNDDOWN(pa),
+    //        refcount[REFCOUNT_IDX(PGROUNDDOWN(pa))]);
   }
   return 0;
 
@@ -324,28 +333,34 @@ void uvmclear(pagetable_t pagetable, uint64 va) {
 // Copy len bytes from src to virtual address dstva in a given page table.
 // Return 0 on success, -1 on error.
 int copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len) {
-  uint64 n, va0, pa0, newpa;
+  uint64 n, va0, pa0;
+  pte_t *pte;
   struct proc *p = myproc();
+  uint flags;
 
   while (len > 0) {
     va0 = PGROUNDDOWN(dstva);
-    pa0 = walkaddr(pagetable, va0);
-    if (pa0 == 0) {
-      if (dstva > p->trapframe->sp && dstva < p->sz) {
-        if ((newpa = (uint64)kalloc()) == 0) {
-          return -1;
-        }
-        memset((void *)newpa, 0, PGSIZE);
-        if (mappages(pagetable, va0, PGSIZE, (uint64)newpa,
-                     PTE_U | PTE_R | PTE_W | PTE_X) != 0) {
-          kfree((void *)newpa);
-          return -1;
-        }
-        pa0 = walkaddr(pagetable, va0);
-      } else {
+    if (va0 > MAXVA)
+      return -1;
+    pte = walk(p->pagetable, va0, 0);
+    if (pte == 0)
+      return -1;
+    if ((*pte & PTE_W) == 0 && (*pte & PTE_RSW)) {
+      if ((pa0 = (uint64)kalloc()) == 0)
         return -1;
+      memmove((void *)pa0, (void *)PTE2PA(*pte), PGSIZE);
+      flags = PTE_FLAGS(*pte);
+      uvmunmap(p->pagetable, va0, 1, 1);
+      if (mappages(p->pagetable, va0, PGSIZE, (uint64)pa0, flags | PTE_W) !=
+          0) {
+        kfree((void *)pa0);
+        p->killed = 1;
       }
+    } else {
+      pa0 = walkaddr(pagetable, va0);
     }
+    if (pa0 == 0)
+      return -1;
     n = PGSIZE - (dstva - va0);
     if (n > len)
       n = len;
@@ -362,28 +377,13 @@ int copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len) {
 // Copy len bytes to dst from virtual address srcva in a given page table.
 // Return 0 on success, -1 on error.
 int copyin(pagetable_t pagetable, char *dst, uint64 srcva, uint64 len) {
-  uint64 n, va0, pa0, newpa;
-  struct proc *p = myproc();
+  uint64 n, va0, pa0;
 
   while (len > 0) {
     va0 = PGROUNDDOWN(srcva);
     pa0 = walkaddr(pagetable, va0);
-    if (pa0 == 0) {
-      if (srcva > p->trapframe->sp && srcva < p->sz) {
-        if ((newpa = (uint64)kalloc()) == 0) {
-          return -1;
-        }
-        memset((void *)newpa, 0, PGSIZE);
-        if (mappages(pagetable, va0, PGSIZE, (uint64)newpa,
-                     PTE_U | PTE_R | PTE_W | PTE_X) != 0) {
-          kfree((void *)newpa);
-          return -1;
-        }
-        pa0 = walkaddr(pagetable, va0);
-      } else {
-        return -1;
-      }
-    }
+    if (pa0 == 0)
+      return -1;
     n = PGSIZE - (srcva - va0);
     if (n > len)
       n = len;

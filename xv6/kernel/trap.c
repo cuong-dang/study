@@ -11,6 +11,8 @@ uint ticks;
 
 extern char trampoline[], uservec[], userret[];
 
+extern int refcount[(PHYSTOP - KERNBASE) / PGSIZE];
+
 // in kernelvec.S, calls kerneltrap().
 void kernelvec();
 
@@ -27,7 +29,9 @@ void trapinithart(void) { w_stvec((uint64)kernelvec); }
 //
 void usertrap(void) {
   int which_dev = 0;
-  uint64 va, pa;
+  uint64 newpa;
+  pte_t *pte;
+  uint flags;
 
   if ((r_sstatus() & SSTATUS_SPP) != 0)
     panic("usertrap: not from user mode");
@@ -58,19 +62,20 @@ void usertrap(void) {
     syscall();
   } else if ((which_dev = devintr()) != 0) {
     // ok
-  } else if (r_scause() == 15 || r_scause() == 13) {
-    // lazy alloc page fault
-    va = r_stval();
-    if (va > p->sz ||
-        (va <= p->trapframe->sp - PGSIZE &&
-         va > p->trapframe->sp - 2 * PGSIZE) ||
-        (pa = (uint64)kalloc()) == 0) {
+  } else if (r_scause() == 15) {
+    // cow
+    if ((pte = walk(p->pagetable, r_stval(), 0)) == 0 || (*pte & PTE_V) == 0 ||
+        (*pte & PTE_RSW) == 0 || (newpa = (uint64)kalloc()) == 0) {
       p->killed = 1;
     } else {
-      memset((void *)pa, 0, PGSIZE);
-      if (mappages(p->pagetable, PGROUNDDOWN(va), PGSIZE, (uint64)pa,
-                   PTE_U | PTE_R | PTE_W | PTE_X) != 0) {
-        kfree((void *)pa);
+      memmove((void *)newpa, (void *)PTE2PA(*pte), PGSIZE);
+      // printf("Unmapping va=%p pa=%p, refcount=%d\n", r_stval(), PTE2PA(*pte),
+      //        refcount[REFCOUNT_IDX(PTE2PA(*pte))]);
+      flags = PTE_FLAGS(*pte);
+      uvmunmap(p->pagetable, PGROUNDDOWN(r_stval()), 1, 1);
+      if (mappages(p->pagetable, PGROUNDDOWN(r_stval()), PGSIZE, (uint64)newpa,
+                   flags | PTE_W) != 0) {
+        kfree((void *)newpa);
         p->killed = 1;
       }
     }
