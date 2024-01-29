@@ -11,7 +11,6 @@ _*
 *.sym
 *~
 barrier
-barrier.dSYM
 bootblock
 entryother
 initcode
@@ -21,7 +20,6 @@ kernelmemfs
 mkfs
 myapi.key
 ph
-ph.dSYM
 submissions/
 user/usys.S
 vectors.S
