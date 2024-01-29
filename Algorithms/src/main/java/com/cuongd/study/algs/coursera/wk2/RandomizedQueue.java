@@ -1,5 +1,6 @@
 package com.cuongd.study.algs.coursera.wk2;
 
+
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
@@ -19,9 +20,13 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         indexes[1] = 1;
     }
 
-    public boolean isEmpty() { return size == 0; }
+    public boolean isEmpty() {
+        return size == 0;
+    }
 
-    public int size() { return size; }
+    public int size() {
+        return size;
+    }
 
     public void enqueue(Item item) {
         if (item == null) throw new IllegalArgumentException();
@@ -91,7 +96,9 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
 
         @Override
-        public boolean hasNext() { return cursor != size; }
+        public boolean hasNext() {
+            return cursor != size;
+        }
 
         @Override
         public Item next() {
@@ -108,23 +115,32 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     public static void main(String[] args) {
         RandomizedQueue<Integer> q = new RandomizedQueue<>();
-        assert q.isEmpty(); assert q.size() == 0;
+        assert q.isEmpty();
+        assert q.size() == 0;
 
-        q.enqueue(1); assert !q.isEmpty(); assert q.size() == 1;
-        int n = q.dequeue(); assert n == 1; assert q.isEmpty(); assert q.size() == 0;
+        q.enqueue(1);
+        assert !q.isEmpty();
+        assert q.size() == 1;
+        int n = q.dequeue();
+        assert n == 1;
+        assert q.isEmpty();
+        assert q.size() == 0;
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i : q) StdOut.printf("%d ", i);
-        StdOut.println(); StdOut.println();
+        StdOut.println();
+        StdOut.println();
         for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.dequeue());
-        StdOut.println(); StdOut.println();
+        StdOut.println();
+        StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i = 0; i < 5; ++i) StdOut.printf("%d ", q.dequeue());
         StdOut.println();
         for (int i = 0; i < 5; ++i) q.enqueue(i + 10);
         for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.dequeue());
-        StdOut.println(); StdOut.println();
+        StdOut.println();
+        StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i = 0; i < 10; ++i)
@@ -132,17 +148,21 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 StdOut.printf("%d ", q.dequeue());
             else
                 q.enqueue(10 + i);
-        StdOut.println(); StdOut.println();
+        StdOut.println();
+        StdOut.println();
         while (!q.isEmpty()) StdOut.printf("%d ", q.dequeue());
-        StdOut.println(); StdOut.println();
+        StdOut.println();
+        StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.sample());
-        StdOut.println(); StdOut.println();
+        StdOut.println();
+        StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         while (!q.isEmpty()) StdOut.printf("%d ", q.dequeue());
-        StdOut.println(); StdOut.println();
+        StdOut.println();
+        StdOut.println();
 
         for (int i = 0; i < 10; ++i) q.enqueue(i);
         for (int i = 0; i < 10; ++i) StdOut.printf("%d ", q.sample());

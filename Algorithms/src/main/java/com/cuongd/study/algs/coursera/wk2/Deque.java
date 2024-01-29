@@ -1,5 +1,6 @@
 package com.cuongd.study.algs.coursera.wk2;
 
+
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.Iterator;
@@ -10,11 +11,16 @@ public class Deque<Item> implements Iterable<Item> {
     private Node last;
     private int size;
 
-    public Deque() { }
+    public Deque() {
+    }
 
-    public boolean isEmpty() { return size == 0; }
+    public boolean isEmpty() {
+        return size == 0;
+    }
 
-    public int size() { return size; }
+    public int size() {
+        return size;
+    }
 
     public void addFirst(Item item) {
         if (item == null) throw new IllegalArgumentException();
@@ -89,7 +95,9 @@ public class Deque<Item> implements Iterable<Item> {
         private Node cursor = first;
 
         @Override
-        public boolean hasNext() { return cursor != null; }
+        public boolean hasNext() {
+            return cursor != null;
+        }
 
         @Override
         public Item next() {
@@ -107,30 +115,56 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public static void main(String[] args) {
-        Deque<Integer> d = new Deque<>(); assert d.isEmpty(); assert d.size() == 0;
+        Deque<Integer> d = new Deque<>();
+        assert d.isEmpty();
+        assert d.size() == 0;
 
-        d.addFirst(1); assert !d.isEmpty(); assert d.size() == 1;
-        int i = d.removeFirst(); assert i == 1; assert d.isEmpty(); assert d.size() == 0;
+        d.addFirst(1);
+        assert !d.isEmpty();
+        assert d.size() == 1;
+        int i = d.removeFirst();
+        assert i == 1;
+        assert d.isEmpty();
+        assert d.size() == 0;
 
         d.addFirst(2);
-        i = d.removeLast(); assert i == 2; assert d.isEmpty(); assert d.size() == 0;
+        i = d.removeLast();
+        assert i == 2;
+        assert d.isEmpty();
+        assert d.size() == 0;
 
         d.addLast(3);
-        i = d.removeLast(); assert i == 3;
+        i = d.removeLast();
+        assert i == 3;
         d.addLast(4);
-        i = d.removeFirst(); assert i == 4;
+        i = d.removeFirst();
+        assert i == 4;
 
-        d.addFirst(1); d.addFirst(2); d.addFirst(3);
-        i = d.removeFirst(); assert i == 3;
-        i = d.removeLast(); assert i == 1;
+        d.addFirst(1);
+        d.addFirst(2);
+        d.addFirst(3);
+        i = d.removeFirst();
+        assert i == 3;
+        i = d.removeLast();
+        assert i == 1;
 
-        d.addFirst(1); d.addFirst(2); d.addLast(3); d.addLast(4); d.addFirst(5);
+        d.addFirst(1);
+        d.addFirst(2);
+        d.addLast(3);
+        d.addLast(4);
+        d.addFirst(5);
         for (Integer item : d) StdOut.println(item);
-        i = d.removeFirst(); assert i == 5;
-        i = d.removeLast(); assert i == 4;
-        i = d.removeLast(); assert i == 3;
-        i = d.removeFirst(); assert i == 2;
-        i = d.removeLast(); assert i == 1;
-        assert d.isEmpty(); assert d.size() == 0;
+        i = d.removeFirst();
+        assert i == 5;
+        i = d.removeLast();
+        assert i == 4;
+        i = d.removeLast();
+        assert i == 3;
+        i = d.removeFirst();
+        assert i == 2;
+        i = d.removeLast();
+        assert i == 1;
+        assert d.isEmpty();
+        assert d.size() == 0;
     }
 }

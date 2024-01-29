@@ -1,5 +1,6 @@
 package com.cuongd.study.algs.coursera.wk2;
 
+
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 

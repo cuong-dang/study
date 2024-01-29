@@ -1,5 +1,6 @@
 package com.cuongd.study.algs.coursera.wk3;
 
+
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -24,9 +25,9 @@ public class BruteCollinearPoints {
         segments = new LineSegment[points.length * points.length];
 
         for (int i1 = 0; i1 < n; ++i1)
-            for (int i2 = i1+1; i2 < n; ++i2)
-                for (int i3 = i2+1; i3 < n; ++i3)
-                    for (int i4 = i3+1; i4 < n; ++i4) {
+            for (int i2 = i1 + 1; i2 < n; ++i2)
+                for (int i3 = i2 + 1; i3 < n; ++i3)
+                    for (int i4 = i3 + 1; i4 < n; ++i4) {
                         double slopeP1P2 = points[i1].slopeTo(points[i2]),
                                 slopeP1P3 = points[i1].slopeTo(points[i3]);
                         if (slopeP1P2 != slopeP1P3)

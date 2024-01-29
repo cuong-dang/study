@@ -50,7 +50,7 @@ public class Board {
         hamming = 0;
         for (int i = 0; i < n; ++i)
             for (int j = 0; j < n; ++j)
-                if (board[i][j] != 0 && board[i][j] != i*n + j + 1)
+                if (board[i][j] != 0 && board[i][j] != i * n + j + 1)
                     ++hamming;
         return hamming;
     }
@@ -63,9 +63,9 @@ public class Board {
         for (int i = 0; i < n; ++i)
             for (int j = 0; j < n; ++j)
                 if (board[i][j] != 0)
-                    if (board[i][j] != i*n + j + 1) {
-                        int correctI = (board[i][j]-1) / n;
-                        int correctJ = board[i][j] - correctI*n - 1;
+                    if (board[i][j] != i * n + j + 1) {
+                        int correctI = (board[i][j] - 1) / n;
+                        int correctJ = board[i][j] - correctI * n - 1;
                         manhattan += abs(i, correctI) + abs(j, correctJ);
                     }
         return manhattan;
@@ -99,7 +99,7 @@ public class Board {
             for (int j = 0; j < n; ++j)
                 if (board[i][j] == 0) {
                     if (i - 1 >= 0)
-                        neighbors.add(makeNeighbor(i, j, i-1, j));
+                        neighbors.add(makeNeighbor(i, j, i - 1, j));
                     if (i + 1 <= n - 1)
                         neighbors.add(makeNeighbor(i, j, i + 1, j));
                     if (j - 1 >= 0)
@@ -115,11 +115,11 @@ public class Board {
         Board twin = new Board(board);
         for (int i = 0; i < n; ++i)
             for (int j = 0; j < n; ++j)
-                if (j < n - 1 && board[i][j] != 0 && board[i][j+1] != 0) {
-                    swap(twin.board, i, j, i, j+1);
+                if (j < n - 1 && board[i][j] != 0 && board[i][j + 1] != 0) {
+                    swap(twin.board, i, j, i, j + 1);
                     return twin;
-                } else if (j == n - 1 && i < n - 1 && board[i][j] != 0 && board[i+1][0] != 0) {
-                    swap(twin.board, i, j, i+1, 0);
+                } else if (j == n - 1 && i < n - 1 && board[i][j] != 0 && board[i + 1][0] != 0) {
+                    swap(twin.board, i, j, i + 1, 0);
                     return twin;
                 }
         throw new IllegalStateException();

@@ -1,5 +1,6 @@
 package com.cuongd.study.algs.coursera.wk1;
 
+
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
@@ -27,7 +28,7 @@ public class PercolationStats {
 
                 exp.open(randRow, randCol);
             }
-            thresholds[i] = (double) exp.numberOfOpenSites() / (n*n);
+            thresholds[i] = (double) exp.numberOfOpenSites() / (n * n);
         }
 
     }
@@ -41,11 +42,11 @@ public class PercolationStats {
     }
 
     public double confidenceLo() {
-        return mean() - CONFIDENCE_95*stddev()/Math.sqrt(t);
+        return mean() - CONFIDENCE_95 * stddev() / Math.sqrt(t);
     }
 
     public double confidenceHi() {
-        return mean() + CONFIDENCE_95*stddev()/Math.sqrt(t);
+        return mean() + CONFIDENCE_95 * stddev() / Math.sqrt(t);
     }
 
     public static void main(String[] args) {

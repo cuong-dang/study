@@ -1,5 +1,6 @@
 package com.cuongd.study.algs.coursera.wk3;
 
+
 import java.util.Arrays;
 
 public class FastCollinearPoints {
@@ -25,7 +26,7 @@ public class FastCollinearPoints {
         segments = new LineSegment[points.length * points.length];
         for (int i = 0; i < n; ++i) {
             /* sort other points by slope to current point */
-            Point[] otherPoints = new Point[n-1];
+            Point[] otherPoints = new Point[n - 1];
             for (int j = 0, k = 0; j < n; ++j) {
                 if (j == i)
                     continue;
@@ -39,7 +40,7 @@ public class FastCollinearPoints {
             Point[] collinear = new Point[n];
             int numCollinear = 0;
             collinear[numCollinear++] = otherPoints[0];
-            for (int curr = 1, prev = 0; curr < n-1; ++curr, ++prev) {
+            for (int curr = 1, prev = 0; curr < n - 1; ++curr, ++prev) {
                 double currSlope = points[i].slopeTo(otherPoints[curr]),
                         prevSlope = points[i].slopeTo(otherPoints[prev]);
                 if (currSlope == prevSlope) {
@@ -81,7 +82,7 @@ public class FastCollinearPoints {
             }
         if (pivotIsMin) {
             Arrays.sort(collinear, 0, n);
-            segments[numberOfSegments++] = new LineSegment(pivot, collinear[n-1]);
+            segments[numberOfSegments++] = new LineSegment(pivot, collinear[n - 1]);
         }
     }
 }

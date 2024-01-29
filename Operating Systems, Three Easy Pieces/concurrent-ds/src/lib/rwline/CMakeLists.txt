@@ -1,0 +1,5 @@
+add_library(rwline rwline.c)
+find_package (PkgConfig REQUIRED)
+pkg_search_module(GLIB REQUIRED glib-2.0)
+target_include_directories(rwline PUBLIC "${PROJECT_SOURCE_DIR}/src/includes" ${GLIB_INCLUDE_DIRS})
+target_link_libraries(rwline PUBLIC ${GLIB_LDFLAGS})
