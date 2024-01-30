@@ -2,6 +2,9 @@ package com.cuongd.study.algs.book.ch3;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class SeparateChainingHashST<Key, Value> {
     private int m;
     private SequentialSearchST<Key, Value>[] st;
@@ -34,7 +37,7 @@ public class SeparateChainingHashST<Key, Value> {
         if (st[hash(key, m)].put(key, val)) {
             n++;
         }
-        if ((double) n / m > lengthTolerance) {
+        if (lengthTolerance != 0 && (double) n / m > lengthTolerance) {
             grow();
         }
     }
@@ -45,6 +48,17 @@ public class SeparateChainingHashST<Key, Value> {
 
     public int m() {
         return m;
+    }
+
+    public Set<Key> keys() {
+        Set<Key> rv = new HashSet<>();
+
+        for (int i = 0; i < m; i++) {
+            for (Pair<Key, Value> kv : st[i].keys()) {
+                rv.add(kv.getKey());
+            }
+        }
+        return rv;
     }
 
     public static <Key> int hash(Key key, int m) {
