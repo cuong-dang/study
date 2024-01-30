@@ -70,12 +70,24 @@ public class LinearProbingST<Key, Val> {
             if (k == null) {
                 continue;
             }
-            for (int i = hash(k, m); !keys[i].equals(k); i++) {
+            for (int i = hash(k, m); !keys[i].equals(k); i = (i + 1) % m) {
                 numProbes += 1;
             }
             numProbes += 1;
         }
         return (double) numProbes / n;
+    }
+
+    public double avgMissProbes() {
+        int numProbes = 0;
+
+        for (int i = 0; i < m; i++) {
+            numProbes++;
+            for (int j = i; keys[j] != null; j = (j + 1) % m) {
+                numProbes++;
+            }
+        }
+        return (double) numProbes / m;
     }
 
     private void resize(int cap) {
