@@ -12,6 +12,7 @@ public class LinearProbingST<Key, Val> {
     private int m = 16;
     private Key[] keys;
     private Val[] vals;
+    private boolean resizing = true;
 
     public LinearProbingST() {
         keys = (Key[]) new Object[m];
@@ -24,10 +25,17 @@ public class LinearProbingST<Key, Val> {
         m = cap;
     }
 
+    public LinearProbingST(int cap, boolean resizing) {
+        keys = (Key[]) new Object[cap];
+        vals = (Val[]) new Object[cap];
+        m = cap;
+        this.resizing = resizing;
+    }
+
     public void put(Key key, Val val) {
         int i;
 
-        if (n >= m / 2) {
+        if (resizing && n >= m / 2) {
             resize(2 * m);
         }
         for (i = hash(key, m); keys[i] != null; i = (i + 1) % m) {
@@ -52,6 +60,22 @@ public class LinearProbingST<Key, Val> {
 
     public Set<Key> keys() {
         return Arrays.stream(keys).filter(Objects::nonNull).collect(Collectors.toSet());
+    }
+
+    public double avgHitProbes() {
+        int numProbes = 0;
+
+        for (int j = 0; j < m; j++) {
+            Key k = keys[j];
+            if (k == null) {
+                continue;
+            }
+            for (int i = hash(k, m); !keys[i].equals(k); i++) {
+                numProbes += 1;
+            }
+            numProbes += 1;
+        }
+        return (double) numProbes / n;
     }
 
     private void resize(int cap) {
