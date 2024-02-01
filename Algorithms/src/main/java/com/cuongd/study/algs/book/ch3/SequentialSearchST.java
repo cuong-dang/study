@@ -8,6 +8,7 @@ import java.util.List;
 
 public class SequentialSearchST<Key, Value> {
     private Node first;
+    private int n;
 
     public Value get(Key key) {
         for (Node x = first; x != null; x = x.next) {
@@ -26,6 +27,7 @@ public class SequentialSearchST<Key, Value> {
             }
         }
         first = new Node(key, val, first);
+        n++;
         return true;
     }
 
@@ -35,6 +37,21 @@ public class SequentialSearchST<Key, Value> {
             rv.add(new ImmutablePair<>(x.key, x.val));
         }
         return rv;
+    }
+
+    public int n() {
+        return n;
+    }
+
+    public int numProbes(Key key) {
+        int numProbes = 1;
+        for (Node x = first; x != null; x = x.next) {
+            if (x.key.equals(key)) {
+                return numProbes;
+            }
+            numProbes++;
+        }
+        return numProbes;
     }
 
     private class Node {
