@@ -13,6 +13,7 @@ public class LinearProbingST<Key, Val> {
     private Key[] keys;
     private Val[] vals;
     private boolean resizing = true;
+    private int nWithTombs;
 
     public LinearProbingST() {
         keys = (Key[]) new Object[m];
@@ -35,7 +36,7 @@ public class LinearProbingST<Key, Val> {
     public void put(Key key, Val val) {
         int i;
 
-        if (resizing && n >= m / 2) {
+        if (resizing && nWithTombs >= m / 2) {
             resize(2 * m);
         }
         for (i = hash(key, m); keys[i] != null; i = (i + 1) % m) {
@@ -47,6 +48,7 @@ public class LinearProbingST<Key, Val> {
         keys[i] = key;
         vals[i] = val;
         n++;
+        nWithTombs++;
     }
 
     public Val get(Key key) {
@@ -90,16 +92,45 @@ public class LinearProbingST<Key, Val> {
         return (double) numProbes / m;
     }
 
+    public void delete(Key key) {
+        for (int i = 0; i < m; i++) {
+            if (keys[i] != null && keys[i].equals(key)) {
+                if (vals[i] != null) {
+                    vals[i] = null;
+                    n--;
+                }
+                break;
+            }
+        }
+    }
+
+    public Key keyAt(int index) {
+        return keys[index];
+    }
+
+    public int n() {
+        return n;
+    }
+
+    public int m() {
+        return m;
+    }
+
+    public int nWithTombs() {
+        return nWithTombs;
+    }
+
     private void resize(int cap) {
         LinearProbingST<Key, Val> t;
         t = new LinearProbingST<>(cap);
         for (int i = 0; i < m; i++) {
-            if (keys[i] != null) {
+            if (keys[i] != null && vals[i] != null) {
                 t.put(keys[i], vals[i]);
             }
         }
         keys = t.keys;
         vals = t.vals;
         m = t.m;
+        nWithTombs = n;
     }
 }
