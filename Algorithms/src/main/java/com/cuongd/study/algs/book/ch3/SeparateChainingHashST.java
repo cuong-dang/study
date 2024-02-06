@@ -78,6 +78,15 @@ public class SeparateChainingHashST<Key, Value> {
         }
     }
 
+    public void delete2(Key key) {
+        int h1 = 11 * key.hashCode() % m;
+        int h2 = 17 * key.hashCode() % m;
+
+        if (st[h1].delete(key) || st[h2].delete(key)) {
+            n--;
+        }
+    }
+
     public double avgHitProbes2() {
         int numProbes = 0;
 

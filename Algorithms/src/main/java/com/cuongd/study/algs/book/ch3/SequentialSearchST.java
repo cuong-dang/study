@@ -54,6 +54,21 @@ public class SequentialSearchST<Key, Value> {
         return numProbes;
     }
 
+    public boolean delete(Key key) {
+        for (Node x = first, px = null; x != null; x = x.next, px = x) {
+            if (x.key.equals(key)) {
+                if (px == null) {
+                    first = x.next;
+                } else {
+                    px.next = x.next;
+                }
+                n--;
+                return true;
+            }
+        }
+        return false;
+    }
+
     private class Node {
         Key key;
         Value val;
