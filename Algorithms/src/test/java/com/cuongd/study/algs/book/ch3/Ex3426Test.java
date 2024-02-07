@@ -15,7 +15,7 @@ public class Ex3426Test {
         st.put('R', 0);
         st.put('C', 0);
         st.put('H', 0);
-        st.delete('A');
+        st.delete2('A');
         st.put('X', 0);
         assertEquals('X', (char) st.keyAt(2));
     }
@@ -30,7 +30,7 @@ public class Ex3426Test {
         assertEquals(8, st.m());
         assertEquals(3, st.n());
         assertEquals(3, st.nWithTombs());
-        st.delete('S');
+        st.delete2('S');
         assertEquals(8, st.m());
         assertEquals(2, st.n());
         assertEquals(3, st.nWithTombs());
