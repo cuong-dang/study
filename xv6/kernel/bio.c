@@ -12,6 +12,7 @@
 // * Do not use the buffer after calling brelse.
 // * Only one process at a time can use a buffer,
 //     so do not keep them longer than necessary.
+
 #include "types.h"
 #include "param.h"
 #include "spinlock.h"
@@ -21,34 +22,30 @@
 #include "fs.h"
 #include "buf.h"
 
-#define NBUCKET 13
-
 struct {
   struct spinlock lock;
-  struct spinlock locks[NBUCKET];
-
   struct buf buf[NBUF];
-  struct buf buckets[NBUCKET];
+
+  // Linked list of all buffers, through prev/next.
+  // Sorted by how recently the buffer was used.
+  // head.next is most recent, head.prev is least.
+  struct buf head;
 } bcache;
 
 void binit(void) {
-  int i, h;
   struct buf *b;
 
   initlock(&bcache.lock, "bcache");
-  for (i = 0; i < NBUCKET; i++) {
-    initlock(&bcache.locks[i], "bcache");
-    bcache.buckets[i].prev = &bcache.buckets[i];
-    bcache.buckets[i].next = &bcache.buckets[i];
-  }
-  for (i = 0; i < NBUF; i++) {
-    h = i % NBUCKET;
-    b = &bcache.buf[i];
 
-    b->next = bcache.buckets[h].next;
-    b->prev = &bcache.buckets[h];
-    bcache.buckets[h].next->prev = b;
-    bcache.buckets[h].next = b;
+  // Create linked list of buffers
+  bcache.head.prev = &bcache.head;
+  bcache.head.next = &bcache.head;
+  for (b = bcache.buf; b < bcache.buf + NBUF; b++) {
+    b->next = bcache.head.next;
+    b->prev = &bcache.head;
+    initsleeplock(&b->lock, "buffer");
+    bcache.head.next->prev = b;
+    bcache.head.next = b;
   }
 }
 
@@ -57,65 +54,30 @@ void binit(void) {
 // In either case, return locked buffer.
 static struct buf *bget(uint dev, uint blockno) {
   struct buf *b;
-  int h = blockno % NBUCKET, hh;
 
-  acquire(&bcache.locks[h]);
-  // Is the block already cached?
-  for (b = bcache.buckets[h].next; b != &bcache.buckets[h]; b = b->next) {
-    if (b->dev == dev && b->blockno == blockno) {
-      b->refcnt++;
-      release(&bcache.locks[h]);
-      acquiresleep(&b->lock);
-      return b;
-    }
-  }
-  release(&bcache.locks[h]);
-
-  // Not cached, find a block
   acquire(&bcache.lock);
-  // Recheck
-  acquire(&bcache.locks[h]);
-  for (b = bcache.buckets[h].next; b != &bcache.buckets[h]; b = b->next) {
+
+  // Is the block already cached?
+  for (b = bcache.head.next; b != &bcache.head; b = b->next) {
     if (b->dev == dev && b->blockno == blockno) {
       b->refcnt++;
       release(&bcache.lock);
-      release(&bcache.locks[h]);
       acquiresleep(&b->lock);
       return b;
     }
   }
-  // Still not cached
-  for (int i = 0; i < NBUF; i++) {
-    b = &bcache.buf[i];
-    hh = b->blockno % NBUCKET;
 
-    if (h != hh) {
-      acquire(&bcache.locks[hh]);
-    }
-
+  // Not cached.
+  // Recycle the least recently used (LRU) unused buffer.
+  for (b = bcache.head.prev; b != &bcache.head; b = b->prev) {
     if (b->refcnt == 0) {
-      b->next->prev = b->prev;
-      b->prev->next = b->next;
       b->dev = dev;
       b->blockno = blockno;
       b->valid = 0;
       b->refcnt = 1;
-
-      b->next = bcache.buckets[h].next;
-      b->prev = &bcache.buckets[h];
-      bcache.buckets[h].next->prev = b;
-      bcache.buckets[h].next = b;
       release(&bcache.lock);
-      if (h != hh) {
-        release(&bcache.locks[hh]);
-      }
-      release(&bcache.locks[h]);
       acquiresleep(&b->lock);
       return b;
-    }
-
-    if (h != hh) {
-      release(&bcache.locks[hh]);
     }
   }
   panic("bget: no buffers");
@@ -143,15 +105,24 @@ void bwrite(struct buf *b) {
 // Release a locked buffer.
 // Move to the head of the most-recently-used list.
 void brelse(struct buf *b) {
-  int h = b->blockno % NBUCKET;
-
   if (!holdingsleep(&b->lock))
     panic("brelse");
 
   releasesleep(&b->lock);
-  acquire(&bcache.locks[h]);
+
+  acquire(&bcache.lock);
   b->refcnt--;
-  release(&bcache.locks[h]);
+  if (b->refcnt == 0) {
+    // no one is waiting for it.
+    b->next->prev = b->prev;
+    b->prev->next = b->next;
+    b->next = bcache.head.next;
+    b->prev = &bcache.head;
+    bcache.head.next->prev = b;
+    bcache.head.next = b;
+  }
+
+  release(&bcache.lock);
 }
 
 void bpin(struct buf *b) {
