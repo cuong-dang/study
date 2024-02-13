@@ -9,6 +9,7 @@
 .metals
 .project
 .settings
+.venv
 .vscode
 a.out
 bin
