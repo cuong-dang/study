@@ -1,4 +1,4 @@
-package leetcode;
+package com.cuongd.study.leetcode;
 
 class Lc0011 {
     public int maxArea(int[] height) {
