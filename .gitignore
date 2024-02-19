@@ -11,6 +11,7 @@
 .settings
 .venv
 .vscode
+__pycache__
 a.out
 bin
 build
