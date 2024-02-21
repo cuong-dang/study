@@ -5,6 +5,9 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "sleeplock.h"
+#include "fs.h"
+#include "file.h"
 
 struct spinlock tickslock;
 uint ticks;
@@ -55,6 +58,47 @@ void usertrap(void) {
     intr_on();
 
     syscall();
+  } else if (r_scause() == 0xd) {
+    // Assuming this is mmap's faults.
+    uint64 va = r_stval();
+    struct vma *vma;
+    int i, flags;
+    uint64 pa;
+
+    printf("Faulting at addr %p\n", va);
+    // Which VMA?
+    for (i = 0; i < 16; i++) {
+      if (!p->vmas[i].isfree && va >= p->vmas[i].addr &&
+          va < p->vmas[i].addr + p->vmas[i].len) {
+        vma = &p->vmas[i];
+        break;
+      }
+    }
+    if (i == 16) {
+      p->killed = 1;
+      goto bad;
+    }
+    // Allocate and map.
+    printf("Found vma from addr %p len %d fl %d\n", vma->addr, vma->len,
+           vma->prot);
+    flags = vma->prot == 1   ? PTE_R
+            : vma->prot == 2 ? PTE_W
+            : vma->prot == 3 ? PTE_R | PTE_W
+                             : 0;
+    if ((pa = (uint64)kalloc()) == 0 ||
+        mappages(p->pagetable, va, PGSIZE, pa, flags | PTE_U) < 0) {
+      p->killed = 1;
+      goto bad;
+    }
+    memset((void *)pa, 0, PGSIZE);
+    // Read file content.
+    ilock(vma->f->ip);
+    if (readi(vma->f->ip, 0, pa, vma->offset, PGSIZE) <= 0) {
+      p->killed = 1;
+      goto bad;
+    }
+    iunlock(vma->f->ip);
+    vma->offset += PGSIZE;
   } else if ((which_dev = devintr()) != 0) {
     // ok
   } else {
@@ -62,7 +106,7 @@ void usertrap(void) {
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
     p->killed = 1;
   }
-
+bad:
   if (p->killed)
     exit(-1);
 
