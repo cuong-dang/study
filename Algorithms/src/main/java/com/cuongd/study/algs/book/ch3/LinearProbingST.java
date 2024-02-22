@@ -74,7 +74,7 @@ public class LinearProbingST<Key, Val> {
     }
 
     public boolean contains(Key key) {
-        for (int i = hashFn.apply(key); keys[i] != null; i++) {
+        for (int i = hashFn.apply(key); keys[i] != null; i = (i + 1) % m) {
             if (keys[i].equals(key)) {
                 return true;
             }

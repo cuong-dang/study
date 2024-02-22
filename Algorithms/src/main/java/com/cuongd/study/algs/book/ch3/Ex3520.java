@@ -18,7 +18,7 @@ public class Ex3520 {
             String line = in.readLine();
             int wordNo = 0;
             for (String word : line.split(" ")) {
-                if (word.equals("")) {
+                if (word.isEmpty()) {
                     continue;
                 }
                 wordNo++;
