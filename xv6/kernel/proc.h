@@ -91,6 +91,7 @@ struct vma {
   int fd;
   struct file *f;
   int offset;
+  int mapped_sz;
 };
 
 // Per-process state

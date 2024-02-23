@@ -65,7 +65,7 @@ void usertrap(void) {
     int i, flags;
     uint64 pa;
 
-    printf("Faulting at addr %p\n", va);
+    // printf("Faulting at addr %p\n", va);
     // Which VMA?
     for (i = 0; i < 16; i++) {
       if (!p->vmas[i].isfree && va >= p->vmas[i].addr &&
@@ -79,8 +79,8 @@ void usertrap(void) {
       goto bad;
     }
     // Allocate and map.
-    printf("Found vma from addr %p len %d fl %d\n", vma->addr, vma->len,
-           vma->prot);
+    // printf("Found vma from addr %p len %d prot %d\n", vma->addr, vma->len,
+    //  vma->prot);
     flags = vma->prot == 1   ? PTE_R
             : vma->prot == 2 ? PTE_W
             : vma->prot == 3 ? PTE_R | PTE_W
@@ -93,12 +93,12 @@ void usertrap(void) {
     memset((void *)pa, 0, PGSIZE);
     // Read file content.
     ilock(vma->f->ip);
-    if (readi(vma->f->ip, 0, pa, vma->offset, PGSIZE) <= 0) {
+    if (readi(vma->f->ip, 0, pa, PGROUNDDOWN(va) - vma->addr, PGSIZE) <= 0) {
       p->killed = 1;
       goto bad;
     }
     iunlock(vma->f->ip);
-    vma->offset += PGSIZE;
+    vma->mapped_sz += PGSIZE;
   } else if ((which_dev = devintr()) != 0) {
     // ok
   } else {

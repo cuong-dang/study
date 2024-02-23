@@ -461,6 +461,10 @@ uint64 sys_mmap(void) {
       argfd(4, &fd, &f) < 0 || argint(5, &offset) < 0) {
     return -1;
   }
+  // Check no RW on read-only files.
+  if (flags == MAP_SHARED && !f->writable && prot & PROT_WRITE) {
+    return -1;
+  }
   // Find a free vma;
   for (vmai = 0; vmai < 16; vmai++) {
     if (p->vmas[vmai].isfree) {
@@ -482,9 +486,56 @@ uint64 sys_mmap(void) {
   p->vmas[vmai].fd = fd;
   p->vmas[vmai].f = f;
   p->vmas[vmai].offset = offset;
+  p->vmas[vmai].mapped_sz = 0;
   p->sz += len;
   filedup(p->vmas[vmai].f);
   return p->vmas[vmai].addr;
 }
 
-uint64 sys_munmap(void) { return -1; }
+int sys_munmap(void) {
+  struct proc *p = myproc();
+  uint64 addr;
+  int len;
+  struct vma *vma;
+  int i;
+
+  if (argaddr(0, &addr) < 0 || argint(1, &len) < 0) {
+    return -1;
+  }
+
+  // Which VMA?
+  for (i = 0; i < 16; i++) {
+    if (!p->vmas[i].isfree && addr >= p->vmas[i].addr &&
+        addr < p->vmas[i].addr + p->vmas[i].len) {
+      vma = &p->vmas[i];
+      break;
+    }
+  }
+  if (i == 16) {
+    return -1;
+  }
+  // printf("munmap %p\n", vma->addr);
+  while (vma->mapped_sz > 0 && len > 0) {
+    if (vma->flags == MAP_SHARED) {
+      begin_op();
+      ilock(vma->f->ip);
+      if (writei(vma->f->ip, 1, PGROUNDDOWN(addr),
+                 vma->offset + PGROUNDDOWN(addr) - vma->addr,
+                 len < PGSIZE ? len : PGSIZE) <= 0) {
+        panic("munmap: writei failed");
+      }
+      iunlock(vma->f->ip);
+      end_op();
+    }
+    uvmunmap(p->pagetable, PGROUNDDOWN(addr), 1, 1);
+    if (addr != PGROUNDDOWN(addr)) {
+      len -= PGROUNDUP(addr) - addr;
+    } else {
+      len -= PGSIZE;
+    }
+    addr = PGROUNDDOWN(addr) + PGSIZE;
+    vma->mapped_sz -= PGSIZE;
+  }
+  // printf("Remaining mapped_sz: %d\n", vma->mapped_sz);
+  return 0;
+}
