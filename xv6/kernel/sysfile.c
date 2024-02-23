@@ -15,6 +15,7 @@
 #include "sleeplock.h"
 #include "file.h"
 #include "fcntl.h"
+#include "memlayout.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -317,50 +318,6 @@ uint64 sys_open(void) {
   f->readable = !(omode & O_WRONLY);
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
 
-  if (ip->type == T_SYMLINK && (omode & O_NOFOLLOW) == 0) {
-    int max_follow_depth = 10;
-    char target[MAXPATH];
-    int n;
-
-    while (max_follow_depth > 0) {
-      if ((n = readi(ip, 0, (uint64)target, 0, MAXPATH)) <= 0) {
-        myproc()->ofile[fd] = 0;
-        f->type = FD_NONE;
-        fileclose(f);
-        iunlockput(ip);
-        end_op();
-        return -1;
-      }
-      iunlockput(ip);
-      if ((ip = namei(target)) == 0) {
-        myproc()->ofile[fd] = 0;
-        fileclose(f);
-        end_op();
-        return -1;
-      }
-      ilock(ip);
-      f->type = FD_INODE;
-      f->off = 0;
-      f->ip = ip;
-      f->readable = !(omode & O_WRONLY);
-      f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
-      myproc()->ofile[fd] = f;
-      if (ip->type != T_SYMLINK) {
-        break;
-      }
-      max_follow_depth--;
-    }
-
-    if (max_follow_depth == 0) {
-      myproc()->ofile[fd] = 0;
-      f->type = FD_NONE;
-      fileclose(f);
-      iunlockput(ip);
-      end_op();
-      return -1;
-    }
-  }
-
   if ((omode & O_TRUNC) && ip->type == T_FILE) {
     itrunc(ip);
   }
@@ -495,28 +452,67 @@ uint64 sys_pipe(void) {
   return 0;
 }
 
-uint sys_symlink(void) {
-  char target[MAXPATH], path[MAXPATH];
-  struct inode *ip;
-  int n;
+uint64 sys_mmap(void) {
+  int len, prot, flags, fd, offset, vmai;
+  struct file *f;
+  struct proc *p = myproc();
 
-  if (argstr(0, target, MAXPATH) < 0 || argstr(1, path, MAXPATH) < 0) {
+  if (argint(1, &len) < 0 || argint(2, &prot) < 0 || argint(3, &flags) < 0 ||
+      argfd(4, &fd, &f) < 0 || argint(5, &offset) < 0) {
+    return -1;
+  }
+  // Check no RW on read-only files.
+  if (flags == MAP_SHARED && !f->writable && prot & PROT_WRITE) {
+    return -1;
+  }
+  // Find a free vma;
+  for (vmai = 0; vmai < 16; vmai++) {
+    if (p->vmas[vmai].isfree) {
+      break;
+    }
+  }
+  if (vmai == 16) {
+    return -1;
+  }
+  if (p->sz + len >= TRAPFRAME) {
+    return -1;
+  }
+  // All good.
+  p->vmas[vmai].isfree = 0;
+  p->vmas[vmai].addr = p->sz;
+  p->vmas[vmai].len = len;
+  p->vmas[vmai].prot = prot;
+  p->vmas[vmai].flags = flags;
+  p->vmas[vmai].fd = fd;
+  p->vmas[vmai].f = f;
+  p->vmas[vmai].offset = offset;
+  p->vmas[vmai].mapped_sz = 0;
+  p->sz += len;
+  filedup(p->vmas[vmai].f);
+  return p->vmas[vmai].addr;
+}
+
+int sys_munmap(void) {
+  struct proc *p = myproc();
+  uint64 addr;
+  int len, i = 0;
+  struct vma *vma;
+
+  if (argaddr(0, &addr) < 0 || argint(1, &len) < 0) {
     return -1;
   }
 
-  // printf("Creating symlink to %s in %s\n", target, path);
-  begin_op();
-  if ((ip = namei(path)) != 0) {
-    ilock(ip);
-  } else if ((ip = create(path, T_SYMLINK, 0, 0)) == 0) {
-    end_op();
-    return -1;
+  // Which VMA?
+  for (i = 0; i < 16; i++) {
+    if (!p->vmas[i].isfree && addr >= p->vmas[i].addr &&
+        addr < p->vmas[i].addr + p->vmas[i].len) {
+      vma = &p->vmas[i];
+      break;
+    }
   }
-  if ((n = writei(ip, 0, (uint64)target, 0, MAXPATH)) <= 0) {
-    printf("Failed to write symlink to file; n = %d; ip->size=%d\n", n);
-    return -1;
+  if (i == 16) {
+    return 0;
   }
-  iunlockput(ip);
-  end_op();
-  return 0;
+  // printf("munmap %p\n", vma->addr);
+  return munmap_(p->pagetable, vma, addr, len);
 }
