@@ -276,6 +276,14 @@ int fork(void) {
       np->ofile[i] = filedup(p->ofile[i]);
   np->cwd = idup(p->cwd);
 
+  // Copy VMAs
+  for (int i = 0; i < 16; i++) {
+    if (!p->vmas[i].isfree) {
+      np->vmas[i] = p->vmas[i];
+      filedup(p->vmas[i].f);
+    }
+  }
+
   safestrcpy(np->name, p->name, sizeof(p->name));
 
   pid = np->pid;
@@ -326,6 +334,13 @@ void exit(int status) {
       struct file *f = p->ofile[fd];
       fileclose(f);
       p->ofile[fd] = 0;
+    }
+  }
+
+  // Unmap VMAs.
+  for (int i = 0; i < 16; i++) {
+    if (!p->vmas[i].isfree) {
+      munmap_(p->pagetable, &p->vmas[i], p->vmas[i].addr, p->vmas[i].len);
     }
   }
 

@@ -5,6 +5,11 @@
 #include "riscv.h"
 #include "defs.h"
 #include "fs.h"
+#include "spinlock.h"
+#include "sleeplock.h"
+#include "fcntl.h"
+#include "proc.h"
+#include "file.h"
 
 /*
  * the kernel's page table.
@@ -156,7 +161,7 @@ void uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free) {
     if ((pte = walk(pagetable, a, 0)) == 0)
       panic("uvmunmap: walk");
     if ((*pte & PTE_V) == 0)
-      panic("uvmunmap: not mapped");
+      continue;
     if (PTE_FLAGS(*pte) == PTE_V)
       panic("uvmunmap: not a leaf");
     if (do_free) {
@@ -277,7 +282,7 @@ int uvmcopy(pagetable_t old, pagetable_t new, uint64 sz) {
     if ((pte = walk(old, i, 0)) == 0)
       panic("uvmcopy: pte should exist");
     if ((*pte & PTE_V) == 0)
-      panic("uvmcopy: page not present");
+      continue;
     pa = PTE2PA(*pte);
     flags = PTE_FLAGS(*pte);
     if ((mem = kalloc()) == 0)
@@ -391,4 +396,37 @@ int copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max) {
   } else {
     return -1;
   }
+}
+
+int munmap_(pagetable_t pgtbl, struct vma *vma, uint64 addr, int len) {
+  int did_unmap;
+
+  while (vma->mapped_sz > 0 && len > 0) {
+    did_unmap = 1;
+    if (vma->flags == MAP_SHARED) {
+      begin_op();
+      ilock(vma->f->ip);
+      if (writei(vma->f->ip, 1, PGROUNDDOWN(addr),
+                 vma->offset + PGROUNDDOWN(addr) - vma->addr,
+                 len < PGSIZE ? len : PGSIZE) < 0) {
+        panic("munmap: writei failed");
+      }
+      iunlock(vma->f->ip);
+      end_op();
+    }
+    uvmunmap(pgtbl, PGROUNDDOWN(addr), 1, 1);
+    if (addr != PGROUNDDOWN(addr)) {
+      len -= PGROUNDUP(addr) - addr;
+    } else {
+      len -= PGSIZE;
+    }
+    addr = PGROUNDDOWN(addr) + PGSIZE;
+    vma->mapped_sz -= PGSIZE;
+  }
+  if (did_unmap && vma->mapped_sz == 0) {
+    vma->isfree = 1;
+    filededup(vma->f);
+  }
+  // printf("Remaining mapped_sz: %d\n", vma->mapped_sz);
+  return 0;
 }

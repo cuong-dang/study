@@ -495,9 +495,8 @@ uint64 sys_mmap(void) {
 int sys_munmap(void) {
   struct proc *p = myproc();
   uint64 addr;
-  int len;
+  int len, i = 0;
   struct vma *vma;
-  int i;
 
   if (argaddr(0, &addr) < 0 || argint(1, &len) < 0) {
     return -1;
@@ -512,30 +511,8 @@ int sys_munmap(void) {
     }
   }
   if (i == 16) {
-    return -1;
+    return 0;
   }
   // printf("munmap %p\n", vma->addr);
-  while (vma->mapped_sz > 0 && len > 0) {
-    if (vma->flags == MAP_SHARED) {
-      begin_op();
-      ilock(vma->f->ip);
-      if (writei(vma->f->ip, 1, PGROUNDDOWN(addr),
-                 vma->offset + PGROUNDDOWN(addr) - vma->addr,
-                 len < PGSIZE ? len : PGSIZE) <= 0) {
-        panic("munmap: writei failed");
-      }
-      iunlock(vma->f->ip);
-      end_op();
-    }
-    uvmunmap(p->pagetable, PGROUNDDOWN(addr), 1, 1);
-    if (addr != PGROUNDDOWN(addr)) {
-      len -= PGROUNDUP(addr) - addr;
-    } else {
-      len -= PGSIZE;
-    }
-    addr = PGROUNDDOWN(addr) + PGSIZE;
-    vma->mapped_sz -= PGSIZE;
-  }
-  // printf("Remaining mapped_sz: %d\n", vma->mapped_sz);
-  return 0;
+  return munmap_(p->pagetable, vma, addr, len);
 }
