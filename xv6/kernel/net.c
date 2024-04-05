@@ -11,15 +11,14 @@
 #include "net.h"
 #include "defs.h"
 
-static uint32 local_ip = MAKE_IP_ADDR(10, 0, 2, 15); // qemu's idea of the guest IP
-static uint8 local_mac[ETHADDR_LEN] = { 0x52, 0x54, 0x00, 0x12, 0x34, 0x56 };
-static uint8 broadcast_mac[ETHADDR_LEN] = { 0xFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF };
+static uint32 local_ip =
+    MAKE_IP_ADDR(10, 0, 2, 15); // qemu's idea of the guest IP
+static uint8 local_mac[ETHADDR_LEN] = {0x52, 0x54, 0x00, 0x12, 0x34, 0x56};
+static uint8 broadcast_mac[ETHADDR_LEN] = {0xFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF};
 
 // Strips data from the start of the buffer and returns a pointer to it.
 // Returns 0 if less than the full requested length is available.
-char *
-mbufpull(struct mbuf *m, unsigned int len)
-{
+char *mbufpull(struct mbuf *m, unsigned int len) {
   char *tmp = m->head;
   if (m->len < len)
     return 0;
@@ -29,9 +28,7 @@ mbufpull(struct mbuf *m, unsigned int len)
 }
 
 // Prepends data to the beginning of the buffer and returns a pointer to it.
-char *
-mbufpush(struct mbuf *m, unsigned int len)
-{
+char *mbufpush(struct mbuf *m, unsigned int len) {
   m->head -= len;
   if (m->head < m->buf)
     panic("mbufpush");
@@ -40,9 +37,7 @@ mbufpush(struct mbuf *m, unsigned int len)
 }
 
 // Appends data to the end of the buffer and returns a pointer to it.
-char *
-mbufput(struct mbuf *m, unsigned int len)
-{
+char *mbufput(struct mbuf *m, unsigned int len) {
   char *tmp = m->head + m->len;
   m->len += len;
   if (m->len > MBUF_SIZE)
@@ -52,9 +47,7 @@ mbufput(struct mbuf *m, unsigned int len)
 
 // Strips data from the end of the buffer and returns a pointer to it.
 // Returns 0 if less than the full requested length is available.
-char *
-mbuftrim(struct mbuf *m, unsigned int len)
-{
+char *mbuftrim(struct mbuf *m, unsigned int len) {
   if (len > m->len)
     return 0;
   m->len -= len;
@@ -62,11 +55,9 @@ mbuftrim(struct mbuf *m, unsigned int len)
 }
 
 // Allocates a packet buffer.
-struct mbuf *
-mbufalloc(unsigned int headroom)
-{
+struct mbuf *mbufalloc(unsigned int headroom) {
   struct mbuf *m;
- 
+
   if (headroom > MBUF_SIZE)
     return 0;
   m = kalloc();
@@ -80,18 +71,12 @@ mbufalloc(unsigned int headroom)
 }
 
 // Frees a packet buffer.
-void
-mbuffree(struct mbuf *m)
-{
-  kfree(m);
-}
+void mbuffree(struct mbuf *m) { kfree(m); }
 
 // Pushes an mbuf to the end of the queue.
-void
-mbufq_pushtail(struct mbufq *q, struct mbuf *m)
-{
+void mbufq_pushtail(struct mbufq *q, struct mbuf *m) {
   m->next = 0;
-  if (!q->head){
+  if (!q->head) {
     q->head = q->tail = m;
     return;
   }
@@ -100,9 +85,7 @@ mbufq_pushtail(struct mbufq *q, struct mbuf *m)
 }
 
 // Pops an mbuf from the start of the queue.
-struct mbuf *
-mbufq_pophead(struct mbufq *q)
-{
+struct mbuf *mbufq_pophead(struct mbufq *q) {
   struct mbuf *head = q->head;
   if (!head)
     return 0;
@@ -111,24 +94,14 @@ mbufq_pophead(struct mbufq *q)
 }
 
 // Returns one (nonzero) if the queue is empty.
-int
-mbufq_empty(struct mbufq *q)
-{
-  return q->head == 0;
-}
+int mbufq_empty(struct mbufq *q) { return q->head == 0; }
 
 // Intializes a queue of mbufs.
-void
-mbufq_init(struct mbufq *q)
-{
-  q->head = 0;
-}
+void mbufq_init(struct mbufq *q) { q->head = 0; }
 
 // This code is lifted from FreeBSD's ping.c, and is copyright by the Regents
 // of the University of California.
-static unsigned short
-in_cksum(const unsigned char *addr, int len)
-{
+static unsigned short in_cksum(const unsigned char *addr, int len) {
   int nleft = len;
   const unsigned short *w = (const unsigned short *)addr;
   unsigned int sum = 0;
@@ -139,7 +112,7 @@ in_cksum(const unsigned char *addr, int len)
    * sequential 16 bit words to it, and at the end, fold back all the
    * carry bits from the top 16 bits into the lower 16 bits.
    */
-  while (nleft > 1)  {
+  while (nleft > 1) {
     sum += *w++;
     nleft -= 2;
   }
@@ -160,9 +133,7 @@ in_cksum(const unsigned char *addr, int len)
 }
 
 // sends an ethernet packet
-static void
-net_tx_eth(struct mbuf *m, uint16 ethtype)
-{
+static void net_tx_eth(struct mbuf *m, uint16 ethtype) {
   struct eth *ethhdr;
 
   ethhdr = mbufpushhdr(m, *ethhdr);
@@ -178,9 +149,7 @@ net_tx_eth(struct mbuf *m, uint16 ethtype)
 }
 
 // sends an IP packet
-static void
-net_tx_ip(struct mbuf *m, uint8 proto, uint32 dip)
-{
+static void net_tx_ip(struct mbuf *m, uint8 proto, uint32 dip) {
   struct ip *iphdr;
 
   // push the IP header
@@ -199,10 +168,7 @@ net_tx_ip(struct mbuf *m, uint8 proto, uint32 dip)
 }
 
 // sends a UDP packet
-void
-net_tx_udp(struct mbuf *m, uint32 dip,
-           uint16 sport, uint16 dport)
-{
+void net_tx_udp(struct mbuf *m, uint32 dip, uint16 sport, uint16 dport) {
   struct udp *udphdr;
 
   // put the UDP header
@@ -217,9 +183,7 @@ net_tx_udp(struct mbuf *m, uint32 dip,
 }
 
 // sends an ARP packet
-static int
-net_tx_arp(uint16 op, uint8 dmac[ETHADDR_LEN], uint32 dip)
-{
+static int net_tx_arp(uint16 op, uint8 dmac[ETHADDR_LEN], uint32 dip) {
   struct mbuf *m;
   struct arp *arphdr;
 
@@ -247,9 +211,7 @@ net_tx_arp(uint16 op, uint8 dmac[ETHADDR_LEN], uint32 dip)
 }
 
 // receives an ARP packet
-static void
-net_rx_arp(struct mbuf *m)
-{
+static void net_rx_arp(struct mbuf *m) {
   struct arp *arphdr;
   uint8 smac[ETHADDR_LEN];
   uint32 sip, tip;
@@ -259,10 +221,8 @@ net_rx_arp(struct mbuf *m)
     goto done;
 
   // validate the ARP header
-  if (ntohs(arphdr->hrd) != ARP_HRD_ETHER ||
-      ntohs(arphdr->pro) != ETHTYPE_IP ||
-      arphdr->hln != ETHADDR_LEN ||
-      arphdr->pln != sizeof(uint32)) {
+  if (ntohs(arphdr->hrd) != ARP_HRD_ETHER || ntohs(arphdr->pro) != ETHTYPE_IP ||
+      arphdr->hln != ETHADDR_LEN || arphdr->pln != sizeof(uint32)) {
     goto done;
   }
 
@@ -274,7 +234,7 @@ net_rx_arp(struct mbuf *m)
 
   // handle the ARP request
   memmove(smac, arphdr->sha, ETHADDR_LEN); // sender's ethernet address
-  sip = ntohl(arphdr->sip); // sender's IP address (qemu's slirp)
+  sip = ntohl(arphdr->sip);                // sender's IP address (qemu's slirp)
   net_tx_arp(ARP_OP_REPLY, smac, sip);
 
 done:
@@ -282,13 +242,10 @@ done:
 }
 
 // receives a UDP packet
-static void
-net_rx_udp(struct mbuf *m, uint16 len, struct ip *iphdr)
-{
+static void net_rx_udp(struct mbuf *m, uint16 len, struct ip *iphdr) {
   struct udp *udphdr;
   uint32 sip;
   uint16 sport, dport;
-
 
   udphdr = mbufpullhdr(m, *udphdr);
   if (!udphdr)
@@ -317,15 +274,13 @@ fail:
 }
 
 // receives an IP packet
-static void
-net_rx_ip(struct mbuf *m)
-{
+static void net_rx_ip(struct mbuf *m) {
   struct ip *iphdr;
   uint16 len;
 
   iphdr = mbufpullhdr(m, *iphdr);
   if (!iphdr)
-	  goto fail;
+    goto fail;
 
   // check IP version and header len
   if (iphdr->ip_vhl != ((4 << 4) | (20 >> 2)))
@@ -353,8 +308,7 @@ fail:
 
 // called by e1000 driver's interrupt handler to deliver a packet to the
 // networking stack
-void net_rx(struct mbuf *m)
-{
+void net_rx(struct mbuf *m) {
   struct eth *ethhdr;
   uint16 type;
 
