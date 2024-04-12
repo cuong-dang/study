@@ -6,7 +6,7 @@ import edu.princeton.cs.algs4.In;
 public class Graph {
     private final int V;
     private int E;
-    private Bag<Integer>[] adj;
+    private final Bag<Integer>[] adj;
 
     public Graph(int V) {
         this.V = V;
