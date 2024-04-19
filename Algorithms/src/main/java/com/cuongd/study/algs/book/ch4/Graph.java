@@ -56,4 +56,13 @@ public class Graph {
     public Iterable<Integer> adj(int v) {
         return adj[v];
     }
+
+    public boolean hasEdge(int v, int w) {
+        for (int ww : adj(v)) {
+            if (ww == w) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
