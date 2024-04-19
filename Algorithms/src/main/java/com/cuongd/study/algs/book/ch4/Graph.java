@@ -17,6 +17,18 @@ public class Graph {
         }
     }
 
+    public Graph(Graph G) {
+        V = G.V;
+        E = G.E;
+        adj = (Bag<Integer>[]) new Bag[V];
+        for (int v = 0; v < V; v++) {
+            adj[v] = new Bag<>();
+            for (int w : G.adj[v]) {
+                adj[v].add(w);
+            }
+        }
+    }
+
     public Graph(In in) {
         this(in.readInt());
         int E = in.readInt();
