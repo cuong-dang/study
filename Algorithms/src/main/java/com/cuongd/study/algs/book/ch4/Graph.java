@@ -3,6 +3,8 @@ package com.cuongd.study.algs.book.ch4;
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.In;
 
+import java.util.Arrays;
+
 public class Graph {
     private final int V;
     private int E;
@@ -31,12 +33,18 @@ public class Graph {
 
     public Graph(In in) {
         this(in.readInt());
-        int E = in.readInt();
-        for (int i = 0; i < E; i++) {
+        int E = in.readInt(), i = 0;
+        do {
             int v = in.readInt();
-            int w = in.readInt();
-            addEdge(v, w);
-        }
+            String[] adjList = Arrays
+                    .stream(in.readLine().split(" "))
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+            for (String w : adjList) {
+                addEdge(v, Integer.parseInt(w));
+                i++;
+            }
+        } while (i != E);
     }
 
     public int V() {
