@@ -9,8 +9,19 @@ public class Graph {
     private final int V;
     private int E;
     private final Bag<Integer>[] adj;
+    private boolean allowingParallelAndSelfEdges = false;
 
     public Graph(int V) {
+        this.V = V;
+        this.E = 0;
+        adj = (Bag<Integer>[]) new Bag[V];
+        for (int v = 0; v < V; v++) {
+            adj[v] = new Bag<>();
+        }
+    }
+
+    public Graph(int V, boolean allowingParallelAndSelfEdges) {
+        this.allowingParallelAndSelfEdges = allowingParallelAndSelfEdges;
         this.V = V;
         this.E = 0;
         adj = (Bag<Integer>[]) new Bag[V];
@@ -56,10 +67,10 @@ public class Graph {
     }
 
     public void addEdge(int v, int w) {
-        if (v == w) {
+        if (!allowingParallelAndSelfEdges && v == w) {
             throw new IllegalArgumentException("Self-loops are disallowed");
         }
-        if (hasEdge(v, w)) {
+        if (!allowingParallelAndSelfEdges && hasEdge(v, w)) {
             throw new IllegalArgumentException("Parallel edges are disallowed");
         }
         adj[v].add(w);
