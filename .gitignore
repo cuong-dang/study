@@ -16,6 +16,7 @@ a.out
 bin
 build
 cmake-build-debug
+data
 my-grader-report.xml
 my-submission.zip
 scratch
