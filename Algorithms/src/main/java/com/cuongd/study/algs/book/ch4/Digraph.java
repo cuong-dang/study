@@ -16,6 +16,15 @@ public class Digraph {
         }
     }
 
+    public Digraph(Digraph G) {
+        this(G.V);
+        for (int v = 0; v < G.V; v++) {
+            for (int w : G.adj(v)) {
+                addEdge(v, w);
+            }
+        }
+    }
+
     public int V() {
         return V;
     }
