@@ -2,6 +2,9 @@ package com.cuongd.study.algs.book.ch4;
 
 import edu.princeton.cs.algs4.Bag;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Digraph {
     private final int V;
     private int E;
@@ -60,5 +63,38 @@ public class Digraph {
             }
         }
         return R;
+    }
+
+    public boolean isTopologicalOrder(Iterable<Integer> order) {
+        boolean[] marked = new boolean[V];
+        Digraph reversed = reverse();
+
+        for (int v : order) {
+            marked[v] = true;
+            for (int w : reversed.adj(v)) {
+                if (!marked[w]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean isTopologicalOrder2(Iterable<Integer> order) {
+        Map<Integer, Integer> vertexOrder = new HashMap<>();
+        int i = 0;
+
+        for (int v : order) {
+            vertexOrder.put(v, i);
+            i++;
+        }
+        for (int v = 0; v < V; v++) {
+            for (int w : adj(v)) {
+                if (vertexOrder.get(v) > vertexOrder.get(w)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
