@@ -97,4 +97,14 @@ public class Digraph {
         }
         return true;
     }
+
+    public Graph undirected() {
+        Graph g = new Graph(V);
+        for (int v = 0; v < V; v++) {
+            for (int w : adj(v)) {
+                g.addEdge(v, w);
+            }
+        }
+        return g;
+    }
 }
