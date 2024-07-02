@@ -1,6 +1,7 @@
 package com.cuongd.study.algs.book.ch4;
 
 import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Stack;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,6 +33,34 @@ public class LCA {
             }
         }
         return ans == null ? -1 : ans;
+    }
+
+    public Iterable<Integer> sap(int v, int w) {
+        Set<Integer> vAnc = new HashSet<>(ancestors(v));
+        Set<Integer> wAnc = new HashSet<>(ancestors(w));
+        Set<Integer> cAnc = vAnc
+                .stream()
+                .filter(wAnc::contains)
+                .collect(Collectors.toSet());
+
+        Graph H = G.undirected();
+        BreadthFirstPaths vBfs = new BreadthFirstPaths(H, v);
+        BreadthFirstPaths wBfs = new BreadthFirstPaths(H, w);
+        List<Integer> ans = new ArrayList<>();
+        int minLength = 0;
+        for (int anc : cAnc) {
+            if (minLength == 0 || vBfs.distTo(anc) + wBfs.distTo(anc) < minLength) {
+                minLength = vBfs.distTo(anc) + wBfs.distTo(anc);
+                ans.clear();
+                vBfs.pathTo(anc).forEach(ans::add);
+
+                Stack<Integer> t = new Stack<>();
+                wBfs.pathTo(anc).forEach(t::push);
+                t.pop();
+                t.forEach(ans::add);
+            }
+        }
+        return ans;
     }
 
     private List<Integer> ancestors(int v) {
