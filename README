@@ -1,14 +1,12 @@
 STUDY
 Solutions to selected exercises from courses and books. Resource links
-and run instructions could be found in individual folder or file.
+and run instructions can be found in individual folder or file.
 
 RESOURCE ID
 These are the resource IDs at the beginning of commit messages. Each
 resource could have multiple related materials such as books and
-Coursera courses. The canonical names are from books, university
-courses, or MOOC, in that order. For further supporting material links
-(e.g., web, code repos), see individual resource page.
-
+Coursera courses. For further supporting material links (e.g., web, code
+repos), see individual resource page.
 - libcc: Implementation of classic data structures and algorithms for
   educational purpose as well as OS development
 - sicp: Structure and Interpretation of Computer Programs
@@ -41,8 +39,7 @@ courses, or MOOC, in that order. For further supporting material links
   + book: https://a.co/d/bYkovN1
 - lc: LeetCode
   + web: https://leetcode.com/
-- cod: Computer Organization and Design
-  + book: https://a.co/d/d1Jj4FV
-  + course: https://inst.eecs.berkeley.edu/~cs61c/sp22/
 - idaa: Introduction to the Design and Analysis of Algorithms
   + book: https://a.co/d/g49sPNp
+- nanodb: Database System Implementation
+  + course: http://courses.cms.caltech.edu/cs122/
