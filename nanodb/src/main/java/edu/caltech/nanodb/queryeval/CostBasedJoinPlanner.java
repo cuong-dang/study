@@ -1,25 +1,12 @@
 package edu.caltech.nanodb.queryeval;
 
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import edu.caltech.nanodb.expressions.Expression;
-import edu.caltech.nanodb.plannodes.FileScanNode;
+import edu.caltech.nanodb.expressions.PredicateUtils;
 import edu.caltech.nanodb.plannodes.PlanNode;
-import edu.caltech.nanodb.plannodes.SelectNode;
 import edu.caltech.nanodb.queryast.FromClause;
-import edu.caltech.nanodb.queryast.SelectClause;
-import edu.caltech.nanodb.relations.TableInfo;
-import edu.caltech.nanodb.storage.StorageManager;
+
+import java.util.*;
 
 
 /**
@@ -28,26 +15,7 @@ import edu.caltech.nanodb.storage.StorageManager;
  * <tt>SELECT</tt>-<tt>FROM</tt>-<tt>WHERE</tt> subqueries; optimizations
  * don't currently span multiple subqueries.
  */
-public class CostBasedJoinPlanner implements Planner {
-
-    /** A logging object for reporting anything interesting that happens. */
-    private static Logger logger = LogManager.getLogger(
-        CostBasedJoinPlanner.class);
-
-
-    /** The storage manager used during query planning. */
-    protected StorageManager storageManager;
-
-
-    /** Sets the server to be used during query planning. */
-    public void setStorageManager(StorageManager storageManager) {
-        if (storageManager == null)
-            throw new IllegalArgumentException("storageManager cannot be null");
-
-        this.storageManager = storageManager;
-    }
-
-
+public class CostBasedJoinPlanner extends AbstractPlannerImpl {
     /**
      * This helper class is used to keep track of one "join component" in the
      * dynamic programming algorithm.  A join component is simply a query plan
@@ -125,43 +93,6 @@ public class CostBasedJoinPlanner implements Planner {
 
 
     /**
-     * Returns the root of a plan tree suitable for executing the specified
-     * query.
-     *
-     * @param selClause an object describing the query to be performed
-     *
-     * @return a plan tree for executing the specified query
-     */
-    public PlanNode makePlan(SelectClause selClause,
-        List<SelectClause> enclosingSelects) {
-
-        // TODO:  Implement!
-        //
-        // This is a very rough sketch of how this function will work,
-        // focusing mainly on join planning:
-        //
-        // 1)  Pull out the top-level conjuncts from the FROM and WHERE
-        //     clauses on the query, since we will handle them in special ways
-        //     if we have outer joins.
-        //
-        // 2)  Create an optimal join plan from the top-level from-clause and
-        //     the top-level conjuncts.
-        //
-        // 3)  If there are any unused conjuncts, determine how to handle them.
-        //
-        // 4)  Create a project plan-node if necessary.
-        //
-        // 5)  Handle other clauses such as ORDER BY, LIMIT/OFFSET, etc.
-        //
-        // Supporting other query features, such as grouping/aggregation,
-        // various kinds of subqueries, queries without a FROM clause, etc.,
-        // can all be incorporated into this sketch relatively easily.
-
-        return null;
-    }
-
-
-    /**
      * Given the top-level {@code FromClause} for a SELECT-FROM-WHERE block,
      * this helper generates an optimal join plan for the {@code FromClause}.
      *
@@ -178,8 +109,8 @@ public class CostBasedJoinPlanner implements Planner {
         // These variables receive the leaf-clauses and join conjuncts found
         // from scanning the sub-clauses.  Initially, we put the extra conjuncts
         // into the collection of conjuncts.
-        HashSet<Expression> conjuncts = new HashSet<>();
         ArrayList<FromClause> leafFromClauses = new ArrayList<>();
+        HashSet<Expression> conjuncts = new HashSet<>();
 
         collectDetails(fromClause, conjuncts, leafFromClauses);
 
@@ -212,8 +143,7 @@ public class CostBasedJoinPlanner implements Planner {
 
         // Build up the full query-plan using a dynamic programming approach.
 
-        JoinComponent optimalJoin =
-            generateOptimalJoin(leafComponents, roConjuncts);
+        JoinComponent optimalJoin = generateOptimalJoin(leafComponents, roConjuncts);
 
         PlanNode plan = optimalJoin.joinPlan;
         logger.info("Optimal join plan generated:\n" +
@@ -227,8 +157,6 @@ public class CostBasedJoinPlanner implements Planner {
      * This helper method pulls the essential details for join optimization
      * out of a <tt>FROM</tt> clause.
      *
-     * TODO:  FILL IN DETAILS.
-     *
      * @param fromClause the from-clause to collect details from
      *
      * @param conjuncts the collection to add all conjuncts to
@@ -237,8 +165,14 @@ public class CostBasedJoinPlanner implements Planner {
      */
     private void collectDetails(FromClause fromClause,
         HashSet<Expression> conjuncts, ArrayList<FromClause> leafFromClauses) {
-
-        // TODO:  IMPLEMENT
+        if (fromClause.isBaseTable() || fromClause.isDerivedTable() || fromClause.isOuterJoin()) {
+            leafFromClauses.add(fromClause);
+            return;
+        }
+        assert fromClause.isJoinExpr() && !fromClause.isOuterJoin();
+        PredicateUtils.collectConjuncts(fromClause.getComputedJoinExpr(), conjuncts);
+        collectDetails(fromClause.getLeftChild(), conjuncts, leafFromClauses);
+        collectDetails(fromClause.getRightChild(), conjuncts, leafFromClauses);
     }
 
 
@@ -271,8 +205,7 @@ public class CostBasedJoinPlanner implements Planner {
         for (FromClause leafClause : leafFromClauses) {
             HashSet<Expression> leafConjuncts = new HashSet<>();
 
-            PlanNode leafPlan =
-                makeLeafPlan(leafClause, conjuncts, leafConjuncts);
+            PlanNode leafPlan = makeLeafPlan(leafClause, conjuncts, leafConjuncts);
 
             JoinComponent leaf = new JoinComponent(leafPlan, leafConjuncts);
             leafComponents.add(leaf);
@@ -284,7 +217,6 @@ public class CostBasedJoinPlanner implements Planner {
 
     /**
      * Constructs a plan tree for evaluating the specified from-clause.
-     * TODO:  COMPLETE THE DOCUMENTATION
      *
      * @param fromClause the select nodes that need to be joined.
      *
@@ -381,46 +313,29 @@ public class CostBasedJoinPlanner implements Planner {
         return joinPlans.values().iterator().next();
     }
 
-
-    /**
-     * Constructs a simple select plan that reads directly from a table, with
-     * an optional predicate for selecting rows.
-     * <p>
-     * While this method can be used for building up larger <tt>SELECT</tt>
-     * queries, the returned plan is also suitable for use in <tt>UPDATE</tt>
-     * and <tt>DELETE</tt> command evaluation.  In these cases, the plan must
-     * only generate tuples of type {@link edu.caltech.nanodb.storage.PageTuple},
-     * so that the command can modify or delete the actual tuple in the file's
-     * page data.
-     *
-     * @param tableName The name of the table that is being selected from.
-     *
-     * @param predicate An optional selection predicate, or {@code null} if
-     *        no filtering is desired.
-     *
-     * @return A new plan-node for evaluating the select operation.
-     */
-    public SelectNode makeSimpleSelect(String tableName, Expression predicate,
-        List<SelectClause> enclosingSelects) {
-        if (tableName == null)
-            throw new IllegalArgumentException("tableName cannot be null");
-
-        if (enclosingSelects != null) {
-            // If there are enclosing selects, this subquery's predicate may
-            // reference an outer query's value, but we don't detect that here.
-            // Therefore we will probably fail with an unrecognized column
-            // reference.
-            logger.warn("Currently we are not clever enough to detect " +
-                "correlated subqueries, so expect things are about to break...");
-        }
-
-        // Open the table.
-        TableInfo tableInfo = storageManager.getTableManager().openTable(tableName);
-
-        // Make a SelectNode to read rows from the table, with the specified
-        // predicate.
-        SelectNode selectNode = new FileScanNode(tableInfo, predicate);
-        selectNode.prepare();
-        return selectNode;
+    @Override
+    PlanNode handleFromWhere(FromClause fromClause, Expression predicate) {
+        // TODO:  Implement!
+        //
+        // This is a very rough sketch of how this function will work,
+        // focusing mainly on join planning:
+        //
+        // 1)  Pull out the top-level conjuncts from the FROM and WHERE
+        //     clauses on the query, since we will handle them in special ways
+        //     if we have outer joins.
+        //
+        // 2)  Create an optimal join plan from the top-level from-clause and
+        //     the top-level conjuncts.
+        //
+        // 3)  If there are any unused conjuncts, determine how to handle them.
+        //
+        // 4)  Create a project plan-node if necessary.
+        //
+        // 5)  Handle other clauses such as ORDER BY, LIMIT/OFFSET, etc.
+        //
+        // Supporting other query features, such as grouping/aggregation,
+        // various kinds of subqueries, queries without a FROM clause, etc.,
+        // can all be incorporated into this sketch relatively easily.
+        return null;
     }
 }
