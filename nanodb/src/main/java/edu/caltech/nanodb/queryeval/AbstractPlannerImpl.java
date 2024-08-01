@@ -45,13 +45,14 @@ public abstract class AbstractPlannerImpl implements Planner {
     @Override
     public PlanNode makePlan(SelectClause selClause,
                              List<SelectClause> enclosingSelects) {
-        PlanNode plan = makeUnpreparedPlan(selClause, selClause.getWhereExpr());
+        PlanNode plan = makeUnpreparedPlan(selClause);
         plan.prepare();
         return plan;
     }
 
-    protected PlanNode makeUnpreparedPlan(SelectClause selClause, Expression predicate) {
+    protected PlanNode makeUnpreparedPlan(SelectClause selClause) {
         PlanNode plan;
+        Expression predicate = selClause.getWhereExpr();
 
         /* Checks for invalid aggregate locations. */
         checkInvalidAggregates(selClause, predicate);

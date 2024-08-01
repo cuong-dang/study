@@ -3,8 +3,12 @@ package edu.caltech.nanodb.queryeval;
 
 import edu.caltech.nanodb.expressions.Expression;
 import edu.caltech.nanodb.expressions.PredicateUtils;
+import edu.caltech.nanodb.plannodes.FileScanNode;
+import edu.caltech.nanodb.plannodes.NestedLoopJoinNode;
 import edu.caltech.nanodb.plannodes.PlanNode;
+import edu.caltech.nanodb.plannodes.PlanUtils;
 import edu.caltech.nanodb.queryast.FromClause;
+import edu.caltech.nanodb.relations.TableInfo;
 
 import java.util.*;
 
@@ -235,18 +239,38 @@ public class CostBasedJoinPlanner extends AbstractPlannerImpl {
      */
     private PlanNode makeLeafPlan(FromClause fromClause,
         Collection<Expression> conjuncts, HashSet<Expression> leafConjuncts) {
+        PlanNode plan;
 
-        // TODO:  IMPLEMENT.
-        //        If you apply any conjuncts then make sure to add them to the
-        //        leafConjuncts collection.
-        //
-        //        Don't forget that all from-clauses can specify an alias.
-        //
-        //        Concentrate on properly handling cases other than outer
-        //        joins first, then focus on outer joins once you have the
-        //        typical cases supported.
+        if (fromClause.isBaseTable() || fromClause.isDerivedTable()) {
+            if (fromClause.isBaseTable()) {
+                TableInfo tableInfo = storageManager
+                        .getTableManager()
+                        .openTable(fromClause.getTableName());
+                plan = new FileScanNode(tableInfo, null);
+            } else {
+                plan = makeUnpreparedPlan(fromClause.getSelectClause());
+            }
+            plan = pushPredicates(plan, conjuncts, leafConjuncts);
+        } else {
+            assert fromClause.isOuterJoin();
+            PlanNode left = makeUnpreparedPlan(fromClause.getLeftChild().getSelectClause());
+            PlanNode right = makeUnpreparedPlan(fromClause.getRightChild().getSelectClause());
+            if (fromClause.hasOuterJoinOnLeft() && !fromClause.hasOuterJoinOnRight()) {
+                HashSet<Expression> conjunctsWithJoinExpr = new HashSet<>(conjuncts);
+                conjunctsWithJoinExpr.add(fromClause.getComputedJoinExpr());
+                left = pushPredicates(left, conjunctsWithJoinExpr, leafConjuncts);
+            }
+            plan = new NestedLoopJoinNode(left, right, fromClause.getJoinType(), fromClause.getComputedJoinExpr());
+        }
+        return plan;
+    }
 
-        return null;
+    private PlanNode pushPredicates(PlanNode plan, Collection<Expression> predicates, HashSet<Expression> leafConjuncts) {
+        plan.prepare();
+        HashSet<Expression> appliedConjuncts = new HashSet<>();
+        PredicateUtils.collectConjuncts(PredicateUtils.makePredicate(predicates), appliedConjuncts);
+        leafConjuncts.addAll(appliedConjuncts);
+        return PlanUtils.addPredicateToPlan(plan, PredicateUtils.makePredicate(appliedConjuncts));
     }
 
 

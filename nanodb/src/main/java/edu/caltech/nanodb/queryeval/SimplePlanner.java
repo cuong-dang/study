@@ -30,7 +30,7 @@ public class SimplePlanner extends AbstractPlannerImpl {
                     .openTable(fromClause.getTableName());
             fromPlan = new FileScanNode(tableInfo, pushDownPredicate);
         } else if (fromClause.isDerivedTable()) {
-            fromPlan = makeUnpreparedPlan(fromClause.getSelectClause(), fromClause.getSelectClause().getWhereExpr());
+            fromPlan = makeUnpreparedPlan(fromClause.getSelectClause());
         } else if (fromClause.isJoinExpr()) {
             PlanNode leftChild = handleFrom(fromClause.getLeftChild(), null);
             PlanNode rightChild = handleFrom(fromClause.getRightChild(), null);
