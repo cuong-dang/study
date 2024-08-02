@@ -142,13 +142,17 @@ public class StatisticsUpdater {
                     break;
                 case LESS_THAN:
                 case LESS_OR_EQUAL:
-                    if (!(compValue.compareTo(stat.getMinValue()) < 0 || compValue.compareTo(stat.getMaxValue()) > 0)) {
+                    if (stat.getMinValue() != null && stat.getMaxValue() != null &&
+                            !(compValue.compareTo(stat.getMinValue()) < 0 ||
+                                    compValue.compareTo(stat.getMaxValue()) > 0)) {
                         stat.setMaxValue(value);
                     }
                     break;
                 case GREATER_THAN:
                 case GREATER_OR_EQUAL:
-                    if (!(compValue.compareTo(stat.getMinValue()) < 0 || compValue.compareTo(stat.getMaxValue()) > 0)) {
+                    if (stat.getMinValue() != null && stat.getMaxValue() != null &&
+                            !(compValue.compareTo(stat.getMinValue()) < 0 ||
+                                    compValue.compareTo(stat.getMaxValue()) > 0)) {
                         stat.setMinValue(value);
                     }
                     break;

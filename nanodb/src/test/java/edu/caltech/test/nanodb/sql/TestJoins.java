@@ -4,7 +4,7 @@ import edu.caltech.nanodb.expressions.TupleLiteral;
 import edu.caltech.nanodb.server.CommandResult;
 import org.testng.annotations.Test;
 
-@Test(groups={"hw2"})
+@Test(groups = {"hw2"})
 public class TestJoins extends SqlTestCase {
     public TestJoins() {
         super("setup_testNaturalUsingJoins");
@@ -15,7 +15,7 @@ public class TestJoins extends SqlTestCase {
 
         // JOIN with only one common column: a
         result = server.doCommand(
-                "SELECT * FROM test_nuj_t1 t1 JOIN test_nuj_t3 t3 ON t1.a = t3.a", true);
+                "SELECT t1.*, t3.* FROM test_nuj_t1 t1 JOIN test_nuj_t3 t3 ON t1.a = t3.a", true);
         TupleLiteral[] expected1 = {
                 new TupleLiteral(2, 20, 2, 200, 2000),
                 new TupleLiteral(3, 30, 3, 300, 3000),
@@ -29,7 +29,7 @@ public class TestJoins extends SqlTestCase {
 
         // JOIN with two common columns: a and c
         result = server.doCommand(
-                "SELECT * FROM test_nuj_t2 t2 JOIN test_nuj_t3 t3 ON t2.a = t3.a AND t2.c = t3.c", true);
+                "SELECT t2.*, t3.* FROM test_nuj_t2 t2 JOIN test_nuj_t3 t3 ON t2.a = t3.a AND t2.c = t3.c", true);
         TupleLiteral[] expected2 = {
                 new TupleLiteral(3, 40, 300, 3, 300, 3000),
                 new TupleLiteral(5, 60, 500, 5, 500, 5000),
@@ -47,7 +47,7 @@ public class TestJoins extends SqlTestCase {
 
         // JOIN with only one common column: a
         result = server.doCommand(
-                "SELECT * FROM test_nuj_t1 t1 LEFT JOIN test_nuj_t3 t3 ON t1.a = t3.a", true);
+                "SELECT t1.*, t3.* FROM test_nuj_t1 t1 LEFT JOIN test_nuj_t3 t3 ON t1.a = t3.a", true);
         TupleLiteral[] expected1 = {
                 new TupleLiteral(1, 10, null, null, null),
                 new TupleLiteral(2, 20, 2, 200, 2000),
@@ -64,7 +64,7 @@ public class TestJoins extends SqlTestCase {
 
         // JOIN with two common columns: a and c
         result = server.doCommand(
-                "SELECT * FROM test_nuj_t2 t2 LEFT JOIN test_nuj_t3 t3 ON t2.a = t3.a AND t2.c = t3.c", true);
+                "SELECT t2.*, t3.* FROM test_nuj_t2 t2 LEFT JOIN test_nuj_t3 t3 ON t2.a = t3.a AND t2.c = t3.c", true);
         TupleLiteral[] expected2 = {
                 new TupleLiteral(3, 40, 300, 3, 300, 3000),
                 new TupleLiteral(4, 30, 400, null, null, null),
@@ -84,7 +84,7 @@ public class TestJoins extends SqlTestCase {
         CommandResult result;
 
         result = server.doCommand(
-                "SELECT * FROM test_nuj_t3 t3 RIGHT JOIN test_nuj_t1 t1 ON t3.a = t1.a", true);
+                "SELECT t3.*, t1.* FROM test_nuj_t3 t3 RIGHT JOIN test_nuj_t1 t1 ON t3.a = t1.a", true);
         TupleLiteral[] expected1 = {
                 new TupleLiteral(null, null, null, 1, 10),
                 new TupleLiteral(2, 200, 2000, 2, 20),

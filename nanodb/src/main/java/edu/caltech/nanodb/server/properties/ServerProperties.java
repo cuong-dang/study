@@ -34,10 +34,14 @@ public interface ServerProperties {
      */
     int MIN_PAGECACHE_SIZE = DBFile.MAX_PAGESIZE;
 
-    /** This is the maximum page-cache size allowed, 1GiB. */
+    /**
+     * This is the maximum page-cache size allowed, 1GiB.
+     */
     int MAX_PAGECACHE_SIZE = 1 << 30;
 
-    /** The default page-cache size is 1MiB. */
+    /**
+     * The default page-cache size is 1MiB.
+     */
     int DEFAULT_PAGECACHE_SIZE = 1 << 20;
 
     String PROP_PAGECACHE_POLICY = "nanodb.pagecache.policy";
@@ -72,9 +76,7 @@ public interface ServerProperties {
      * keys" functionality in "<tt>CREATE TABLE ...</tt>".
      */
     public static final String PROP_CREATE_INDEXES_ON_KEYS =
-        "nanodb.createIndexesOnKeys";
-
-
+            "nanodb.createIndexesOnKeys";
 
 
     /**
@@ -82,7 +84,7 @@ public interface ServerProperties {
      * processing.
      */
     public static final String PROP_ENABLE_TRANSACTIONS =
-        "nanodb.enableTransactions";
+            "nanodb.enableTransactions";
 
 
     /**
@@ -104,5 +106,5 @@ public interface ServerProperties {
      * overridden in the configuration.
      */
     public static final String DEFAULT_PLANNER_CLASS =
-        "edu.caltech.nanodb.queryeval.SimplePlanner";
+            "edu.caltech.nanodb.queryeval.CostBasedJoinPlanner";
 }
