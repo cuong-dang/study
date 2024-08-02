@@ -237,26 +237,36 @@ public class CostBasedJoinPlanner extends AbstractPlannerImpl {
             } else {
                 plan = makeUnpreparedPlan(fromClause.getSelectClause());
             }
-            plan = pushPredicates(plan, conjuncts, leafConjuncts);
+            if (fromClause.isRenamed()) {
+                plan = new RenameNode(plan, fromClause.getResultName());
+            }
+            plan.prepare();
+            plan = pushConjuncts(plan, conjuncts, leafConjuncts);
         } else {
             assert fromClause.isOuterJoin();
-            PlanNode left = makeUnpreparedPlan(fromClause.getLeftChild().getSelectClause());
-            PlanNode right = makeUnpreparedPlan(fromClause.getRightChild().getSelectClause());
+            PlanNode left = handleFromWhere(fromClause.getLeftChild(), null);
+            PlanNode right = handleFromWhere(fromClause.getRightChild(), null);
             if (fromClause.hasOuterJoinOnLeft() && !fromClause.hasOuterJoinOnRight()) {
                 HashSet<Expression> conjunctsWithJoinExpr = new HashSet<>(conjuncts);
                 conjunctsWithJoinExpr.add(fromClause.getComputedJoinExpr());
-                left = pushPredicates(left, conjunctsWithJoinExpr, leafConjuncts);
+                left.prepare();
+                left = pushConjuncts(left, conjunctsWithJoinExpr, leafConjuncts);
             }
             plan = new NestedLoopJoinNode(left, right, fromClause.getJoinType(), fromClause.getComputedJoinExpr());
         }
         return plan;
     }
 
-    private PlanNode pushPredicates(PlanNode plan, Collection<Expression> predicates,
-                                    HashSet<Expression> appliedConjuncts) {
-        plan.prepare();
-        PredicateUtils.findExprsUsingSchemas(predicates, false, appliedConjuncts, plan.getSchema());
-        return appliedConjuncts.isEmpty() ? plan : PlanUtils.addPredicateToPlan(plan, PredicateUtils.makePredicate(appliedConjuncts));
+    private PlanNode pushConjuncts(PlanNode plan, Collection<Expression> conjuncts,
+                                   HashSet<Expression> appliedConjuncts) {
+        logger.debug("Pushing conjuncts for plan: " + plan + "; conjuncts: " + conjuncts);
+        PredicateUtils.findExprsUsingSchemas(conjuncts, false, appliedConjuncts, plan.getSchema());
+        logger.debug("Applied conjuncts: " + appliedConjuncts);
+        if (!appliedConjuncts.isEmpty()) {
+            plan = PlanUtils.addPredicateToPlan(plan, PredicateUtils.makePredicate(appliedConjuncts));
+            plan.prepare();
+        }
+        return plan;
     }
 
 
@@ -357,9 +367,6 @@ public class CostBasedJoinPlanner extends AbstractPlannerImpl {
         conjuncts.removeAll(optimalJoinPlan.conjunctsUsed);
         if (!conjuncts.isEmpty()) {
             plan = PlanUtils.addPredicateToPlan(plan, PredicateUtils.makePredicate(conjuncts));
-        }
-        if (fromClause.isRenamed()) {
-            plan = new RenameNode(plan, fromClause.getResultName());
         }
         return plan;
     }
