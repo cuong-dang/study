@@ -54,8 +54,8 @@ public abstract class AbstractPlannerImpl implements Planner {
         PlanNode plan;
         Expression predicate = selClause.getWhereExpr();
 
-        /* Checks for invalid aggregate locations. */
         checkInvalidAggregates(selClause, predicate);
+        planSubqueries(selClause);
 
         /* FROM */
         if (selClause.getFromClause() == null) { // literals
@@ -89,12 +89,12 @@ public abstract class AbstractPlannerImpl implements Planner {
 
     private PlanNode handleGroupByHaving(PlanNode plan, SelectClause selClause) {
         AggregateCollector collector = new AggregateCollector(true);
-        for (SelectValue sv : selClause.getSelectValues()) {
-            if (!sv.isExpression())
-                continue;
-            Expression e = sv.getExpression().traverse(collector);
-            sv.setExpression(e);
-        }
+        selClause.getSelectValues().stream()
+                .filter(SelectValue::isExpression)
+                .forEach(sv -> {
+                    Expression e = sv.getExpression().traverse(collector);
+                    sv.setExpression(e);
+                });
         if (selClause.getHavingExpr() != null)
             selClause.getHavingExpr().traverse(collector);
         if (selClause.getGroupByExprs().isEmpty() && collector.getAggregates().isEmpty())
@@ -105,6 +105,20 @@ public abstract class AbstractPlannerImpl implements Planner {
             aggNode = PlanUtils.addPredicateToPlan(aggNode, selClause.getHavingExpr());
         }
         return aggNode;
+    }
+
+    private void planSubqueries(SelectClause selClause) {
+        ExpressionPlanner ep = new ExpressionPlanner(this);
+        /* SELECT */
+        selClause.getSelectValues().stream()
+                .filter(SelectValue::isExpression)
+                .forEach(sv -> sv.getExpression().traverse(ep));
+        /* WHERE */
+        if (selClause.getWhereExpr() != null)
+            selClause.getWhereExpr().traverse(ep);
+        /* HAVING */
+        if (selClause.getHavingExpr() != null)
+            selClause.getHavingExpr().traverse(ep);
     }
 
     /**
