@@ -3,10 +3,7 @@ package edu.caltech.nanodb.plannodes;
 
 import edu.caltech.nanodb.expressions.Expression;
 import edu.caltech.nanodb.expressions.OrderByExpression;
-import edu.caltech.nanodb.queryeval.ColumnStats;
-import edu.caltech.nanodb.queryeval.PlanCost;
-import edu.caltech.nanodb.queryeval.SelectivityEstimator;
-import edu.caltech.nanodb.queryeval.StatisticsUpdater;
+import edu.caltech.nanodb.queryeval.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,6 +122,9 @@ public class SimpleFilterNode extends SelectNode {
                 leftChild.cost.numBlockIOs,
                 leftChild.cost.numLargeSeeks
         );
+        ExpressionCostCalculator ecc = new ExpressionCostCalculator();
+        predicate.traverse(ecc);
+        cost.cpuCost += leftChild.cost.numTuples * ecc.getCost();
 
         stats = StatisticsUpdater.updateStats(predicate, schema, childStats);
     }
