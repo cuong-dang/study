@@ -45,20 +45,6 @@ public class SAP {
         return runSubsets(v, w, false);
     }
 
-    private List<Integer> ancestors(int v) {
-        Queue<Integer> q = new Queue<>();
-        List<Integer> r = new ArrayList<>();
-        q.enqueue(v);
-        while (!q.isEmpty()) {
-            int c = q.dequeue();
-            r.add(c);
-            for (int w : G.adj(c)) {
-                q.enqueue(w);
-            }
-        }
-        return r;
-    }
-
     private int run(int v, int w, boolean returningLength) {
         Pair<Integer, Integer> cacheKey = new Pair<>(v, w);
         if (cache.contains(cacheKey)) {
@@ -84,14 +70,34 @@ public class SAP {
         return run(v, w, returningLength);
     }
 
+    private List<Integer> ancestors(int v) {
+        Queue<Integer> q = new Queue<>();
+        List<Integer> r = new ArrayList<>();
+        q.enqueue(v);
+        while (!q.isEmpty()) {
+            int c = q.dequeue();
+            r.add(c);
+            for (int w : G.adj(c)) {
+                q.enqueue(w);
+            }
+        }
+        return r;
+    }
+
     private int runSubsets(Iterable<Integer> v, Iterable<Integer> w, boolean returningLength) {
         int length = -1;
         int ancestor = -1;
-        for (int vv : v) {
-            for (int ww : w) {
+        for (Integer vv : v) {
+            if (vv == null) {
+                throw new IllegalArgumentException();
+            }
+            for (Integer ww : w) {
+                if (ww == null) {
+                    throw new IllegalArgumentException();
+                }
                 int len = length(vv, ww);
                 int anc = ancestor(vv, ww);
-                if (len < length) {
+                if (length == -1 || len < length) {
                     length = len;
                     ancestor = anc;
                 }
