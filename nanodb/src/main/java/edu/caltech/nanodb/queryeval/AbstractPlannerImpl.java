@@ -2,7 +2,13 @@ package edu.caltech.nanodb.queryeval;
 
 import edu.caltech.nanodb.expressions.AggregateCollector;
 import edu.caltech.nanodb.expressions.Expression;
-import edu.caltech.nanodb.plannodes.*;
+import edu.caltech.nanodb.plannodes.FileScanNode;
+import edu.caltech.nanodb.plannodes.HashedGroupAggregateNode;
+import edu.caltech.nanodb.plannodes.PlanNode;
+import edu.caltech.nanodb.plannodes.PlanUtils;
+import edu.caltech.nanodb.plannodes.ProjectNode;
+import edu.caltech.nanodb.plannodes.SelectNode;
+import edu.caltech.nanodb.plannodes.SortNode;
 import edu.caltech.nanodb.queryast.FromClause;
 import edu.caltech.nanodb.queryast.SelectClause;
 import edu.caltech.nanodb.queryast.SelectValue;
@@ -55,7 +61,7 @@ public abstract class AbstractPlannerImpl implements Planner {
         Expression predicate = selClause.getWhereExpr();
 
         checkInvalidAggregates(selClause, predicate);
-        planSubqueries(selClause);
+//        planSubqueries(selClause);
 
         /* FROM */
         if (selClause.getFromClause() == null) { // literals
@@ -68,7 +74,13 @@ public abstract class AbstractPlannerImpl implements Planner {
         if (!selClause.getOrderByExprs().isEmpty()) {
             plan = new SortNode(plan, selClause.getOrderByExprs());
         }
-        return new ProjectNode(plan, selClause.getSelectValues());
+        plan = new ProjectNode(plan, selClause.getSelectValues());
+        for (SelectValue sv : selClause.getSelectValues()) {
+            if (sv.isExpression()) {
+                planSubqueries(sv.getExpression(), plan);
+            }
+        }
+        return plan;
     }
 
     private void checkInvalidAggregates(SelectClause selClause, Expression predicate) {
@@ -103,23 +115,32 @@ public abstract class AbstractPlannerImpl implements Planner {
                 collector.getAggregates());
         if (selClause.getHavingExpr() != null) {
             aggNode = PlanUtils.addPredicateToPlan(aggNode, selClause.getHavingExpr());
+            planSubqueries(selClause.getHavingExpr(), aggNode);
         }
         return aggNode;
     }
 
-    private void planSubqueries(SelectClause selClause) {
+    protected void planSubqueries(Expression e, PlanNode enclosingPlanNode) {
         ExpressionPlanner ep = new ExpressionPlanner(this);
-        /* SELECT */
-        selClause.getSelectValues().stream()
-                .filter(SelectValue::isExpression)
-                .forEach(sv -> sv.getExpression().traverse(ep));
-        /* WHERE */
-        if (selClause.getWhereExpr() != null)
-            selClause.getWhereExpr().traverse(ep);
-        /* HAVING */
-        if (selClause.getHavingExpr() != null)
-            selClause.getHavingExpr().traverse(ep);
+        e.traverse(ep);
+        if (ep.hasSeenSubqueries()) {
+            enclosingPlanNode.setEnvironment(ep.parentEnvironment());
+        }
     }
+
+//    private void planSubqueries(SelectClause selClause) {
+//        ExpressionPlanner ep = new ExpressionPlanner(this);
+//        /* SELECT */
+//        selClause.getSelectValues().stream()
+//                .filter(SelectValue::isExpression)
+//                .forEach(sv -> sv.getExpression().traverse(ep));
+//        /* WHERE */
+//        if (selClause.getWhereExpr() != null)
+//            selClause.getWhereExpr().traverse(ep);
+//        /* HAVING */
+//        if (selClause.getHavingExpr() != null)
+//            selClause.getHavingExpr().traverse(ep);
+//    }
 
     /**
      * Constructs a simple select plan that reads directly from a table, with

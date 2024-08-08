@@ -3,12 +3,21 @@ package edu.caltech.nanodb.queryeval;
 
 import edu.caltech.nanodb.expressions.Expression;
 import edu.caltech.nanodb.expressions.PredicateUtils;
-import edu.caltech.nanodb.plannodes.*;
+import edu.caltech.nanodb.plannodes.FileScanNode;
+import edu.caltech.nanodb.plannodes.NestedLoopJoinNode;
+import edu.caltech.nanodb.plannodes.PlanNode;
+import edu.caltech.nanodb.plannodes.PlanUtils;
+import edu.caltech.nanodb.plannodes.RenameNode;
 import edu.caltech.nanodb.queryast.FromClause;
 import edu.caltech.nanodb.relations.JoinType;
 import edu.caltech.nanodb.relations.TableInfo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -263,7 +272,9 @@ public class CostBasedJoinPlanner extends AbstractPlannerImpl {
         PredicateUtils.findExprsUsingSchemas(conjuncts, false, appliedConjuncts, plan.getSchema());
         logger.debug("Applied conjuncts: " + appliedConjuncts);
         if (!appliedConjuncts.isEmpty()) {
-            plan = PlanUtils.addPredicateToPlan(plan, PredicateUtils.makePredicate(appliedConjuncts));
+            Expression predicate = PredicateUtils.makePredicate(appliedConjuncts);
+            plan = PlanUtils.addPredicateToPlan(plan, predicate);
+            planSubqueries(predicate, plan);
             plan.prepare();
         }
         return plan;
@@ -366,7 +377,9 @@ public class CostBasedJoinPlanner extends AbstractPlannerImpl {
         PlanNode plan = optimalJoinPlan.joinPlan;
         conjuncts.removeAll(optimalJoinPlan.conjunctsUsed);
         if (!conjuncts.isEmpty()) {
-            plan = PlanUtils.addPredicateToPlan(plan, PredicateUtils.makePredicate(conjuncts));
+            Expression remainingConjuncts = PredicateUtils.makePredicate(conjuncts);
+            plan = PlanUtils.addPredicateToPlan(plan, remainingConjuncts);
+            planSubqueries(remainingConjuncts, plan);
         }
         return plan;
     }

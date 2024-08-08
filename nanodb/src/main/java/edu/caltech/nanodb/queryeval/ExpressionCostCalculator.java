@@ -15,6 +15,7 @@ public class ExpressionCostCalculator implements ExpressionProcessor {
     public void enter(Expression node) {
         if (node instanceof SubqueryOperator) {
             PlanNode sp = ((SubqueryOperator) node).getSubqueryPlan();
+            assert sp != null;
             assert sp.getCost() != null;
             cost += sp.getCost().cpuCost;
         } else {
