@@ -53,21 +53,11 @@ public class WordNet {
         return st.contains(word);
     }
 
-    public int distance(String nounA, String nounB) {
-        return sap.length(st.get(nounA), st.get(nounB));
-    }
-
-    public String sap(String nounA, String nounB) {
-        return synsets[sap.ancestor(st.get(nounA), st.get(nounB))];
-    }
-
-    public static void main(String[] args) {
-        WordNet wn = new WordNet("data/synsets.txt", "data/hypernyms.txt");
-        /* isNoun */
-        assert wn.isNoun("event");
-        assert wn.isNoun("happening");
-        assert !wn.isNoun("asdf");
-        /* sap */
-        assert wn.sap("happening", "miracle").equals("event");
-    }
+//    public int distance(String nounA, String nounB) {
+//        return sap.length(st.get(nounA), st.get(nounB));
+//    }
+//
+//    public String sap(String nounA, String nounB) {
+//        return synsets[sap.ancestor(st.get(nounA), st.get(nounB))];
+//    }
 }
