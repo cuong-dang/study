@@ -1,6 +1,10 @@
 package com.cuongd.study.algs.coursera.wk6;
 
-import edu.princeton.cs.algs4.*;
+import edu.princeton.cs.algs4.Bag;
+import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.DirectedCycle;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.ST;
 
 public class WordNet {
     private final ST<String, Bag<Integer>> st;
@@ -53,11 +57,11 @@ public class WordNet {
         return st.contains(word);
     }
 
-//    public int distance(String nounA, String nounB) {
-//        return sap.length(st.get(nounA), st.get(nounB));
-//    }
-//
-//    public String sap(String nounA, String nounB) {
-//        return synsets[sap.ancestor(st.get(nounA), st.get(nounB))];
-//    }
+    public int distance(String nounA, String nounB) {
+        return sap.length(st.get(nounA), st.get(nounB));
+    }
+
+    public String sap(String nounA, String nounB) {
+        return synsets[sap.ancestor(st.get(nounA), st.get(nounB))];
+    }
 }
