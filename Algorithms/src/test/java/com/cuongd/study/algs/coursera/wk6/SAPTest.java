@@ -32,4 +32,12 @@ public class SAPTest {
         assertEquals(4, sap.length(List.of(13, 23, 24), List.of(6, 16, 17)));
         assertEquals(3, sap.ancestor(List.of(13, 23, 24), List.of(6, 16, 17)));
     }
+
+    @Test
+    public void test3() {
+        Digraph G = new Digraph(new In("src/test/resources/wk6/my_digraph1.txt"));
+        SAP sap = new SAP(G);
+        assertEquals(2, sap.length(2, 0));
+        assertEquals(2, sap.ancestor(2, 0));
+    }
 }

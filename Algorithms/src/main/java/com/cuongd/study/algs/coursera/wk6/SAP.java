@@ -53,39 +53,40 @@ public class SAP {
 
         bfsV.reset(v);
         bfsW.reset(w);
-        int anc = -1;
+        Pair<Integer, Integer> ans = new Pair<>();
         while (bfsV.canWalk() || bfsW.canWalk()) {
+            if (ans.first != null && bfsV.dist() >= ans.first() && bfsW.dist() >= ans.first()) {
+                break;
+            }
+
             Set<Integer> landedOnV = new HashSet<>();
             Set<Integer> landedOnW = new HashSet<>();
             if (bfsV.canWalk()) {
                 bfsV.step(landedOnV);
-                anc = checkAnc(landedOnV, bfsW);
-                if (anc != -1) {
-                    break;
-                }
+                check(landedOnV, bfsV, bfsW, ans);
             }
             if (bfsW.canWalk()) {
                 bfsW.step(landedOnW);
-                anc = checkAnc(landedOnW, bfsV);
-                if (anc != -1) {
-                    break;
-                }
+                check(landedOnW, bfsW, bfsV, ans);
             }
         }
-        if (anc != -1) {
-            cache.put(cacheKey, new Pair<>(bfsV.distTo(anc) + bfsW.distTo(anc), anc));
+        if (ans.first != null) {
+            cache.put(cacheKey, ans);
             return run(v, w, returningLength);
         }
         return -1;
     }
 
-    private int checkAnc(Set<Integer> landed, BFSWalk bfsW) {
+    private void check(Set<Integer> landed, BFSWalk bfsThis, BFSWalk bfsThat, Pair<Integer, Integer> ans) {
         for (int v : landed) {
-            if (bfsW.distTo(v) != -1) {
-                return v;
+            if (bfsThat.distTo(v) != -1) { // a common ancestor
+                int dist = bfsThis.distTo(v) + bfsThat.distTo(v);
+                if (ans.first == null || dist < ans.first) {
+                    ans.setFirst(dist);
+                    ans.setSecond(v);
+                }
             }
         }
-        return -1;
     }
 
     private static class BFSWalk {
@@ -118,6 +119,10 @@ public class SAP {
             }
             q = nextQ;
             dist++;
+        }
+
+        public int dist() {
+            return dist;
         }
 
         public int distTo(int v) {
@@ -153,12 +158,17 @@ public class SAP {
     }
 
     private static class Pair<F, S> implements Comparable<Pair<Iterable<Integer>, Iterable<Integer>>> {
-        private final F first;
-        private final S second;
+        private F first;
+        private S second;
 
         public Pair(F first, S second) {
             this.first = first;
             this.second = second;
+        }
+
+        public Pair() {
+            first = null;
+            second = null;
         }
 
         public F first() {
@@ -167,6 +177,14 @@ public class SAP {
 
         public S second() {
             return second;
+        }
+
+        public void setFirst(F first) {
+            this.first = first;
+        }
+
+        public void setSecond(S second) {
+            this.second = second;
         }
 
         @Override
