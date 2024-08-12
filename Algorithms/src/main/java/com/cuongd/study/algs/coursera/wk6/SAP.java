@@ -14,6 +14,7 @@ public class SAP {
     private final ST<Pair<Iterable<Integer>, Iterable<Integer>>, Pair<Integer, Integer>> cache;
     private final BFSWalk bfsV;
     private final BFSWalk bfsW;
+    private final Digraph G;
 
     public SAP(Digraph G) {
         if (G == null) {
@@ -21,6 +22,7 @@ public class SAP {
         }
         bfsV = new BFSWalk(G);
         bfsW = new BFSWalk(G);
+        this.G = G;
         cache = new ST<>();
     }
 
@@ -45,34 +47,33 @@ public class SAP {
             throw new IllegalArgumentException();
         }
 
-        Pair<Iterable<Integer>, Iterable<Integer>> cacheKey = new Pair<>(v, w);
-        if (cache.contains(cacheKey)) {
-            Pair<Integer, Integer> cached = cache.get(cacheKey);
-            return returningLength ? cached.first() : cached.second();
-        }
+//        Pair<Iterable<Integer>, Iterable<Integer>> cacheKey = new Pair<>(v, w);
+//        if (cache.contains(cacheKey)) {
+//            Pair<Integer, Integer> cached = cache.get(cacheKey);
+//            return returningLength ? cached.first() : cached.second();
+//        }
 
         bfsV.reset(v);
         bfsW.reset(w);
         Pair<Integer, Integer> ans = new Pair<>();
-        while (bfsV.canWalk() || bfsW.canWalk()) {
-            if (ans.first != null && bfsV.dist() >= ans.first() && bfsW.dist() >= ans.first()) {
-                break;
-            }
-
-            Set<Integer> landedOnV = new HashSet<>();
-            Set<Integer> landedOnW = new HashSet<>();
-            if (bfsV.canWalk()) {
+        Set<Integer> landedOnV = new HashSet<>();
+        Set<Integer> landedOnW = new HashSet<>();
+        while (bfsV.shouldWalk() || bfsW.shouldWalk()) {
+            landedOnV.clear();
+            landedOnW.clear();
+            if (bfsV.shouldWalk()) {
                 bfsV.step(landedOnV);
                 check(landedOnV, bfsV, bfsW, ans);
             }
-            if (bfsW.canWalk()) {
+            if (bfsW.shouldWalk()) {
                 bfsW.step(landedOnW);
                 check(landedOnW, bfsW, bfsV, ans);
             }
         }
         if (ans.first != null) {
-            cache.put(cacheKey, ans);
-            return run(v, w, returningLength);
+//            cache.put(cacheKey, ans);
+//            return run(v, w, returningLength);
+            return returningLength ? ans.first : ans.second;
         }
         return -1;
     }
@@ -87,13 +88,17 @@ public class SAP {
                 }
             }
         }
+        if (ans.first != null && bfsThis.nextStepDist() >= ans.first) {
+            bfsThis.setTooFar();
+        }
     }
 
     private static class BFSWalk {
         private final Digraph G;
         private final int[] distTo;
+        private int nextStepDist;
+        private boolean isTooFar;
         private Queue<Integer> q;
-        private int dist;
         private Iterable<Integer> oldSources;
 
         public BFSWalk(Digraph G) {
@@ -103,7 +108,11 @@ public class SAP {
             q = new Queue<>();
         }
 
-        public boolean canWalk() {
+        public boolean shouldWalk() {
+            return canWalk() && !isTooFar;
+        }
+
+        private boolean canWalk() {
             return !q.isEmpty();
         }
 
@@ -111,18 +120,20 @@ public class SAP {
             Queue<Integer> nextQ = new Queue<>();
             while (!q.isEmpty()) {
                 int v = q.dequeue();
-                distTo[v] = dist;
+                distTo[v] = nextStepDist;
                 landedOn.add(v);
                 for (int w : G.adj(v)) {
-                    nextQ.enqueue(w);
+                    if (distTo[w] == -1) {
+                        nextQ.enqueue(w);
+                    }
                 }
             }
             q = nextQ;
-            dist++;
+            nextStepDist++;
         }
 
-        public int dist() {
-            return dist;
+        public int nextStepDist() {
+            return nextStepDist;
         }
 
         public int distTo(int v) {
@@ -136,22 +147,25 @@ public class SAP {
             if (oldSources != null) {
                 unmark(oldSources);
             }
-            for (int src : sources) {
-                q.enqueue(src);
-            }
-            dist = 0;
+            sources.forEach(q::enqueue);
+            nextStepDist = 0;
+            isTooFar = false;
             oldSources = sources;
         }
 
-        private void unmark(Iterable<Integer> oldSources) {
-            for (int src : oldSources) {
-                q.enqueue(src);
-            }
+        public void setTooFar() {
+            this.isTooFar = true;
+        }
+
+        private void unmark(Iterable<Integer> sources) {
+            sources.forEach(q::enqueue);
             while (!q.isEmpty()) {
                 int v = q.dequeue();
                 distTo[v] = -1;
                 for (int w : G.adj(v)) {
-                    q.enqueue(w);
+                    if (distTo[w] != -1) {
+                        q.enqueue(w);
+                    }
                 }
             }
         }
