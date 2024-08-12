@@ -1,22 +1,21 @@
 package edu.caltech.nanodb.plannodes;
 
 
+import edu.caltech.nanodb.expressions.*;
+import edu.caltech.nanodb.queryast.SelectValue;
+import edu.caltech.nanodb.queryeval.ColumnStats;
+import edu.caltech.nanodb.queryeval.ExpressionCostCalculator;
+import edu.caltech.nanodb.queryeval.PlanCost;
+import edu.caltech.nanodb.relations.ColumnInfo;
+import edu.caltech.nanodb.relations.Schema;
+import edu.caltech.nanodb.relations.Tuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
-import edu.caltech.nanodb.expressions.*;
-import edu.caltech.nanodb.queryeval.ColumnStats;
-import edu.caltech.nanodb.queryeval.PlanCost;
-import edu.caltech.nanodb.relations.Schema;
-import edu.caltech.nanodb.relations.Tuple;
-import edu.caltech.nanodb.relations.ColumnInfo;
-
-import edu.caltech.nanodb.queryast.SelectValue;
 
 
 /**
@@ -25,7 +24,9 @@ import edu.caltech.nanodb.queryast.SelectValue;
  */
 public class ProjectNode extends PlanNode {
 
-    /** A logging object for reporting anything interesting that happens. **/
+    /**
+     * A logging object for reporting anything interesting that happens.
+     **/
     private static Logger logger = LogManager.getLogger(ProjectNode.class);
 
 
@@ -37,15 +38,21 @@ public class ProjectNode extends PlanNode {
     private static final int GUESS_NUM_UNIQUE_VALUES = 100;
 
 
-    /** The schema of tuples produced by the subplan. */
+    /**
+     * The schema of tuples produced by the subplan.
+     */
     private Schema inputSchema;
 
 
-    /** The cost of the input subplan. */
+    /**
+     * The cost of the input subplan.
+     */
     private PlanCost inputCost;
 
 
-    /** The new schema that this project node creates */
+    /**
+     * The new schema that this project node creates
+     */
     private List<SelectValue> projectionSpec;
 
 
@@ -63,18 +70,22 @@ public class ProjectNode extends PlanNode {
     private List<ColumnInfo> nonWildcardColumnInfos;
 
 
-    /** Current tuple the node is projecting (in NON-projected form). */
+    /**
+     * Current tuple the node is projecting (in NON-projected form).
+     */
     private Tuple currentTuple;
 
 
-    /** True if we have finished pulling tuples from children. */
+    /**
+     * True if we have finished pulling tuples from children.
+     */
     private boolean done;
 
 
     /**
      * Constructs a ProjectNode that pulls tuples from a child node.
      *
-     * @param leftChild the child to pull tuples from
+     * @param leftChild      the child to pull tuples from
      * @param projectionSpec the set of expressions specifying how to project
      *                       input tuples.
      */
@@ -126,7 +137,7 @@ public class ProjectNode extends PlanNode {
      * even be removed.
      *
      * @return true if the select value is a full wildcard value, not even
-     *         specifying a table name
+     * specifying a table name
      */
     public boolean isTrivial() {
         return projectIsTrivial;
@@ -150,14 +161,10 @@ public class ProjectNode extends PlanNode {
             inputCost = leftChild.getCost();
             if (inputCost != null) {
                 cost = new PlanCost(inputCost);
-                cost.cpuCost += inputCost.numTuples;
+            } else {
+                logger.debug("Child's cost not available; not computing this node's cost.");
             }
-            else {
-                logger.debug(
-                    "Child's cost not available; not computing this node's cost.");
-            }
-        }
-        else {
+        } else {
             // The project operator is a leaf in the plan, so it must generate
             // only one tuple.
 
@@ -167,13 +174,17 @@ public class ProjectNode extends PlanNode {
 
             // Estimated number of tuples:  1
             // Tuple size:  TODO
-            // Estimated CPU cost:  1
+            // Estimated CPU cost:  0
             // Number of block IOs:  0
             // Number of large seeks:  0
-            inputCost = new PlanCost(1, /* TODO:  tupleSize */ 100, 1, 0, 0);
+            inputCost = new PlanCost(1, /* TODO:  tupleSize */ 100, 0, 0, 0);
             cost = inputCost;
         }
-
+        ExpressionCostCalculator ecc = new ExpressionCostCalculator();
+        projectionSpec.stream()
+                .filter(SelectValue::isExpression)
+                .forEach(sv -> sv.getExpression().traverse(ecc));
+        cost.cpuCost += inputCost.numTuples * ecc.getCost();
         // TODO:  Estimate the final tuple-size.  It isn't hard, just tedious.
     }
 
@@ -200,21 +211,19 @@ public class ProjectNode extends PlanNode {
                     // Need to find all columns that are associated with the
                     // specified table.
                     SortedMap<Integer, ColumnInfo> found =
-                        inputSchema.findColumns(wildcard);
+                            inputSchema.findColumns(wildcard);
 
                     // Add each column that was found, as well as its stats.
                     colInfos.addAll(found.values());
                     for (Integer idx : found.keySet())
                         stats.add(inputStats.get(idx));
-                }
-                else {
+                } else {
                     // No table is specified, so this is all columns in the
                     // child schema.
                     colInfos.addAll(inputSchema.getColumnInfos());
                     stats.addAll(inputStats);
                 }
-            }
-            else if (selVal.isExpression()) {
+            } else if (selVal.isExpression()) {
                 // Determining the schema is relatively straightforward.  The
                 // statistics, unfortunately, are a different matter:  if the
                 // expression is a simple column-reference then we can look up
@@ -231,8 +240,7 @@ public class ProjectNode extends PlanNode {
                     int colIndex = inputSchema.getColumnIndex(colValue.getColumnName());
                     colInfo = inputSchema.getColumnInfo(colIndex);
                     stats.add(inputStats.get(colIndex));
-                }
-                else {
+                } else {
                     // This is a more complicated expression.  Guess the schema,
                     // and assume that every row will have a distinct value.
 
@@ -245,9 +253,8 @@ public class ProjectNode extends PlanNode {
                         // Adding 0.5 and casting to int is equivalent to
                         // rounding, as long as the input >= 0.
                         colStat.setNumUniqueValues(
-                            (int) (inputCost.numTuples + 0.5f));
-                    }
-                    else {
+                                (int) (inputCost.numTuples + 0.5f));
+                    } else {
                         colStat.setNumUniqueValues(GUESS_NUM_UNIQUE_VALUES);
                     }
 
@@ -261,10 +268,9 @@ public class ProjectNode extends PlanNode {
 
                 colInfos.add(colInfo);
                 nonWildcardColumnInfos.add(colInfo);
-            }
-            else if (selVal.isScalarSubquery()) {
+            } else if (selVal.isScalarSubquery()) {
                 throw new UnsupportedOperationException(
-                    "Scalar subquery support is currently incomplete.");
+                        "Scalar subquery support is currently incomplete.");
             }
         }
 
@@ -273,7 +279,9 @@ public class ProjectNode extends PlanNode {
     }
 
 
-    /** Determines whether the results of the node are sorted. */
+    /**
+     * Determines whether the results of the node are sorted.
+     */
     public List<OrderByExpression> resultsOrderedBy() {
         // TODO:  if subplan is ordered and projected results include the same
         //        columns, then this node's results are also ordered.
@@ -281,7 +289,9 @@ public class ProjectNode extends PlanNode {
     }
 
 
-    /** This node supports marking if its subplan supports marking. */
+    /**
+     * This node supports marking if its subplan supports marking.
+     */
     public boolean supportsMarking() {
         return leftChild != null && leftChild.supportsMarking();
     }
@@ -305,8 +315,7 @@ public class ProjectNode extends PlanNode {
             advanceCurrentTuple();
             if (currentTuple == null)
                 done = true;
-        }
-        else {
+        } else {
             // Since we are here, we know that done == false and we haven't
             // generated our tuple yet.
             currentTuple = new TupleLiteral();
@@ -339,7 +348,6 @@ public class ProjectNode extends PlanNode {
      * based on the project
      *
      * @param tuple the tuple to project
-     *
      * @return the projected version of the tuple
      */
     private Tuple projectTuple(Tuple tuple) {
@@ -360,7 +368,7 @@ public class ProjectNode extends PlanNode {
         // For each select value, evaluate it and add it to the tuple.
 
         Iterator<ColumnInfo> iterNonWildcardCols =
-            nonWildcardColumnInfos.iterator();
+                nonWildcardColumnInfos.iterator();
 
         for (SelectValue selVal : projectionSpec) {
             if (selVal.isWildcard()) {
@@ -375,18 +383,16 @@ public class ProjectNode extends PlanNode {
                     // specified table.
 
                     SortedMap<Integer, ColumnInfo> matchCols =
-                        inputSchema.findColumns(wildcard);
+                            inputSchema.findColumns(wildcard);
 
                     for (int iCol : matchCols.keySet())
                         newTuple.addValue(tuple.getColumnValue(iCol));
-                }
-                else {
+                } else {
                     // No table is specified, so this is all columns in the
                     // child schema.
                     newTuple.appendTuple(tuple);
                 }
-            }
-            else if (selVal.isExpression()) {
+            } else if (selVal.isExpression()) {
                 // This value is a simple expression.
                 Expression expr = selVal.getExpression();
                 String alias = selVal.getAlias();
@@ -397,8 +403,8 @@ public class ProjectNode extends PlanNode {
                 ColumnInfo colInfo = iterNonWildcardCols.next();
 
                 logger.debug(String.format(
-                    "Expression:  %s \tColInfo:  %s\tAlias:  %s",
-                    expr, colInfo, alias));
+                        "Expression:  %s \tColInfo:  %s\tAlias:  %s",
+                        expr, colInfo, alias));
 
                 // Add the result to the tuple.
 
@@ -411,14 +417,12 @@ public class ProjectNode extends PlanNode {
                 */
 
                 newTuple.addValue(result);
-            }
-            else if (selVal.isScalarSubquery()) {
+            } else if (selVal.isScalarSubquery()) {
                 throw new UnsupportedOperationException(
-                    "Scalar subquery support is currently incomplete");
-            }
-            else {
+                        "Scalar subquery support is currently incomplete");
+            } else {
                 throw new IllegalStateException(
-                    "Select-value doesn't specify a value");
+                        "Select-value doesn't specify a value");
             }
         }
 
@@ -426,7 +430,9 @@ public class ProjectNode extends PlanNode {
     }
 
 
-    /** Do initialization for the select operation.  Resets state variables. */
+    /**
+     * Do initialization for the select operation.  Resets state variables.
+     */
     public void initialize() {
         super.initialize();
 
@@ -473,15 +479,17 @@ public class ProjectNode extends PlanNode {
             ProjectNode other = (ProjectNode) obj;
 
             return projectionSpec.equals(other.projectionSpec) &&
-                (leftChild == null && other.leftChild == null ||
-                 leftChild != null && leftChild.equals(other.leftChild));
+                    (leftChild == null && other.leftChild == null ||
+                            leftChild != null && leftChild.equals(other.leftChild));
         }
 
         return false;
     }
 
 
-    /** Computes and returns the hash-code of a project node. */
+    /**
+     * Computes and returns the hash-code of a project node.
+     */
     @Override
     public int hashCode() {
         int hash = 7;
