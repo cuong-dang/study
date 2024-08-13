@@ -19,7 +19,7 @@ public class WordNet {
         /* synsets */
         In synsetsIn = new In(synsets);
         String[] synsetsLines = synsetsIn.readAllLines();
-        Digraph g = new Digraph(synsetsLines.length);
+        Digraph G = new Digraph(synsetsLines.length);
         this.synsets = new String[synsetsLines.length];
         for (String line : synsetsLines) {
             String[] fields = line.split(",");
@@ -39,14 +39,27 @@ public class WordNet {
             String[] vertices = line.split(",");
             int src = Integer.parseInt(vertices[0]);
             for (int i = 1; i < vertices.length; i++) {
-                g.addEdge(src, Integer.parseInt(vertices[i]));
+                G.addEdge(src, Integer.parseInt(vertices[i]));
             }
         }
         /* Check isDAG */
-        if (new DirectedCycle(g).hasCycle()) {
+        if (new DirectedCycle(G).hasCycle()) {
             throw new IllegalArgumentException();
         }
-        sap = new SAP(g);
+        sap = new SAP(G);
+        /* Check invalid vertices */
+        int numRoots = 0;
+        for (int v = 0; v < G.V(); v++) {
+            if (G.indegree(v) == 0 && G.outdegree(v) == 0) {
+                throw new IllegalArgumentException();
+            }
+            if (G.outdegree(v) == 0) {
+                numRoots++;
+                if (numRoots > 1) {
+                    throw new IllegalArgumentException();
+                }
+            }
+        }
     }
 
     public Iterable<String> nouns() {
