@@ -11,9 +11,13 @@ import java.util.Set;
 
 public class SAP {
     private final Digraph G;
+    private final BFSWalk bfsV;
+    private final BFSWalk bfsW;
 
     public SAP(Digraph G) {
         this.G = new Digraph(G);
+        bfsV = new BFSWalk(G);
+        bfsW = new BFSWalk(G);
     }
 
     public int length(int v, int w) {
@@ -38,8 +42,8 @@ public class SAP {
         if (!vs.iterator().hasNext() || !ws.iterator().hasNext()) {
             return -1;
         }
-        BFSWalk bfsV = new BFSWalk(this.G, vs);
-        BFSWalk bfsW = new BFSWalk(this.G, ws);
+        bfsV.reset(vs);
+        bfsW.reset(ws);
 
         List<Integer> ans = new ArrayList<>(2);
         ans.add(-1);
@@ -96,16 +100,27 @@ public class SAP {
         private final int[] distTo;
         private final Queue<Integer> q;
         private final Queue<Integer> nextQ;
+        private final Queue<Integer> oldSources;
         private int currentDist;
 
-        public BFSWalk(Digraph G, Iterable<Integer> sources) {
+        public BFSWalk(Digraph G) {
             this.G = G;
             distTo = new int[G.V()];
             Arrays.fill(distTo, -1);
             q = new Queue<>();
             nextQ = new Queue<>();
+            oldSources = new Queue<>();
+        }
+
+        public void reset(Iterable<Integer> sources) {
+            clear(q);
+            if (!oldSources.isEmpty()) {
+                unmark(oldSources);
+            }
+            currentDist = 0;
             sources.forEach(q::enqueue);
             sources.forEach(i -> distTo[i] = currentDist);
+            sources.forEach(oldSources::enqueue);
         }
 
         public void step(Set<Integer> landedOn) {
@@ -134,6 +149,18 @@ public class SAP {
 
         public int currentDist() {
             return currentDist;
+        }
+
+        private void unmark(Queue<Integer> oldSources) {
+            while (!oldSources.isEmpty()) {
+                int v = oldSources.dequeue();
+                distTo[v] = -1;
+                for (int w : G.adj(v)) {
+                    if (distTo[w] != -1) {
+                        oldSources.enqueue(w);
+                    }
+                }
+            }
         }
 
         private static void clear(Queue<Integer> q) {
