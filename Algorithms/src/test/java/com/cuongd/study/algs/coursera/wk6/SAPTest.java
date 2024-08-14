@@ -4,6 +4,7 @@ import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -13,10 +14,12 @@ public class SAPTest {
     public void test() {
         Digraph G = new Digraph(new In("src/test/resources/wk6/digraph1.txt"));
         SAP sap = new SAP(G);
-//        assertEquals(-1, sap.length(new ArrayList<>(), new ArrayList<>()));
-//        assertEquals(-1, sap.ancestor(new ArrayList<>(), new ArrayList<>()));
+        assertEquals(-1, sap.length(new ArrayList<>(), new ArrayList<>()));
+        assertEquals(-1, sap.ancestor(new ArrayList<>(), new ArrayList<>()));
         assertEquals(4, sap.length(3, 11));
         assertEquals(1, sap.ancestor(3, 11));
+        assertEquals(4, sap.length(3, 11)); // cache test
+        assertEquals(4, sap.length(11, 3)); // cache test
         assertEquals(3, sap.length(9, 12));
         assertEquals(5, sap.ancestor(9, 12));
         assertEquals(4, sap.length(7, 2));
@@ -34,6 +37,7 @@ public class SAPTest {
         Digraph G = new Digraph(new In("src/test/resources/wk6/digraph25.txt"));
         SAP sap = new SAP(G);
         assertEquals(4, sap.length(List.of(13, 23, 24), List.of(6, 16, 17)));
+        assertEquals(4, sap.length(List.of(23, 13, 24), List.of(17, 16, 6))); // cache test
         assertEquals(3, sap.ancestor(List.of(13, 23, 24), List.of(6, 16, 17)));
     }
 

@@ -5,19 +5,23 @@ import edu.princeton.cs.algs4.Queue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class SAP {
     private final Digraph G;
     private final BFSWalk bfsV;
     private final BFSWalk bfsW;
+    private final Map<Set<Set<Integer>>, List<Integer>> cache;
 
     public SAP(Digraph G) {
         this.G = new Digraph(G);
         bfsV = new BFSWalk(G);
         bfsW = new BFSWalk(G);
+        cache = new HashMap<>();
     }
 
     public int length(int v, int w) {
@@ -39,8 +43,16 @@ public class SAP {
     private int findSAP(Iterable<Integer> vs, Iterable<Integer> ws, boolean returningLength) {
         checkVertices(vs);
         checkVertices(ws);
-        if (!vs.iterator().hasNext() || !ws.iterator().hasNext()) {
-            return -1;
+
+        Set<Integer> setV = new HashSet<>(), setW = new HashSet<>();
+        vs.forEach(setV::add);
+        ws.forEach(setW::add);
+        Set<Set<Integer>> cacheKey = new HashSet<>();
+        cacheKey.add(setV);
+        cacheKey.add(setW);
+        if (cache.containsKey(cacheKey)) {
+            List<Integer> cached = cache.get(cacheKey);
+            return returningLength ? cached.get(0) : cached.get(1);
         }
         bfsV.reset(vs);
         bfsW.reset(ws);
@@ -56,7 +68,8 @@ public class SAP {
             }
         }
 
-        return returningLength ? ans.get(0) : ans.get(1);
+        cache.put(cacheKey, ans);
+        return findSAP(vs, ws, returningLength);
     }
 
     private boolean tryAStep(List<Integer> ans, BFSWalk bfsThis, BFSWalk bfsThat) {
@@ -151,13 +164,13 @@ public class SAP {
             return currentDist;
         }
 
-        private void unmark(Queue<Integer> oldSources) {
-            while (!oldSources.isEmpty()) {
-                int v = oldSources.dequeue();
+        private void unmark(Queue<Integer> sources) {
+            while (!sources.isEmpty()) {
+                int v = sources.dequeue();
                 distTo[v] = -1;
                 for (int w : G.adj(v)) {
                     if (distTo[w] != -1) {
-                        oldSources.enqueue(w);
+                        sources.enqueue(w);
                     }
                 }
             }
