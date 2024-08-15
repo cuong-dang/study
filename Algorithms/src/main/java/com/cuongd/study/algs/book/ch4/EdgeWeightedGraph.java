@@ -1,6 +1,7 @@
 package com.cuongd.study.algs.book.ch4;
 
 import edu.princeton.cs.algs4.Bag;
+import edu.princeton.cs.algs4.In;
 
 public class EdgeWeightedGraph {
     private final int V;
@@ -14,6 +15,19 @@ public class EdgeWeightedGraph {
         for (int v = 0; v < V; v++) {
             adj[v] = new Bag<>();
         }
+    }
+
+    public EdgeWeightedGraph(In in) {
+        this(in.readInt());
+        int E = in.readInt(), i = 0;
+        do {
+            int v = in.readInt(), w = in.readInt();
+            double weight = in.readDouble();
+            Edge e = new Edge(v, w, weight);
+            adj[v].add(e);
+            adj[w].add(e);
+            i++;
+        } while (i != E);
     }
 
     public int V() {
