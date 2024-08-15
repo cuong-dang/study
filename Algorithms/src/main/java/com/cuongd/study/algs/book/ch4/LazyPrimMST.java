@@ -4,9 +4,9 @@ import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.Queue;
 
 public class LazyPrimMST {
-    private boolean[] marked;
-    private Queue<Edge> mst;
-    private MinPQ<Edge> pq;
+    private final boolean[] marked;
+    private final Queue<Edge> mst;
+    private final MinPQ<Edge> pq;
 
     public LazyPrimMST(EdgeWeightedGraph G) {
         marked = new boolean[G.V()];
