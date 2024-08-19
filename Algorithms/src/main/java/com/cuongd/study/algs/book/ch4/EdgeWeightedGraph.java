@@ -2,6 +2,11 @@ package com.cuongd.study.algs.book.ch4;
 
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Stack;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class EdgeWeightedGraph {
     private final int V;
@@ -59,5 +64,51 @@ public class EdgeWeightedGraph {
             }
         }
         return b;
+    }
+
+    public Iterable<Integer> cycle() {
+        int[] edgeTo = new int[V];
+        Arrays.fill(edgeTo, -1);
+        boolean[] marked = new boolean[V];
+        Arrays.fill(marked, false);
+        List<Integer> cycleStartEnd = new ArrayList<>();
+        cycleStartEnd.add(null);
+        cycleStartEnd.add(null);
+        for (int i = 0; i < V; i++) {
+            if (!marked[i]) {
+                dfs(i, i, marked, edgeTo, cycleStartEnd);
+            }
+            if (cycleStartEnd.get(0) != null) {
+                break;
+            }
+        }
+        Stack<Integer> ans = new Stack<>();
+        if (cycleStartEnd.get(0) == null) {
+            return ans;
+        }
+        int cycleStart = cycleStartEnd.get(0), cycleEnd = cycleStartEnd.get(1);
+        ans.push(cycleEnd);
+        while (cycleStart != cycleEnd) {
+            cycleEnd = edgeTo[cycleEnd];
+            ans.push(cycleEnd);
+        }
+        return ans;
+    }
+
+    private void dfs(int v, int w, boolean[] marked, int[] edgeTo, List<Integer> result) {
+        marked[v] = true;
+        for (Edge e : adj(v)) {
+            if (result.get(0) != null) {
+                return;
+            }
+            int x = e.other(v);
+            if (!marked[x]) {
+                edgeTo[x] = v;
+                dfs(x, v, marked, edgeTo, result);
+            } else if (x != w) {
+                result.set(0, x);
+                result.set(1, v);
+            }
+        }
     }
 }
