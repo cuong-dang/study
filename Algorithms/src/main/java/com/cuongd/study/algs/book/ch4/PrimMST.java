@@ -1,5 +1,6 @@
 package com.cuongd.study.algs.book.ch4;
 
+import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.IndexMinPQ;
 
 import java.util.Arrays;
@@ -41,5 +42,13 @@ public class PrimMST {
                 }
             }
         }
+    }
+
+    public Iterable<Edge> edges() {
+        Bag<Edge> mst = new Bag<>();
+        for (int i = 1; i < edgeTo.length; i++) {
+            mst.add(edgeTo[i]);
+        }
+        return mst;
     }
 }
