@@ -28,4 +28,8 @@ public class KruskalMST {
             uf.union(v, w);
         }
     }
+
+    public Iterable<Edge> mst() {
+        return mst;
+    }
 }
