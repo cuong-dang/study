@@ -19,15 +19,27 @@ public class Ex4322Test {
         G.addEdge(e02);
         G.addEdge(e12);
         G.addEdge(e34);
-        PrimMSF msf = new PrimMSF(G);
-        assertEquals(2, msf.msf().size());
-        Iterable<Edge> mst1 = msf.msf().get(0);
-        Iterable<Edge> mst2 = msf.msf().get(1);
+        PrimMSF msf1 = new PrimMSF(G);
+        KruskalMSF msf2 = new KruskalMSF(G);
+
+        assertEquals(2, msf1.msf().size());
+        assertEquals(2, msf2.msf().size());
+
         List<Edge> actual = new ArrayList<>();
-        mst1.forEach(actual::add);
+        msf1.msf().get(0).forEach(actual::add);
         assertEquals(List.of(e02, e01), actual);
         actual.clear();
-        mst2.forEach(actual::add);
+
+        msf1.msf().get(1).forEach(actual::add);
         assertEquals(List.of(e34), actual);
+        actual.clear();
+
+        msf2.msf().get(0).forEach(actual::add);
+        assertEquals(List.of(e02, e01), actual);
+        actual.clear();
+
+        msf2.msf().get(1).forEach(actual::add);
+        assertEquals(List.of(e34), actual);
+        actual.clear();
     }
 }
