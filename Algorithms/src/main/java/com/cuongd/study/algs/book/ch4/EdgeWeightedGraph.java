@@ -50,6 +50,24 @@ public class EdgeWeightedGraph {
         E++;
     }
 
+    public void removeEdge(Edge e) {
+        int v = e.either(), w = e.other(v);
+        adj[v] = cloneExcept(adj[v], e);
+        adj[w] = cloneExcept(adj[w], e);
+        E--;
+    }
+
+    private Bag<Edge> cloneExcept(Bag<Edge> bag, Edge e) {
+        Bag<Edge> t = bag;
+        bag = new Bag<>();
+        for (Edge ee : t) {
+            if (ee != e) {
+                bag.add(ee);
+            }
+        }
+        return bag;
+    }
+
     public Iterable<Edge> adj(int v) {
         return adj[v];
     }

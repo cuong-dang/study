@@ -75,4 +75,26 @@ public class EdgeWeightedGraphTest {
         G.cycle().forEach(actual::add);
         assertEquals(List.of(e24, e45, e25), actual);
     }
+
+    @Test
+    public void testRemoveEdge() {
+        EdgeWeightedGraph G = new EdgeWeightedGraph(3);
+        Edge e01 = new Edge(0, 1, 0);
+        Edge e12 = new Edge(1, 2, 0);
+        Edge e02 = new Edge(0, 2, 0);
+        G.addEdge(e01);
+        G.addEdge(e12);
+        G.addEdge(e02);
+        List<Edge> actual = new ArrayList<>();
+        G.removeEdge(e01);
+        assertEquals(2, G.E());
+        G.edges().forEach(actual::add);
+        assertEquals(List.of(e12, e02), actual);
+        actual.clear();
+        G.removeEdge(e12);
+        assertEquals(1, G.E());
+        G.edges().forEach(actual::add);
+        assertEquals(List.of(e02), actual);
+
+    }
 }
