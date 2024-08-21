@@ -8,19 +8,11 @@ public class Ex4316 {
         EdgeWeightedGraph t = new EdgeWeightedGraph(G.V());
         mst.forEach(t::addEdge);
         t.addEdge(e);
-        int currV = -1;
         maxW = Double.MIN_VALUE;
-        for (int prevV : t.cycle()) {
-            if (currV != -1) {
-                for (Edge ee : t.adj(prevV)) {
-                    if (ee.other(prevV) == currV) {
-                        if (ee.weight() > maxW) {
-                            maxW = ee.weight();
-                        }
-                    }
-                }
+        for (Edge ee : t.cycle()) {
+            if (ee.weight() > maxW) {
+                maxW = ee.weight();
             }
-            currV = prevV;
         }
     }
 

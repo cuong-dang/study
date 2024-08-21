@@ -66,7 +66,7 @@ public class EdgeWeightedGraph {
         return b;
     }
 
-    public Iterable<Integer> cycle() {
+    public Iterable<Edge> cycle() {
         int[] edgeTo = new int[V];
         Arrays.fill(edgeTo, -1);
         boolean[] marked = new boolean[V];
@@ -82,17 +82,41 @@ public class EdgeWeightedGraph {
                 break;
             }
         }
-        Stack<Integer> ans = new Stack<>();
+        Stack<Integer> vertices = new Stack<>();
+        Bag<Edge> edges = new Bag<>();
         if (cycleStartEnd.get(0) == null) {
-            return ans;
+            return edges;
         }
         int cycleStart = cycleStartEnd.get(0), cycleEnd = cycleStartEnd.get(1);
-        ans.push(cycleEnd);
+        vertices.push(cycleEnd);
         while (cycleStart != cycleEnd) {
             cycleEnd = edgeTo[cycleEnd];
-            ans.push(cycleEnd);
+            vertices.push(cycleEnd);
         }
-        return ans;
+        Integer prev = null, first = null, last = null;
+        for (int v : vertices) {
+            if (prev != null) {
+                for (Edge e : adj(prev)) {
+                    if (e.other(prev) == v) {
+                        edges.add(e);
+                    }
+                }
+            } else {
+                first = v;
+            }
+            prev = v;
+        }
+        while (!vertices.isEmpty()) {
+            last = vertices.pop();
+        }
+        assert first != null;
+        assert last != null;
+        for (Edge e : adj(last)) {
+            if (e.other(last) == first) {
+                edges.add(e);
+            }
+        }
+        return edges;
     }
 
     private void dfs(int v, int w, boolean[] marked, int[] edgeTo, List<Integer> result) {
