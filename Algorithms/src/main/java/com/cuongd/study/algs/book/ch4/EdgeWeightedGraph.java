@@ -57,6 +57,15 @@ public class EdgeWeightedGraph {
         E--;
     }
 
+    public boolean containsEdge(Edge e) {
+        for (Edge ee : adj[e.either()]) {
+            if (ee == e) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Bag<Edge> cloneExcept(Bag<Edge> bag, Edge e) {
         Bag<Edge> t = bag;
         bag = new Bag<>();
