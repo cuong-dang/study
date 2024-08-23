@@ -21,7 +21,9 @@ public class Cycle {
             if (!marked[w]) {
                 edgeTo[w] = v;
                 dfs(G, w, v);
-            } else if (w != u && edgeTo[w] != v && w != v) {
+            } else if (w != u && // not the immediately previous vertex
+                    edgeTo[w] != v && // parallel edges
+                    w != v) { // self-loops
                 hasCycle = true;
             }
         }
