@@ -528,7 +528,7 @@ public class BTreeTupleFile implements SequentialTupleFile {
             }
             if (keyNo == inPage.getNumKeys()) {
                 dbPage = storageManager.loadDBPage(dbFile,
-                        inPage.getPointer(keyNo + 1));
+                        inPage.getPointer(keyNo));
             }
         }
     }

@@ -747,12 +747,15 @@ public class LeafPageOperations {
         newLeaf.setNextPageNo(leaf.getNextPageNo());
         leaf.setNextPageNo(newLeaf.getPageNo());
         leaf.moveTuplesRight(newLeaf, leaf.getNumTuples() / 2);
-        BTreeFilePageTuple result = newLeaf.addTuple(tuple);
+        int cmp = TupleComparator.comparePartialTuples(tuple,
+                newLeaf.getTuple(0),
+                TupleComparator.CompareMode.SHORTER_IS_LESS);
+        BTreeFilePageTuple result = cmp >= 0 ?
+                newLeaf.addTuple(tuple) : leaf.addTuple(tuple);
         pagePath.remove(pagePath.size() - 1);
         if (!pagePath.isEmpty()) { // has parent
-            InnerPage parent = innerPageOps.loadPage(pagePath.get(pagePath.size() - 1));
-            LeafPage nextPage = loadLeafPage(newLeaf.getNextPageNo());
-            assert nextPage != null;
+            InnerPage parent = innerPageOps.loadPage(
+                    pagePath.get(pagePath.size() - 1));
             innerPageOps.addTuple(parent, pagePath, leaf.getPageNo(),
                     newLeaf.getTuple(0), newLeaf.getPageNo());
         } else { // no parents
@@ -760,9 +763,10 @@ public class LeafPageOperations {
             InnerPage parent = InnerPage.init(fileOps.getNewDataPage(),
                     tupleFile.getSchema(), leaf.getPageNo(),
                     newLeaf.getTuple(0), newLeaf.getPageNo());
-            HeaderPage.setRootPageNo(
-                    storageManager.loadDBPage(tupleFile.getDBFile(), 0),
-                    parent.getPageNo());
+            DBPage dbpHeader = storageManager.loadDBPage(
+                    tupleFile.getDBFile(), 0);
+            HeaderPage.setRootPageNo(dbpHeader, parent.getPageNo());
+            HeaderPage.setFirstLeafPageNo(dbpHeader, leaf.getPageNo());
         }
         return result;
     }
