@@ -1,18 +1,17 @@
 package edu.caltech.nanodb.storage.btreefile;
 
 
-import java.util.List;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import edu.caltech.nanodb.expressions.TupleLiteral;
 import edu.caltech.nanodb.relations.Schema;
 import edu.caltech.nanodb.relations.Tuple;
 import edu.caltech.nanodb.storage.DBPage;
 import edu.caltech.nanodb.storage.PageTuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import static edu.caltech.nanodb.storage.btreefile.BTreePageTypes.*;
+import java.util.List;
+
+import static edu.caltech.nanodb.storage.btreefile.BTreePageTypes.BTREE_INNER_PAGE;
 
 
 /**
@@ -731,13 +730,23 @@ public class InnerPage implements DataPage {
          * Your implementation also needs to properly handle the incoming
          * parent-key, and produce a new parent-key as well.
          */
-        logger.error("NOT YET IMPLEMENTED:  movePointersLeft()");
+        byte[] buf = new byte[pointerOffsets[count] - OFFSET_FIRST_POINTER + 2];
+        TupleLiteral newKey = TupleLiteral.fromTuple(getKey(count));
+        if (parentKey == null) {
+            // Move data to sibling.
+            dbPage.read(OFFSET_FIRST_POINTER, buf);
+            leftSibling.dbPage.write(leftSibling.endOffset, buf);
+            // Shift left.
+            int srcOffset = pointerOffsets[count + 1] + 2;
+            dbPage.moveDataRange(srcOffset, OFFSET_FIRST_POINTER,
+                    endOffset - srcOffset);
+        }
 
         // Update the cached info for both non-leaf pages.
         loadPageContents();
         leftSibling.loadPageContents();
 
-        return null;
+        return newKey;
     }
 
 
