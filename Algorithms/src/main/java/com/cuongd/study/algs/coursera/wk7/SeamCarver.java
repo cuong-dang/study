@@ -39,7 +39,45 @@ public class SeamCarver {
 //    public int[] findHorizontalSeam()
 
     // sequence of indices for vertical seam
-//    public int[] findVerticalSeam()
+    public int[] findVerticalSeam() {
+        double[][] spe = new double[height()][width()];
+        int[][] sp = new int[height()][width()];
+        // init
+        for (int y = 0; y < height(); y++) {
+            for (int x = 0; x < width(); x++) {
+                spe[y][x] = Double.POSITIVE_INFINITY;
+            }
+        }
+        // solve matrix
+        for (int y = 0; y < height() - 1; y++) {
+            for (int x = 0; x < width(); x++) {
+                if (y == 0) spe[y][x] = energy(x, y);
+                for (int d = -1; d <= 1; d++) {
+                    if (x+d < 0 || x+d >= width()) continue;
+                    double e = spe[y][x] + energy(x+d, y+1);
+                    if (spe[y+1][x+d] > spe[y][x] + e) {
+                        spe[y+1][x+d] = spe[y][x] + e;
+                        sp[y+1][x+d] = x;
+                    }
+                }
+            }
+        }
+        // find min
+        int minX = 0;
+        for (int x = 1; x < width(); x++) {
+            if (spe[height()-1][x] < spe[height()-1][minX]) {
+                minX = x;
+            }
+        }
+        // build result
+        int[] result = new int[height()];
+        result[result.length - 1] = minX;
+        for (int y = height() - 1; y >= 1; y--) {
+            result[y - 1] = sp[y][minX];
+            minX = sp[y][minX];
+        }
+        return result;
+    }
 
     // remove horizontal seam from current picture
 //    public void removeHorizontalSeam(int[] seam)
