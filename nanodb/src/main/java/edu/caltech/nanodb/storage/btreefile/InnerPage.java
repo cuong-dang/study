@@ -955,7 +955,24 @@ public class InnerPage implements DataPage {
          * Your implementation also needs to properly handle the incoming
          * parent-key, and produce a new parent-key as well.
          */
-        logger.error("NOT YET IMPLEMENTED:  movePointersRight()");
+        byte[] buf = new byte[len];
+        TupleLiteral newKey = TupleLiteral.fromTuple(
+                getKey(startPointerIndex - 1));
+        if (parentKey != null) {
+
+        }
+        // Move data to sibling.
+        dbPage.read(startOffset, buf);
+        if (rightSibling.numPointers != 0) {
+            int movingLen = rightSibling.endOffset - rightSibling.pointerOffsets[0];
+            rightSibling.dbPage.moveDataRange(OFFSET_FIRST_POINTER,
+                    OFFSET_FIRST_POINTER + len, movingLen);
+        }
+        rightSibling.dbPage.write(OFFSET_FIRST_POINTER, buf);
+        // Update num pointers.
+        dbPage.writeShort(OFFSET_NUM_POINTERS, numPointers - count);
+        rightSibling.dbPage.writeShort(OFFSET_NUM_POINTERS,
+                rightSibling.numPointers + count);
 
         // Update the cached info for both non-leaf pages.
         loadPageContents();
@@ -970,7 +987,7 @@ public class InnerPage implements DataPage {
                 rightSibling.toFormattedString());
         }
 
-        return null;
+        return newKey;
     }
 
 
