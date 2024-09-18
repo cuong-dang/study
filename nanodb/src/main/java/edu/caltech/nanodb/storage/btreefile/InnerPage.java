@@ -958,15 +958,19 @@ public class InnerPage implements DataPage {
         byte[] buf = new byte[len];
         TupleLiteral newKey = TupleLiteral.fromTuple(
                 getKey(startPointerIndex - 1));
-        if (parentKey != null) {
-
-        }
         // Move data to sibling.
         dbPage.read(startOffset, buf);
-        if (rightSibling.numPointers != 0) {
-            int movingLen = rightSibling.endOffset - rightSibling.pointerOffsets[0];
+        if (rightSibling.numPointers > 0) {
+            int siblingLen = rightSibling.endOffset - OFFSET_FIRST_POINTER;
+            if (parentKey != null) {
+                rightSibling.dbPage.moveDataRange(OFFSET_FIRST_POINTER,
+                        OFFSET_FIRST_POINTER + parentKeyLen, siblingLen);
+                PageTuple.storeTuple(rightSibling.dbPage, OFFSET_FIRST_POINTER,
+                        schema, parentKey);
+                siblingLen += parentKeyLen;
+            }
             rightSibling.dbPage.moveDataRange(OFFSET_FIRST_POINTER,
-                    OFFSET_FIRST_POINTER + len, movingLen);
+                    OFFSET_FIRST_POINTER + len, siblingLen);
         }
         rightSibling.dbPage.write(OFFSET_FIRST_POINTER, buf);
         // Update num pointers.
