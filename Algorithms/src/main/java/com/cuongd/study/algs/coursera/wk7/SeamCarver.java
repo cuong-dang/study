@@ -12,12 +12,12 @@ public class SeamCarver {
     public SeamCarver(Picture picture) {
         if (picture == null) throw new IllegalArgumentException();
 
-        pic = picture;
+        pic = new Picture(picture);
         energy = new Double[pic.height()][pic.width()];
     }
 
     // current picture
-    public Picture picture() { return pic; }
+    public Picture picture() { return new Picture(pic); }
 
     // width of current picture
     public int width() { return pic.width(); }
