@@ -36,7 +36,29 @@ public class SeamCarver {
     }
 
     // sequence of indices for horizontal seam
-//    public int[] findHorizontalSeam()
+    public int[] findHorizontalSeam() {
+        // transpose
+        Picture oldPic = pic;
+        Double[][] oldEnergy = energy;
+        transpose();
+        // calculate
+        int[] result = findVerticalSeam();
+        // restore
+        pic = oldPic;
+        energy = oldEnergy;
+        return result;
+    }
+
+    private void transpose() {
+        Picture oldPic = pic;
+        pic = new Picture(oldPic.height(), oldPic.width());
+        for (int i = 0; i < pic.height(); i++) {
+            for (int j = 0; j < pic.width(); j++) {
+                pic.set(j, i, oldPic.get(i, j));
+            }
+        }
+        energy = new Double[pic.width()][pic.height()];
+    }
 
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
@@ -86,7 +108,9 @@ public class SeamCarver {
 //    public void removeVerticalSeam(int[] seam)
 
     private double delta(Color a, Color b) {
-        return sq(a.getRed() - b.getRed()) + sq(a.getBlue() - b.getBlue()) + sq(a.getGreen() - b.getGreen());
+        return sq(a.getRed() - b.getRed()) +
+                sq(a.getBlue() - b.getBlue()) +
+                sq(a.getGreen() - b.getGreen());
     }
 
     private double sq(double x) { return Math.pow(x, 2); }
