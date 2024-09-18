@@ -2,7 +2,7 @@ package com.cuongd.study.algs.coursera.wk7;
 
 import edu.princeton.cs.algs4.Picture;
 
-import java.awt.*;
+import java.awt.Color;
 
 public class SeamCarver {
     private Picture pic;
@@ -10,8 +10,10 @@ public class SeamCarver {
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
+        if (picture == null) throw new IllegalArgumentException();
+
         pic = picture;
-        energy = new Double[pic.width()][pic.height()];
+        energy = new Double[pic.height()][pic.width()];
     }
 
     // current picture
@@ -25,13 +27,17 @@ public class SeamCarver {
 
     // energy of pixel at column x and row y
     public double energy(int x, int y) {
-        if (energy[x][y] != null) return energy[x][y];
+        if (x < 0 || x >= width() || y < 0 || y >= height()) {
+            throw new IllegalArgumentException();
+        }
+
+        if (energy[y][x] != null) return energy[y][x];
         if (x - 1 < 0 || x + 1 >= width()) return 1000;
         if (y - 1 < 0 || y + 1 >= height()) return 1000;
         double deltaX = delta(pic.get(x-1, y), pic.get(x+1, y));
         double deltaY = delta(pic.get(x, y-1), pic.get(x, y+1));
         double e = Math.sqrt(deltaX + deltaY);
-        energy[x][y] = e;
+        energy[y][x] = e;
         return e;
     }
 
@@ -57,7 +63,7 @@ public class SeamCarver {
                 pic.set(j, i, oldPic.get(i, j));
             }
         }
-        energy = new Double[pic.width()][pic.height()];
+        energy = new Double[pic.height()][pic.width()];
     }
 
     // sequence of indices for vertical seam
@@ -71,15 +77,15 @@ public class SeamCarver {
             }
         }
         // solve matrix
-        for (int y = 0; y < height() - 1; y++) {
-            for (int x = 0; x < width(); x++) {
-                if (y == 0) spe[y][x] = energy(x, y);
+        for (int h = 0; h < height()-1; h++) {
+            for (int w = 0; w < width(); w++) {
+                if (h == 0) spe[h][w] = energy(w, h);
                 for (int d = -1; d <= 1; d++) {
-                    if (x+d < 0 || x+d >= width()) continue;
-                    double e = spe[y][x] + energy(x+d, y+1);
-                    if (spe[y+1][x+d] > spe[y][x] + e) {
-                        spe[y+1][x+d] = spe[y][x] + e;
-                        sp[y+1][x+d] = x;
+                    if (w+d < 0 || w+d >= width()) continue;
+                    double e = spe[h][w] + energy(w+d, h+1);
+                    if (spe[h+1][w+d] > e) {
+                        spe[h+1][w+d] = e;
+                        sp[h+1][w+d] = w;
                     }
                 }
             }
@@ -102,10 +108,39 @@ public class SeamCarver {
     }
 
     // remove horizontal seam from current picture
-//    public void removeHorizontalSeam(int[] seam)
+    public void removeHorizontalSeam(int[] seam) {
+        transpose();
+        removeVerticalSeam(seam);
+        transpose();
+    }
 
     // remove vertical seam from current picture
-//    public void removeVerticalSeam(int[] seam)
+    public void removeVerticalSeam(int[] seam) {
+        if (seam == null) throw new IllegalArgumentException();
+        if (seam.length != height()) throw new IllegalArgumentException();
+        if (width() <= 1) throw new IllegalArgumentException();
+
+        Picture newPic = new Picture(pic.width() - 1, pic.height());
+        for (int h = 0; h < pic.height(); h++) {
+            int d = 0;
+            for (int w = 0; w < pic.width(); w++) {
+                if (seam[h] < 0 || seam[h] > width()) {
+                    throw new IllegalArgumentException();
+                }
+                if (h != 0 && Math.abs(seam[h] - seam[h-1]) > 1) {
+                    throw new IllegalArgumentException();
+                }
+
+                if (w == seam[h]) {
+                    d = -1;
+                    continue;
+                }
+                newPic.set(w+d, h, pic.get(w, h));
+            }
+        }
+        pic = newPic;
+        energy = new Double[pic.height()][pic.width()];
+    }
 
     private double delta(Color a, Color b) {
         return sq(a.getRed() - b.getRed()) +
@@ -114,7 +149,4 @@ public class SeamCarver {
     }
 
     private double sq(double x) { return Math.pow(x, 2); }
-
-    //  unit testing (optional)
-//    public static void main(String[] args)
 }
