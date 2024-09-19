@@ -7,6 +7,11 @@ import java.awt.Color;
 public class SeamCarver {
     private Picture pic;
     private Double[][] energy;
+    private boolean hasProt;
+    private int protFromX;
+    private int protToX;
+    private int protFromY;
+    private int protToY;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
@@ -14,6 +19,15 @@ public class SeamCarver {
 
         pic = new Picture(picture);
         energy = new Double[pic.height()][pic.width()];
+    }
+
+    public SeamCarver(Picture picture, int fromX, int toX, int fromY, int toY) {
+        this(picture);
+        hasProt = true;
+        protFromX = fromX;
+        protToX = toX;
+        protFromY = fromY;
+        protToY = toY;
     }
 
     // current picture
@@ -34,6 +48,7 @@ public class SeamCarver {
         if (energy[y][x] != null) return energy[y][x];
         if (x - 1 < 0 || x + 1 >= width()) return 1000;
         if (y - 1 < 0 || y + 1 >= height()) return 1000;
+        if (hasProt && protFromX <= x && x <= protToX && protFromY <= y && y <= protToY) return Double.POSITIVE_INFINITY;
         double deltaX = delta(pic.get(x-1, y), pic.get(x+1, y));
         double deltaY = delta(pic.get(x, y-1), pic.get(x, y+1));
         double e = Math.sqrt(deltaX + deltaY);
@@ -64,6 +79,11 @@ public class SeamCarver {
             }
         }
         energy = new Double[pic.height()][pic.width()];
+        int oldProtFromX = protFromX, oldProtToX = protToX;
+        protFromX = protFromY;
+        protToX = protToY;
+        protFromY = oldProtFromX;
+        protToY = oldProtToX;
     }
 
     // sequence of indices for vertical seam
@@ -119,10 +139,12 @@ public class SeamCarver {
         if (seam == null) throw new IllegalArgumentException();
         if (seam.length != height()) throw new IllegalArgumentException();
         if (width() <= 1) throw new IllegalArgumentException();
+        boolean cutLeft = false;
 
         Picture newPic = new Picture(pic.width() - 1, pic.height());
         for (int h = 0; h < pic.height(); h++) {
             int d = 0;
+            if (hasProt && seam[h] < protFromX) cutLeft = true;
             for (int w = 0; w < pic.width(); w++) {
                 if (seam[h] < 0 || seam[h] > width()) {
                     throw new IllegalArgumentException();
@@ -137,6 +159,10 @@ public class SeamCarver {
                 }
                 newPic.set(w+d, h, pic.get(w, h));
             }
+        }
+        if (cutLeft) {
+            protFromX--;
+            protToX--;
         }
         pic = newPic;
         energy = new Double[pic.height()][pic.width()];
