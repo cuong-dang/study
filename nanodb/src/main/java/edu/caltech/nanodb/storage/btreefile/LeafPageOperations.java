@@ -127,6 +127,8 @@ public class LeafPageOperations {
         // TODO:  VERIFY THIS AND THROW AN EXCEPTION IF NOT
 
         int leafPageNo = leaf.getPageNo();
+        InnerPage parent =
+                innerPageOps.loadPage(pagePath.get(pagePath.size() - 2));
 
         // Leaf pages know their right sibling, so that's why finding the
         // right page doesn't require the innerPageOps object.
@@ -154,7 +156,7 @@ public class LeafPageOperations {
             leftSibling = loadLeafPage(leftPageNo);
 
         LeafPage rightSibling = null;
-        if (rightPageNo != -1)
+        if (rightPageNo != -1 && parent.getIndexOfPointer(rightPageNo) != -1)
             rightSibling = loadLeafPage(rightPageNo);
 
         assert leftSibling != null || rightSibling != null;
@@ -202,9 +204,6 @@ public class LeafPageOperations {
             // page was coalesced into its left sibling, we need to remove
             // the tuple to the left of the pointer being removed.
 
-            InnerPage parent =
-                innerPageOps.loadPage(pagePath.get(pagePath.size() - 2));
-
             List<Integer> parentPagePath = pagePath.subList(0, pagePath.size() - 1);
             innerPageOps.deletePointer(parent, parentPagePath, leafPageNo,
                 /* remove right tuple */ false);
@@ -249,9 +248,6 @@ public class LeafPageOperations {
             // we need to remove it from the parent page.  Also, since the
             // page was coalesced into its right sibling, we need to remove
             // the tuple to the right of the pointer being removed.
-
-            InnerPage parent =
-                innerPageOps.loadPage(pagePath.get(pagePath.size() - 2));
 
             List<Integer> parentPagePath = pagePath.subList(0, pagePath.size() - 1);
             innerPageOps.deletePointer(parent, parentPagePath, leafPageNo,
@@ -377,8 +373,6 @@ public class LeafPageOperations {
                 }
             }
 
-            InnerPage parent =
-                innerPageOps.loadPage(pagePath.get(pagePath.size() - 2));
             int index;
 
             if (adjPage == leftSibling) {

@@ -951,10 +951,10 @@ public class InnerPage implements DataPage {
         }
 
         // Begin my implementation.
-        assert count != numPointers;
         byte[] buf = new byte[len];
-        TupleLiteral newKey = TupleLiteral.fromTuple(
-                getKey(startPointerIndex - 1));
+        TupleLiteral newKey = count == numPointers ?
+                null :
+                TupleLiteral.fromTuple(getKey(startPointerIndex - 1));
         // Move data to sibling.
         dbPage.read(startOffset, buf);
         if (rightSibling.numPointers > 0) {
