@@ -1,24 +1,25 @@
 package com.cuongd.study.algs.book.ch5;
 
-import java.util.Arrays;
+import edu.princeton.cs.algs4.Queue;
 
-public class KeyIndexedCounting {
+public class Ex517 {
     private KeyIndex[] a;
 
-    public KeyIndexedCounting(KeyIndex[] a, int R) {
+    public Ex517(KeyIndex[] a, int R) {
         this.a = new KeyIndex[a.length];
         int N = a.length;
-        int[] count = new int[R+1];
-        Arrays.fill(count, 0);
-
-        for (KeyIndex kv : a) {
-            count[kv.key+1]++;
-        }
+        Queue<KeyIndex>[] indices = new Queue[R];
         for (int r = 0; r < R; r++) {
-            count[r+1] += count[r];
+            indices[r] = new Queue<>();
         }
-        for (int i = 0; i < N; i++) {
-            this.a[count[a[i].key]++] = a[i];
+        for (KeyIndex kv : a) {
+            indices[kv.key].enqueue(kv);
+        }
+        int i = 0;
+        for (int r = 0; r < R; r++) {
+            while (!indices[r].isEmpty()) {
+                this.a[i++] = indices[r].dequeue();
+            }
         }
     }
 
