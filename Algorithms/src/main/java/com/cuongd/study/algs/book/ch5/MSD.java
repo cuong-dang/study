@@ -5,7 +5,7 @@ public class MSD {
     private static int M = 15; // cutoff for small arrays
     private static String[] aux; // auxiliary array for distribution
 
-    private static int charAt(String s, int d) {
+    public static int charAt(String s, int d) {
         return d < s.length() ? s.charAt(d) : -1;
     }
 
