@@ -1,17 +1,16 @@
 package edu.caltech.nanodb.storage.btreefile;
 
 
-import java.util.List;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import edu.caltech.nanodb.expressions.TupleComparator;
 import edu.caltech.nanodb.expressions.TupleLiteral;
 import edu.caltech.nanodb.relations.Tuple;
 import edu.caltech.nanodb.storage.DBFile;
 import edu.caltech.nanodb.storage.DBPage;
 import edu.caltech.nanodb.storage.StorageManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.List;
 
 
 /**
@@ -25,7 +24,6 @@ public class LeafPageOperations {
     private static Logger logger = LogManager.getLogger(LeafPageOperations.class);
 
     private StorageManager storageManager;
-
 
     private BTreeTupleFile tupleFile;
 
@@ -129,6 +127,8 @@ public class LeafPageOperations {
         // TODO:  VERIFY THIS AND THROW AN EXCEPTION IF NOT
 
         int leafPageNo = leaf.getPageNo();
+        InnerPage parent =
+                innerPageOps.loadPage(pagePath.get(pagePath.size() - 2));
 
         // Leaf pages know their right sibling, so that's why finding the
         // right page doesn't require the innerPageOps object.
@@ -156,7 +156,7 @@ public class LeafPageOperations {
             leftSibling = loadLeafPage(leftPageNo);
 
         LeafPage rightSibling = null;
-        if (rightPageNo != -1)
+        if (rightPageNo != -1 && parent.getIndexOfPointer(rightPageNo) != -1)
             rightSibling = loadLeafPage(rightPageNo);
 
         assert leftSibling != null || rightSibling != null;
@@ -204,9 +204,6 @@ public class LeafPageOperations {
             // page was coalesced into its left sibling, we need to remove
             // the tuple to the left of the pointer being removed.
 
-            InnerPage parent =
-                innerPageOps.loadPage(pagePath.get(pagePath.size() - 2));
-
             List<Integer> parentPagePath = pagePath.subList(0, pagePath.size() - 1);
             innerPageOps.deletePointer(parent, parentPagePath, leafPageNo,
                 /* remove right tuple */ false);
@@ -251,9 +248,6 @@ public class LeafPageOperations {
             // we need to remove it from the parent page.  Also, since the
             // page was coalesced into its right sibling, we need to remove
             // the tuple to the right of the pointer being removed.
-
-            InnerPage parent =
-                innerPageOps.loadPage(pagePath.get(pagePath.size() - 2));
 
             List<Integer> parentPagePath = pagePath.subList(0, pagePath.size() - 1);
             innerPageOps.deletePointer(parent, parentPagePath, leafPageNo,
@@ -379,8 +373,6 @@ public class LeafPageOperations {
                 }
             }
 
-            InnerPage parent =
-                innerPageOps.loadPage(pagePath.get(pagePath.size() - 2));
             int index;
 
             if (adjPage == leftSibling) {
@@ -743,20 +735,34 @@ public class LeafPageOperations {
 
         // Get a new blank page in the index, with the same parent as the
         // leaf-page we were handed.
-
         DBPage newDBPage = fileOps.getNewDataPage();
         LeafPage newLeaf = LeafPage.init(newDBPage, tupleFile.getSchema());
-
-        /* TODO:  IMPLEMENT THE REST OF THIS METHOD.
-         *
-         * The LeafPage class provides some helpful operations for moving leaf-
-         * entries to a left or right sibling.
-         *
-         * The parent page must also be updated.  If the leaf node doesn't have
-         * a parent, the tree's depth will increase by one level.
-         */
-        logger.error("NOT YET IMPLEMENTED:  splitLeafAndAddKey()");
-        return null;
+        // Link the new leaf to the right.
+        newLeaf.setNextPageNo(leaf.getNextPageNo());
+        leaf.setNextPageNo(newLeaf.getPageNo());
+        leaf.moveTuplesRight(newLeaf, leaf.getNumTuples() / 2);
+        int cmp = TupleComparator.comparePartialTuples(tuple,
+                newLeaf.getTuple(0),
+                TupleComparator.CompareMode.SHORTER_IS_LESS);
+        BTreeFilePageTuple result = cmp >= 0 ?
+                newLeaf.addTuple(tuple) : leaf.addTuple(tuple);
+        pagePath.remove(pagePath.size() - 1);
+        if (!pagePath.isEmpty()) { // has parent
+            InnerPage parent = innerPageOps.loadPage(
+                    pagePath.get(pagePath.size() - 1));
+            innerPageOps.addTuple(parent, pagePath, leaf.getPageNo(),
+                    newLeaf.getTuple(0), newLeaf.getPageNo());
+        } else { // no parents
+            // Create a new inner page.
+            InnerPage parent = InnerPage.init(fileOps.getNewDataPage(),
+                    tupleFile.getSchema(), leaf.getPageNo(),
+                    newLeaf.getTuple(0), newLeaf.getPageNo());
+            DBPage dbpHeader = storageManager.loadDBPage(
+                    tupleFile.getDBFile(), 0);
+            HeaderPage.setRootPageNo(dbpHeader, parent.getPageNo());
+            HeaderPage.setFirstLeafPageNo(dbpHeader, leaf.getPageNo());
+        }
+        return result;
     }
 
 

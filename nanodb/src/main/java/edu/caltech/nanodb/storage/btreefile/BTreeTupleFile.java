@@ -1,29 +1,22 @@
 package edu.caltech.nanodb.storage.btreefile;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import edu.caltech.nanodb.expressions.OrderByExpression;
 import edu.caltech.nanodb.expressions.TupleComparator;
 import edu.caltech.nanodb.expressions.TupleLiteral;
 import edu.caltech.nanodb.queryeval.TableStats;
 import edu.caltech.nanodb.relations.Schema;
 import edu.caltech.nanodb.relations.Tuple;
-import edu.caltech.nanodb.storage.DBFile;
-import edu.caltech.nanodb.storage.DBPage;
-import edu.caltech.nanodb.storage.FilePointer;
-import edu.caltech.nanodb.storage.InvalidFilePointerException;
-import edu.caltech.nanodb.storage.PageTuple;
-import edu.caltech.nanodb.storage.SequentialTupleFile;
-import edu.caltech.nanodb.storage.StorageManager;
-import edu.caltech.nanodb.storage.TupleFileManager;
+import edu.caltech.nanodb.storage.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import static edu.caltech.nanodb.storage.btreefile.BTreePageTypes.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static edu.caltech.nanodb.storage.btreefile.BTreePageTypes.BTREE_INNER_PAGE;
+import static edu.caltech.nanodb.storage.btreefile.BTreePageTypes.BTREE_LEAF_PAGE;
 
 
 /**
@@ -508,29 +501,36 @@ public class BTreeTupleFile implements SequentialTupleFile {
         // leaf-page based on the key value(s).
 
         DBPage dbPage = dbpRoot;
-        int pageType = dbPage.readByte(0);
-        if (pageType != BTREE_INNER_PAGE && pageType != BTREE_LEAF_PAGE) {
-            throw new BTreeTupleFileException(
-                "Invalid page type encountered:  " + pageType);
+        while (true) {
+            int pageType = dbPage.readByte(0);
+            if (pageType != BTREE_INNER_PAGE && pageType != BTREE_LEAF_PAGE) {
+                throw new BTreeTupleFileException(
+                        "Invalid page type encountered:  " + pageType);
+            }
+            if (pagePath != null)
+                pagePath.add(dbPage.getPageNo());
+            if (pageType == BTREE_LEAF_PAGE) {
+                return new LeafPage(dbPage, schema);
+            }
+            InnerPage inPage = new InnerPage(dbPage, schema);
+            int keyNo = 0;
+            while (keyNo < inPage.getNumKeys()) {
+                int cmp = TupleComparator.comparePartialTuples(
+                        searchKey,
+                        inPage.getKey(keyNo),
+                        TupleComparator.CompareMode.SHORTER_IS_LESS);
+                if (cmp < 0) {
+                    dbPage = storageManager.loadDBPage(dbFile,
+                            inPage.getPointer(keyNo));
+                    break;
+                }
+                keyNo++;
+            }
+            if (keyNo == inPage.getNumKeys()) {
+                dbPage = storageManager.loadDBPage(dbFile,
+                        inPage.getPointer(keyNo));
+            }
         }
-
-        if (pagePath != null)
-            pagePath.add(rootPageNo);
-
-        /* TODO:  IMPLEMENT THE REST OF THIS METHOD.
-         *
-         * Don't forget to update the page-path as you navigate the index
-         * structure, if it is provided by the caller.
-         *
-         * Use the TupleComparator.comparePartialTuples() method for comparing
-         * the index's keys with the passed-in search key.
-         *
-         * It's always a good idea to code defensively:  if you see an invalid
-         * page-type, flag it with an IOException, as done earlier.
-         */
-        logger.error("NOT YET IMPLEMENTED:  navigateToLeafPage()");
-
-        return null;
     }
 
 
