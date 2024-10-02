@@ -6,15 +6,16 @@ RESOURCE ID
 These are the resource IDs at the beginning of commit messages. Each
 resource could have multiple related materials such as books and
 Coursera courses. For further supporting material links (e.g., web, code
-repos), see individual resource page.
+repos), see individual resource page. `*` denotes golden resources that
+are truly rewarding to work through.
 - libcc: Implementation of classic data structures and algorithms for
   educational purpose as well as OS development
-- sicp: Structure and Interpretation of Computer Programs
+- *sicp: Structure and Interpretation of Computer Programs
   + book: https://a.co/d/dGoEB5A
-- algs: Algorithms
+- *algs: Algorithms
   + book: https://www.amazon.com/Algorithms-4th-Robert-Sedgewick/dp/032157351X
   + Coursera: https://www.coursera.org/learn/algorithms-part1
-- csapp: Computer Systems, A Programmer's Perspective
+- *csapp: Computer Systems, A Programmer's Perspective
   + book: http://csapp.cs.cmu.edu/3e/home.html
 - natda: Computer Networking, A Top-Down Approach
   + book: http://gaia.cs.umass.edu/kurose_ross/index.php
@@ -22,14 +23,14 @@ repos), see individual resource page.
   + Coursera: https://www.coursera.org/learn/scala2-functional-program-design
 - lcpis: Learning Concurrent Programming in Scala
   + book: https://www.packtpub.com/product/learning-concurrent-programming-in-scala/9781783281411
-- xv6: xv6: a simple, Unix-like teaching operating system
+- *xv6: xv6: a simple, Unix-like teaching operating system
   + course: https://pdos.csail.mit.edu/6.828/2020/index.html
 - dbsc: Database System Concepts
   + book: https://www.db-book.com/
   + course: https://15445.courses.cs.cmu.edu/fall2021/
 - pcdp: Parallel, Concurrent, and Distributed Programming in Java
   + course: https://www.coursera.org/specializations/pcdp
-- dis: Distributed Systems
+- *dis: Distributed Systems
   + course: http://nil.csail.mit.edu/6.824/2020/
 - ascj: Advanced Software Construction in Java
   + edX: https://www.edx.org/course/advanced-software-construction-in-java
