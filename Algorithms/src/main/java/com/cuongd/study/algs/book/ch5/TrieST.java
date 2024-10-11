@@ -109,6 +109,51 @@ public class TrieST<Value> {
         return null;
     }
 
+    public String floor(String s) {
+        StringBuilder result = new StringBuilder();
+        floor(root, s, 0, result);
+        return result.toString();
+    }
+
+    private boolean floor(Node x, String s, int d, StringBuilder result) {
+        if (d == s.length()) {
+            return x.val != null;
+        }
+        char c = s.charAt(d);
+        if (x.next[c] != null) {
+            result.append(c);
+            if (floor(x.next[c], s, d+1, result)) {
+                return true;
+            }
+            result.deleteCharAt(result.length()-1);
+        }
+        for (int i = c-1; i >= 0; i--) {
+            if (x.next[i] != null) {
+                result.append(max(x.next[i], String.format("%c", (char) i)));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String max() {
+        return max(root, "");
+    }
+
+    private String max(Node x, String key) {
+        int next = -1;
+        for (int r = R-1; r >= 0; r--) {
+            if (x.next[r] != null) {
+                next = r;
+                break;
+            }
+        }
+        if (next != -1) {
+            return max(x.next[next], key + (char) next);
+        }
+        return key;
+    }
+
     public static void main(String[] args) {
         TrieST<Integer> t = new TrieST<>();
         t.put("she", 0);
@@ -119,7 +164,12 @@ public class TrieST<Value> {
         t.put("the", 5);
         t.put("sea", 6);
         t.put("shore", 7);
-        t.keysThatMatch(".he").forEach(System.out::println);
-        System.out.println(t.longestPrefixOf("shellsort"));
+
+        assert t.max().equals("the");
+        assert t.floor("shorf").equals("shore");
+        assert t.floor("shells").equals("shells");
+        assert t.floor("shellr").equals("sells");
+        assert t.floor("shell").equals("sells");
+        assert t.floor("shf").equals("shells");
     }
 }
