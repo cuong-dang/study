@@ -154,16 +154,58 @@ public class TrieST<Value> {
         return key;
     }
 
+    public int rank(String s) {
+        return rank(root, s, 0);
+    }
+
+    private int rank(Node x, String s, int d) {
+        if (d >= s.length()) return 0;
+        char c = s.charAt(d);
+        int result = 0;
+        for (int i = 0; i < c; i++) {
+            result += count(x.next[i]);
+        }
+        if (x.next[c] != null) {
+            result += rank(x.next[c], s, d+1);
+        }
+        if (x.val != null) {
+            result++;
+        }
+        return result;
+    }
+
+    public int size() {
+        return count(root);
+    }
+
+    private int count(Node x) {
+        if (x == null) return 0;
+        int result = x.val != null ? 1 : 0;
+        for (int i = 0; i < R; i++) {
+            result += count(x.next[i]);
+        }
+        return result;
+    }
+
     public static void main(String[] args) {
         TrieST<Integer> t = new TrieST<>();
+        assert t.size() == 0;
         t.put("she", 0);
+        assert t.size() == 1;
         t.put("sells", 1);
+        assert t.size() == 2;
         t.put("sea", 2);
+        assert t.size() == 3;
         t.put("shells", 3);
+        assert t.size() == 4;
         t.put("by", 4);
+        assert t.size() == 5;
         t.put("the", 5);
+        assert t.size() == 6;
         t.put("sea", 6);
+        assert t.size() == 6;
         t.put("shore", 7);
+        assert t.size() == 7;
 
         assert t.max().equals("the");
         assert t.floor("shorf").equals("shore");
@@ -171,5 +213,17 @@ public class TrieST<Value> {
         assert t.floor("shellr").equals("sells");
         assert t.floor("shell").equals("sells");
         assert t.floor("shf").equals("shells");
+
+        assert t.rank("the") == 6;
+        assert t.rank("thea") == 7;
+        assert t.rank("thf") == 7;
+        assert t.rank("thd") == 6;
+        assert t.rank("s") == 1;
+        assert t.rank("sh") == 3;
+        assert t.rank("sho") == 5;
+        assert t.rank("she") == 3;
+        assert t.rank("shel") == 4;
+        assert t.rank("shem") == 5;
+        assert t.rank("shek") == 4;
     }
 }
