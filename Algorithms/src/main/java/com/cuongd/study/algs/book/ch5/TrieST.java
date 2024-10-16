@@ -154,6 +154,18 @@ public class TrieST<Value> {
         return key;
     }
 
+    private String min(Node x, String key) {
+        if (x.val != null) {
+            return key;
+        }
+        for (int r = 0; r < R; r++) {
+            if (x.next[r] != null) {
+                return min(x.next[r], key + (char) r);
+            }
+        }
+        return key;
+    }
+
     public int rank(String s) {
         return rank(root, s, 0);
     }
@@ -185,6 +197,32 @@ public class TrieST<Value> {
             result += count(x.next[i]);
         }
         return result;
+    }
+
+    public String select(int k) {
+        if (root == null) return null;
+        return select(root, k, new StringBuilder());
+    }
+
+    private String select(Node x, int k, StringBuilder sb) {
+        if (k == 0) {
+            return min(x, sb.toString());
+        }
+        if (x.val != null) {
+            k--;
+        }
+        for (int i = 0; i < R; i++) {
+            if (x.next[i] != null) {
+                int c = count(x.next[i]);
+                if (c > k) {
+                    sb.append((char) i);
+                    return select(x.next[i], k, sb);
+                } else {
+                    k -= c;
+                }
+            }
+        }
+        return null;
     }
 
     public static void main(String[] args) {
@@ -225,5 +263,23 @@ public class TrieST<Value> {
         assert t.rank("shel") == 4;
         assert t.rank("shem") == 5;
         assert t.rank("shek") == 4;
+
+        assert t.select(0).equals("by");
+        assert t.select(1).equals("sea");
+        assert t.select(2).equals("sells");
+        assert t.select(3).equals("she");
+        assert t.select(4).equals("shells");
+        assert t.select(5).equals("shore");
+        assert t.select(6).equals("the");
+        assert t.select(7) == null;
+        t.put("seashore", 8);
+        assert t.select(0).equals("by");
+        assert t.select(1).equals("sea");
+        assert t.select(2).equals("seashore");
+        assert t.select(3).equals("sells");
+        assert t.select(4).equals("she");
+        assert t.select(5).equals("shells");
+        assert t.select(6).equals("shore");
+        assert t.select(7).equals("the");
     }
 }
