@@ -56,6 +56,20 @@ public class TST<Value> {
         collect(x.right, key, q);
     }
 
+    public String longestPrefixOf(String s) {
+        int length = search(root, s, 0, 0);
+        return s.substring(0, length);
+    }
+
+    private int search(Node x, String s, int d, int length) {
+        if (x == null) return length;
+        char c = s.charAt(d);
+        if (c < x.c) return search(x.left, s, d, length);
+        if (c > x.c) return search(x.right, s, d, length);
+        if (x.val != null) length = d+1;
+        return search(x.mid, s, d+1, length);
+    }
+
     public static void main(String[] args) {
         TST<Integer> t = new TST<>();
         t.put("shells", 15);
@@ -67,6 +81,9 @@ public class TST<Value> {
         t.put("surely", 13);
         t.put("she", 10);
         t.put("shore", 7);
-        t.keys().forEach(System.out::println);
+
+        assert t.longestPrefixOf("seashore").equals("sea");
+        assert t.longestPrefixOf("shellsort").equals("shells");
+        assert t.longestPrefixOf("c").isEmpty();
     }
 }
