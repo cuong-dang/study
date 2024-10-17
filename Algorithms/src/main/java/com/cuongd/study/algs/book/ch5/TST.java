@@ -69,21 +69,57 @@ public class TST<Value> {
     }
 
     public Iterable<String> keysWithPrefix(String s) {
-        int d = 0;
-        Node x = root;
         Queue<String> q = new Queue<>();
-        while (x != null && d < s.length()) {
-            char c = s.charAt(d);
-            if (c < x.c) x = x.left;
-            else if (c > x.c) x = x.right;
-            else {
-                d++;
-                x = x.mid;
+        keysWithPrefix(root, s, 0, "", q);
+        return q;
+    }
+
+    private void keysWithPrefix(Node x, String s, int d, String key,
+                                Queue<String> q) {
+        if (x == null) return;
+        if (d == s.length()) {
+            collect(x, key, q);
+            return;
+        }
+        char c = s.charAt(d);
+        if (c == x.c) {
+            keysWithPrefix(x.mid, s, d + 1, key + c, q);
+        } else if (c < x.c) {
+            keysWithPrefix(x.left, s, d, key, q);
+        } else {
+            keysWithPrefix(x.right, s, d, key, q);
+        }
+    }
+
+    public Iterable<String> keysThatMatch(String s) {
+        Queue<String> q = new Queue<>();
+        keysThatMatch(root, s, 0, "", q);
+        return q;
+    }
+
+    private void keysThatMatch(Node x, String s, int d, String key,
+                               Queue<String> q) {
+        if (x == null) return;
+        char c = s.charAt(d);
+        if (c == '.') {
+            if (x.left != null) {
+                keysThatMatch(x.left.mid, s, d + 1, key + x.left.c, q);
+            }
+            keysThatMatch(x.mid, s, d + 1, key + x.c, q);
+            if (x.right != null) {
+                keysThatMatch(x.right.mid, s, d + 1, key + x.right.c,
+                        q);
+            }
+        } else if (c < x.c) {
+            keysThatMatch(x.left, s, d, key, q);
+        } else if (c > x.c) {
+            keysThatMatch(x.right, s, d, key, q);
+        } else {
+            if (d == s.length() - 1 && x.val != null) q.enqueue(key + x.c);
+            else if (d < s.length() - 1) {
+                keysThatMatch(x.mid, s, d + 1, key + x.c, q);
             }
         }
-        if (d != s.length()) return q;
-        collect(x, s.substring(0, d), q);
-        return q;
     }
 
     public static void main(String[] args) {
@@ -101,5 +137,7 @@ public class TST<Value> {
         assert t.longestPrefixOf("seashore").equals("sea");
         assert t.longestPrefixOf("shellsort").equals("shells");
         assert t.longestPrefixOf("c").isEmpty();
+
+        t.keysThatMatch("shell").forEach(System.out::println);
     }
 }
