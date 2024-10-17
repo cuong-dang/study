@@ -41,9 +41,7 @@ public class TST<Value> {
     }
 
     public Iterable<String> keys() {
-        Queue<String> q = new Queue<>();
-        collect(root, "", q);
-        return q;
+        return keysWithPrefix("");
     }
 
     private void collect(Node x, String key, Queue<String> q) {
@@ -68,6 +66,24 @@ public class TST<Value> {
         if (c > x.c) return search(x.right, s, d, length);
         if (x.val != null) length = d+1;
         return search(x.mid, s, d+1, length);
+    }
+
+    public Iterable<String> keysWithPrefix(String s) {
+        int d = 0;
+        Node x = root;
+        Queue<String> q = new Queue<>();
+        while (x != null && d < s.length()) {
+            char c = s.charAt(d);
+            if (c < x.c) x = x.left;
+            else if (c > x.c) x = x.right;
+            else {
+                d++;
+                x = x.mid;
+            }
+        }
+        if (d != s.length()) return q;
+        collect(x, s.substring(0, d), q);
+        return q;
     }
 
     public static void main(String[] args) {
