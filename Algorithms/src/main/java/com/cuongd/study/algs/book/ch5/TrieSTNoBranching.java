@@ -50,6 +50,28 @@ public class TrieSTNoBranching<Value> {
         return p;
     }
 
+    public Value get(String key) {
+        if (key == null || key.isEmpty()) return null;
+        Node x = get(root, key);
+        if (x == null) return null;
+        return (Value) x.val;
+    }
+
+    private Node get(Node x, String key) {
+        if (x == null) return null;
+        if (key.equals(x.key)) return x;
+        if (x.next == null) return null;
+        if (!x.key.isEmpty()) {
+            if (key.startsWith(x.key)) {
+                return get(x.next[key.charAt(x.key.length())],
+                        key.substring(x.key.length() + 1));
+            } else {
+                return null;
+            }
+        }
+        return get(x.next[key.charAt(0)], key.substring(1));
+    }
+
     private static int diffAt(String a, String b) {
         int i = 0;
         while (i < a.length() && i < b.length()) {
@@ -75,11 +97,15 @@ public class TrieSTNoBranching<Value> {
     public static void main(String[] args) {
         // test 1 key at root
         TrieSTNoBranching<Integer> t = new TrieSTNoBranching<>();
+        assert t.get("a") == null;
         t.put("a", 0);
         t.assertNode(t.root, "a", 0, true);
+        assert t.get("a") == 0;
+        assert t.get("b") == null;
         // test replacing
         t.put("a", 1);
         t.assertNode(t.root, "a", 1, true);
+        assert t.get("a") == 1;
 
         // test 2 different keys
         t  = new TrieSTNoBranching<>();
@@ -88,6 +114,9 @@ public class TrieSTNoBranching<Value> {
         t.assertNode(t.root, "", null, false);
         t.assertNode(t.root.next['a'], "", 0, true);
         t.assertNode(t.root.next['b'], "", 1, true);
+        assert t.get("a") == 0;
+        assert t.get("b") == 1;
+        assert t.get("c") == null;
 
         // regression 1
         t  = new TrieSTNoBranching<>();
@@ -95,11 +124,19 @@ public class TrieSTNoBranching<Value> {
         t.put("ab", 1);
         t.assertNode(t.root, "a", 0, false);
         t.assertNode(t.root.next['b'], "", 1, true);
+        assert t.get("a") == 0;
+        assert t.get("ab") == 1;
+        assert t.get("b") == null;
+        assert t.get("ac") == null;
         t.put("b", 2);
         t.assertNode(t.root, "", null, false);
         t.assertNode(t.root.next['a'], "", 0, false);
         t.assertNode(t.root.next['a'].next['b'], "", 1, true);
         t.assertNode(t.root.next['b'], "", 2, true);
+        assert t.get("a") == 0;
+        assert t.get("ab") == 1;
+        assert t.get("b") == 2;
+        assert t.get("ac") == null;
 
         // test insert into a node that is a prefix of the new key
         t  = new TrieSTNoBranching<>();
@@ -113,6 +150,10 @@ public class TrieSTNoBranching<Value> {
         t.assertNode(t.root.next['b'], "y", 0, true);
         t.assertNode(t.root.next['s'], "he", 1, false);
         t.assertNode(t.root.next['s'].next['l'], "ls", 2, true);
+        assert t.get("by") == 0;
+        assert t.get("she") == 1;
+        assert t.get("shells") == 2;
+        assert t.get("shell") == null;
 
         // test insert into a node that starts with the new key
         t  = new TrieSTNoBranching<>();
@@ -126,6 +167,11 @@ public class TrieSTNoBranching<Value> {
         t.assertNode(t.root.next['b'], "y", 0, true);
         t.assertNode(t.root.next['s'], "he", 2, false);
         t.assertNode(t.root.next['s'].next['l'], "ls", 1, true);
+        assert t.get("by") == 0;
+        assert t.get("shells") == 1;
+        assert t.get("she") == 2;
+        assert t.get("shell") == null;
+        assert t.get("sh") == null;
 
         // textbook 1
         t = new TrieSTNoBranching<>();
