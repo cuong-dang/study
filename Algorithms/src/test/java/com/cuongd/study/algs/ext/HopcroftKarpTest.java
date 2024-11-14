@@ -1,4 +1,4 @@
-package com.cuongd.study.algs.stray;
+package com.cuongd.study.algs.ext;
 
 import org.junit.Test;
 
