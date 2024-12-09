@@ -1,5 +1,7 @@
 package com.cuongd.study.algs.book.ch5;
 
+import edu.princeton.cs.algs4.In;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,17 @@ public class KMP {
         return search(txt, 0);
     }
 
+    public int search(In in) {
+        int j = 0, i = 0;
+        while (true) {
+            if (!in.hasNextChar()) return -1;
+            if (j == pat.length()) return i - pat.length();
+            char c = in.readChar();
+            j = dfa[c][j];
+            i++;
+        }
+    }
+
     public List<Integer> findAll(String txt) {
         List<Integer> result = new ArrayList<>();
         int from = 0, i;
@@ -38,7 +51,7 @@ public class KMP {
 
     private int search(String txt, int from) {
         int i, j, n = txt.length(), m = pat.length();
-        for (i = 0, j = 0; i < n && j < m; i++) {
+        for (i = from, j = 0; i < n && j < m; i++) {
             j = dfa[txt.charAt(i)][j];
         }
         if (j == m) return i - m;
@@ -48,5 +61,7 @@ public class KMP {
     public static void main(String[] args) {
         KMP kmp = new KMP("ABA");
         assert List.of(0, 7).equals(kmp.findAll("ABAABBAABA"));
+        In in = new In();
+        assert kmp.search(in) == 1;
     }
 }
