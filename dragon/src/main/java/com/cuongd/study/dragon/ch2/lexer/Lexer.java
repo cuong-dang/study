@@ -6,6 +6,7 @@ import java.util.*;
 public class Lexer {
     public int line = 1;
     private char peek = ' ';
+    private char putBack = ' ';
     private Hashtable words = new Hashtable();
 
     void reserve(Word t) {
@@ -18,16 +19,30 @@ public class Lexer {
     }
 
     public Token scan() throws IOException {
-        for ( ; ; peek = (char)System.in.read() ) {
+        boolean isLineComment = false;
+        for( ; ; peek = read() ) {
             if( peek == ' ' || peek == '\t' ) continue;
-            else if( peek == '\n' ) line = line + 1;
-            else break;
+            if( peek == '\n' ) {
+                line = line + 1;
+                if( isLineComment )
+                    isLineComment = false;
+            } else if ( isLineComment ) continue;
+            else if ( peek == '/' ) {
+                peek = read();
+                if ( peek == '/' )
+                    isLineComment = true;
+                else {
+                    putBack = peek;
+                    peek = '/';
+                    break;
+                }
+            } else break;
         }
         if( Character.isDigit(peek) ) {
             int v = 0;
             do {
                 v = 10*v + Character.digit(peek, 10);
-                peek = (char)System.in.read();
+                peek = read();
             } while ( Character.isDigit(peek) );
             return new Num(v);
         }
@@ -35,6 +50,7 @@ public class Lexer {
             StringBuffer b = new StringBuffer();
             do {
                 b.append(peek);
+                peek = read();
             } while ( Character.isLetterOrDigit(peek) );
             String s = b.toString();
             Word w = (Word)words.get(s);
@@ -46,5 +62,21 @@ public class Lexer {
         Token t = new Token(peek);
         peek = ' ';
         return t;
+    }
+
+    private char read() throws IOException {
+        if (putBack != ' ') {
+            char t = putBack;
+            putBack = ' ';
+            return t;
+        }
+        return (char)System.in.read();
+    }
+
+    public static void main(String[] args) throws IOException {
+        Lexer lex = new Lexer();
+        while (true) {
+            System.out.println("Scanned token: " + lex.scan());
+        }
     }
 }
