@@ -19,24 +19,39 @@ public class Lexer {
     }
 
     public Token scan() throws IOException {
-        boolean isLineComment = false;
+        boolean isLineComment = false, isBlockComment = false;
         for( ; ; peek = read() ) {
-            if( peek == ' ' || peek == '\t' ) continue;
+            // end of line comment?
             if( peek == '\n' ) {
                 line = line + 1;
                 if( isLineComment )
                     isLineComment = false;
+            // are we in line comment?
             } else if ( isLineComment ) continue;
+            // end of block comment?
+            else if ( isBlockComment && peek == '*' ) {
+                peek = read();
+                if (peek == '/')
+                    isBlockComment = false;
+                else
+                    putBack = peek;
+            // are we in block comment?
+            } else if ( isBlockComment ) continue;
+            // not in comments
             else if ( peek == '/' ) {
                 peek = read();
                 if ( peek == '/' )
                     isLineComment = true;
+                else if ( peek == '*' )
+                    isBlockComment = true;
                 else {
                     putBack = peek;
                     peek = '/';
                     break;
                 }
-            } else break;
+            // skip white spaces
+            } else if( peek == ' ' || peek == '\t' ) continue;
+            else break;
         }
         if( Character.isDigit(peek) ) {
             int v = 0;
