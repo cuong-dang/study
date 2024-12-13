@@ -53,12 +53,22 @@ public class Lexer {
             } else if (peek == ' ' || peek == '\t') continue;
             else break;
         }
-        if (Character.isDigit(peek)) {
+        if (Character.isDigit(peek) || peek == '.') {
             int v = 0;
-            do {
+            while (Character.isDigit(peek)) {
                 v = 10 * v + Character.digit(peek, 10);
                 peek = read();
-            } while (Character.isDigit(peek));
+            }
+            if (peek == '.') {
+                peek = read();
+                double d = v, m = 1.0 / 10;
+                while (Character.isDigit(peek)) {
+                    d += m * Character.digit(peek, 10);
+                    m /= 10;
+                    peek = read();
+                }
+                return new Dec(d);
+            }
             return new Num(v);
         }
         if (Character.isLetter(peek)) {
