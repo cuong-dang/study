@@ -1,0 +1,18 @@
+Class For extends Stmt {
+    Expr E1, E2, E3; Stmt S;
+    public For(Expr x, Expr y, Expr z, Stmt s) {
+        E1 = x; E2 = y; E3 = z;
+        S = s;
+        start = newlabel();
+        done = newlabel();
+    }
+    public void gen() {
+        E1.gen();
+        emit(start + ":");
+        emit("ifFalse " + E2.rvalue().toString() + " goto " + done);
+        S.gen();
+        E3.gen();
+        emit("goto " + start);
+        emit(done + ":");
+    }
+}
