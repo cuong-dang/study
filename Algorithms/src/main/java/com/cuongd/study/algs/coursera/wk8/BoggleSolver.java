@@ -4,12 +4,9 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.TrieSET;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 public class BoggleSolver {
-    private TrieSET dict;
+    private final TrieSET dict;
+    private boolean[][] marked;
 
     // Initializes the data structure using the given array of strings as the dictionary.
     // (You can assume each word in the dictionary contains only the uppercase letters A through Z.)
@@ -23,54 +20,45 @@ public class BoggleSolver {
     // Returns the set of all valid words in the given Boggle board, as an Iterable.
     public Iterable<String> getAllValidWords(BoggleBoard board) {
         TrieSET result = new TrieSET();
+        marked = new boolean[board.rows()][board.cols()];
         for (int row = 0; row < board.rows(); row++) {
             for (int col = 0; col < board.cols(); col++) {
                 StringBuilder sb = new StringBuilder();
-                Set<List<Integer>> walked = new HashSet<>();
-                walk(board, row, col, sb, walked, result);
+                walk(board, row, col, sb, result);
             }
         }
         return result;
     }
 
     private void walk(BoggleBoard board, int row, int col,
-                      StringBuilder sb, Set<List<Integer>> walked,
-                      TrieSET result) {
+                      StringBuilder sb, TrieSET result) {
         char c = board.getLetter(row, col);
         sb.append(c);
         if (c == 'Q') {
             sb.append('U');
         }
-        List<Integer> thisSquareRowCol = List.of(row, col);
-        walked.add(thisSquareRowCol);
-        if (hasKeysWithPrefix(sb.toString())) {
-            if (sb.length() >= 3 &&
-                    dict.contains(sb.toString())) {
-                result.add(sb.toString());
+        marked[row][col] = true;
+        String s = sb.toString();
+        if (dict.keysWithPrefix(s).iterator().hasNext()) {
+            if (s.length() >= 3 && dict.contains(s)) {
+                result.add(s);
             }
             for (int i = -1; i <= 1; i++) {
                 for (int j = -1; j <= 1; j++) {
                     int nRow = row+i, nCol = col+j;
                     if (nRow >= 0 && nRow < board.rows() &&
                             nCol >= 0 && nCol < board.cols() &&
-                            !walked.contains(List.of(nRow, nCol))) {
-                        walk(board, nRow, nCol, sb, walked, result);
+                            !marked[nRow][nCol]) {
+                        walk(board, nRow, nCol, sb, result);
                     }
                 }
             }
         }
-        walked.remove(thisSquareRowCol);
+        marked[row][col] = false;
         sb.deleteCharAt(sb.length()-1);
         if (c == 'Q') {
             sb.deleteCharAt(sb.length()-1);
         }
-    }
-
-    private boolean hasKeysWithPrefix(String s) {
-        for (String t : dict.keysWithPrefix(s)) {
-            return true;
-        }
-        return false;
     }
 
     // Returns the score of the given word if it is in the dictionary, zero otherwise.
