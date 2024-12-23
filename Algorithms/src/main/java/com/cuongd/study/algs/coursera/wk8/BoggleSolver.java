@@ -5,13 +5,13 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.TrieSET;
 
 public class BoggleSolver {
-    private final TrieSET dict;
+    private final BoggleTrie dict;
     private boolean[][] marked;
 
     // Initializes the data structure using the given array of strings as the dictionary.
     // (You can assume each word in the dictionary contains only the uppercase letters A through Z.)
     public BoggleSolver(String[] dictionary) {
-        dict = new TrieSET();
+        dict = new BoggleTrie();
         for (String word : dictionary) {
             dict.add(word);
         }
@@ -23,23 +23,21 @@ public class BoggleSolver {
         marked = new boolean[board.rows()][board.cols()];
         for (int row = 0; row < board.rows(); row++) {
             for (int col = 0; col < board.cols(); col++) {
-                StringBuilder sb = new StringBuilder();
-                walk(board, row, col, sb, result);
+                walk(board, row, col, "", result);
             }
         }
         return result;
     }
 
-    private void walk(BoggleBoard board, int row, int col,
-                      StringBuilder sb, TrieSET result) {
+    private void walk(BoggleBoard board, int row, int col, String prefix,
+                      TrieSET result) {
         char c = board.getLetter(row, col);
-        sb.append(c);
+        String s = prefix + c;
         if (c == 'Q') {
-            sb.append('U');
+            s += 'U';
         }
         marked[row][col] = true;
-        String s = sb.toString();
-        if (dict.keysWithPrefix(s).iterator().hasNext()) {
+        if (dict.containsPrefix(s)) {
             if (s.length() >= 3 && dict.contains(s)) {
                 result.add(s);
             }
@@ -49,21 +47,18 @@ public class BoggleSolver {
                     if (nRow >= 0 && nRow < board.rows() &&
                             nCol >= 0 && nCol < board.cols() &&
                             !marked[nRow][nCol]) {
-                        walk(board, nRow, nCol, sb, result);
+                        walk(board, nRow, nCol, s, result);
                     }
                 }
             }
         }
         marked[row][col] = false;
-        sb.deleteCharAt(sb.length()-1);
-        if (c == 'Q') {
-            sb.deleteCharAt(sb.length()-1);
-        }
     }
 
     // Returns the score of the given word if it is in the dictionary, zero otherwise.
     // (You can assume the word contains only the uppercase letters A through Z.)
     public int scoreOf(String word) {
+        if (!dict.contains(word)) return 0;
         switch (word.length()) {
             case 3: case 4: return 1;
             case 5: return 2;
