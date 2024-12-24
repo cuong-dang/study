@@ -1,5 +1,7 @@
 package com.cuongd.study.algs.coursera.wk8;
 
+import java.util.Objects;
+
 public class BoggleTrie {
     private static final int R = 26;
     private final Node root;
@@ -9,7 +11,7 @@ public class BoggleTrie {
     }
 
     public void add(String s) {
-        search(s, true).isString = true;
+        Objects.requireNonNull(search(s, true)).isString = true;
     }
 
     public boolean contains(String s) {
@@ -19,6 +21,11 @@ public class BoggleTrie {
 
     public boolean containsPrefix(String s) {
         return search(s, false) != null;
+    }
+
+    public Node searchPrefix(String s, Node fromNode) {
+        if (fromNode == null) return search(s, false);
+        return fromNode.next[s.charAt(s.length()-1) - 'A'];
     }
 
     private Node search(String s, boolean allocating) {
@@ -36,7 +43,7 @@ public class BoggleTrie {
         return x;
     }
 
-    private static class Node {
+    public static class Node {
         Node[] next;
         boolean isString;
 

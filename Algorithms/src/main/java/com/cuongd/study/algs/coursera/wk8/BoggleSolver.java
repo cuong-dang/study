@@ -23,21 +23,22 @@ public class BoggleSolver {
         marked = new boolean[board.rows()][board.cols()];
         for (int row = 0; row < board.rows(); row++) {
             for (int col = 0; col < board.cols(); col++) {
-                walk(board, row, col, "", result);
+                walk(board, row, col, "", result, null);
             }
         }
         return result;
     }
 
     private void walk(BoggleBoard board, int row, int col, String prefix,
-                      TrieSET result) {
+                      TrieSET result, BoggleTrie.Node fromNode) {
         char c = board.getLetter(row, col);
         String s = prefix + c;
         if (c == 'Q') {
             s += 'U';
         }
         marked[row][col] = true;
-        if (dict.containsPrefix(s)) {
+        BoggleTrie.Node prefixNode = dict.searchPrefix(s, fromNode);
+        if (prefixNode != null) {
             if (s.length() >= 3 && dict.contains(s)) {
                 result.add(s);
             }
@@ -47,7 +48,7 @@ public class BoggleSolver {
                     if (nRow >= 0 && nRow < board.rows() &&
                             nCol >= 0 && nCol < board.cols() &&
                             !marked[nRow][nCol]) {
-                        walk(board, nRow, nCol, s, result);
+                        walk(board, nRow, nCol, s, result, prefixNode);
                     }
                 }
             }
