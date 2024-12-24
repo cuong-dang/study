@@ -11,7 +11,7 @@ public class BoggleTrie {
     }
 
     public void add(String s) {
-        Objects.requireNonNull(search(s, true)).isString = true;
+        Objects.requireNonNull(search(s, true)).setIsString();
     }
 
     public boolean contains(String s) {
@@ -25,6 +25,11 @@ public class BoggleTrie {
 
     public Node searchPrefix(String s, Node fromNode) {
         if (fromNode == null) return search(s, false);
+        if (s.charAt(s.length()-2) == 'Q') {
+            int q = 'Q' - 'A', u = 'U' - 'A';
+            if (fromNode.next[q] == null) return null;
+            return fromNode.next[q].next[u];
+        }
         return fromNode.next[s.charAt(s.length()-1) - 'A'];
     }
 
@@ -44,12 +49,16 @@ public class BoggleTrie {
     }
 
     public static class Node {
-        Node[] next;
-        boolean isString;
+        private final Node[] next;
+        private boolean isString;
 
         public Node() {
             next = new Node[R];
             isString = false;
+        }
+
+        public void setIsString() {
+            isString = true;
         }
     }
 

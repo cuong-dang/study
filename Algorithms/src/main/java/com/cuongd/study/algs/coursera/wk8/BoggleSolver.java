@@ -1,8 +1,8 @@
 package com.cuongd.study.algs.coursera.wk8;
 
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.TrieSET;
 
 public class BoggleSolver {
     private final BoggleTrie dict;
@@ -19,7 +19,7 @@ public class BoggleSolver {
 
     // Returns the set of all valid words in the given Boggle board, as an Iterable.
     public Iterable<String> getAllValidWords(BoggleBoard board) {
-        TrieSET result = new TrieSET();
+        SET<String> result = new SET<>();
         marked = new boolean[board.rows()][board.cols()];
         for (int row = 0; row < board.rows(); row++) {
             for (int col = 0; col < board.cols(); col++) {
@@ -30,7 +30,7 @@ public class BoggleSolver {
     }
 
     private void walk(BoggleBoard board, int row, int col, String prefix,
-                      TrieSET result, BoggleTrie.Node fromNode) {
+                      SET<String> result, BoggleTrie.Node fromNode) {
         char c = board.getLetter(row, col);
         String s = prefix + c;
         if (c == 'Q') {
