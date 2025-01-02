@@ -24,13 +24,19 @@ public class NFA {
             if (re[i] == '(' || re[i] == '|') {
                 ops.push(i);
             } else if (re[i] == ')') {
-                int or = ops.pop();
-                if (re[or] == '|') {
-                    lp = ops.pop();
+                Bag<Integer> ors = new Bag<>();
+                while (true) {
+                    int or = ops.pop();
+                    if (re[or] == '|') {
+                        ors.add(or);
+                    } else {
+                        lp = or;
+                        break;
+                    }
+                }
+                for (int or : ors) {
                     g.addEdge(lp, or+1);
                     g.addEdge(or, i);
-                } else {
-                    lp = or;
                 }
             }
             if (i < m-1 && re[i+1] == '*') {
@@ -70,5 +76,11 @@ public class NFA {
     public static void main(String[] args) {
         NFA nfa = new NFA("(.*AB((C|D*E)F)*G)");
         assert nfa.recognizes("aABCFDDEFG");
+        nfa = new NFA("(A(B|C|D|E)F");
+        assert nfa.recognizes("ABF");
+        assert nfa.recognizes("ACF");
+        assert nfa.recognizes("ADF");
+        assert nfa.recognizes("AEF");
+        assert !nfa.recognizes("AF");
     }
 }
