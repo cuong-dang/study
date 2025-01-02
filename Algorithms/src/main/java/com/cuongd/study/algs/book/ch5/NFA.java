@@ -3,18 +3,46 @@ package com.cuongd.study.algs.book.ch5;
 import com.cuongd.study.algs.book.ch4.Digraph;
 import com.cuongd.study.algs.book.ch4.DirectedDFS;
 import edu.princeton.cs.algs4.Bag;
+import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.Stack;
 
 public class NFA {
-    private int m;
-    private char re[];
-    private Digraph G;
+    private final int m;
+    private final char[] re;
+    private final Digraph G;
 
     public NFA(String regex) {
-        regex = rewriteSpecifiedSet(rewriteRange(regex));
+        regex = rewriteSpecifiedSet(rewriteRange(rewriteComplement(regex)));
         m = regex.length();
         re = regex.toCharArray();
         G = buildEpsilonTransitionDigraph();
+    }
+
+    private String rewriteComplement(String regex) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < regex.length()) {
+            if (regex.charAt(i) == '[' && regex.charAt(i+1) == '^') {
+                SET<Character> complements = new SET<>();
+                i += 2;
+                while (regex.charAt(i) != ']') {
+                    complements.add(regex.charAt(i++));
+                }
+                sb.append('(');
+                for (char c = 'A'; c <= 'Z'; c++) {
+                    if (!complements.contains(c)) {
+                        sb.append(c);
+                        sb.append('|');
+                    }
+                }
+                sb.deleteCharAt(sb.length()-1);
+                sb.append(')');
+            } else {
+                sb.append(regex.charAt(i));
+            }
+            i++;
+        }
+        return sb.toString();
     }
 
     private String rewriteRange(String regex) {
@@ -158,5 +186,11 @@ public class NFA {
         assert !nfa.recognizes("AFE");
         nfa = new NFA("((A[B-D]*E)");
         assert nfa.recognizes("ABBCDDDE");
+
+        nfa = new NFA("(A[^BCDEFGHIJK]E)");
+        assert nfa.recognizes("AAE");
+        assert nfa.recognizes("ALE");
+        assert !nfa.recognizes("ABE");
+        assert !nfa.recognizes("AKE");
     }
 }
