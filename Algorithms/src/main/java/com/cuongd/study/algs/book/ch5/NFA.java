@@ -39,11 +39,15 @@ public class NFA {
                     g.addEdge(or, i);
                 }
             }
-            if (i < m-1 && re[i+1] == '*') {
-                g.addEdge(lp, i+1);
-                g.addEdge(i+1, lp);
+            if (i < m-1) {
+                if (re[i+1] == '*') {
+                    g.addEdge(lp, i+1);
+                    g.addEdge(i+1, lp);
+                } else if (re[i+1] == '+') {
+                    g.addEdge(i+1, lp);
+                }
             }
-            if (re[i] == '(' || re[i] == '*' || re[i] == ')')
+            if (re[i] == '(' || re[i] == '*' || re[i] == '+' || re[i] == ')')
                 g.addEdge(i, i+1);
         }
         return g;
@@ -76,11 +80,16 @@ public class NFA {
     public static void main(String[] args) {
         NFA nfa = new NFA("(.*AB((C|D*E)F)*G)");
         assert nfa.recognizes("aABCFDDEFG");
-        nfa = new NFA("(A(B|C|D|E)F");
+        nfa = new NFA("(A(B|C|D|E)F)");
         assert nfa.recognizes("ABF");
         assert nfa.recognizes("ACF");
         assert nfa.recognizes("ADF");
         assert nfa.recognizes("AEF");
         assert !nfa.recognizes("AF");
+        nfa = new NFA("(AB+C)");
+        assert nfa.recognizes("ABC");
+        assert nfa.recognizes("ABBC");
+        assert nfa.recognizes("ABBBC");
+        assert !nfa.recognizes("AC");
     }
 }
