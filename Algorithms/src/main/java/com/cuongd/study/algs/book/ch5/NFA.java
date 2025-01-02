@@ -11,13 +11,37 @@ public class NFA {
     private Digraph G;
 
     public NFA(String regex) {
-        regex = preproc(regex);
+        regex = rewriteSpecifiedSet(rewriteRange(regex));
         m = regex.length();
         re = regex.toCharArray();
         G = buildEpsilonTransitionDigraph();
     }
 
-    private String preproc(String regex) {
+    private String rewriteRange(String regex) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < regex.length()) {
+            char c = regex.charAt(i);
+            if (c == '[' && regex.charAt(i+2) == '-') {
+                char rangeStart = regex.charAt(i+1),
+                        rangeEnd = regex.charAt(i+3);
+                sb.append('(');
+                for (char r = rangeStart; r <= rangeEnd; r++) {
+                    sb.append(r);
+                    sb.append('|');
+                }
+                sb.deleteCharAt(sb.length()-1);
+                sb.append(')');
+                i += 4;
+            } else {
+                sb.append(c);
+                i++;
+            }
+        }
+        return sb.toString();
+    }
+
+    private String rewriteSpecifiedSet(String regex) {
         StringBuilder sb = new StringBuilder();
         boolean isInBracket = false;
         for (int i = 0; i < regex.length(); i++) {
@@ -123,7 +147,16 @@ public class NFA {
         assert nfa.recognizes("ADE");
         assert !nfa.recognizes("AE");
         assert !nfa.recognizes("AFE");
-        nfa = new NFA("((A([BCD])*E)");
+        nfa = new NFA("((A[BCD]*E)");
+        assert nfa.recognizes("ABBCDDDE");
+
+        nfa = new NFA("(A[B-D]E)");
+        assert nfa.recognizes("ABE");
+        assert nfa.recognizes("ACE");
+        assert nfa.recognizes("ADE");
+        assert !nfa.recognizes("AE");
+        assert !nfa.recognizes("AFE");
+        nfa = new NFA("((A[B-D]*E)");
         assert nfa.recognizes("ABBCDDDE");
     }
 }
