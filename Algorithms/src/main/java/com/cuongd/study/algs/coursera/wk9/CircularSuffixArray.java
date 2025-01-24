@@ -1,24 +1,25 @@
 package com.cuongd.study.algs.coursera.wk9;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CircularSuffixArray {
-    private final String[] a;
-    private final Map<String, Integer> indices;
+    private final Integer[] a;
 
     // circular suffix array of s
     public CircularSuffixArray(String s) {
         if (s == null) throw new IllegalArgumentException();
-        a = new String[s.length()];
-        indices = new HashMap<>(s.length());
+        a = new Integer[s.length()];
         for (int i = 0; i < s.length(); i++) {
-            String suffix = s.substring(i) + s.substring(0, i);
-            a[i] = suffix;
-            indices.put(suffix, i);
+            a[i] = i;
         }
-        Arrays.sort(a);
+        Arrays.sort(a, (i, j) -> {
+            int n = s.length();
+            for (int k = 0; k < s.length(); k++) {
+                char c1 = s.charAt((i + k) % n), c2 = s.charAt((j + k) % n);
+                if (c1 != c2) return c1 - c2;
+            }
+            return 0;
+        });
     }
 
     // length of s
@@ -28,7 +29,7 @@ public class CircularSuffixArray {
 
     // returns index of ith sorted suffix
     public int index(int i) {
-        return indices.get(a[i]);
+        return a[i];
     }
 
     // unit testing (required)
