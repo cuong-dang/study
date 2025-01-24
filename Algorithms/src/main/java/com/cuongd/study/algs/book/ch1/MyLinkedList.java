@@ -1,6 +1,6 @@
 package com.cuongd.study.algs.book.ch1;
 
-public class MyLinkedList<Item> {
+public class MyLinkedList<E> {
     public Node first;
     private int N;
 
@@ -12,15 +12,34 @@ public class MyLinkedList<Item> {
         return N;
     }
 
-    public void add(Item item) {
+    public E elemAt(int k) {
+        for (Node x = first; x != null; x = x.next) {
+            if (k == 0) return x.value;
+            k--;
+        }
+        return null;
+    }
+
+    public int rank(E e) {
+        int i = 0;
+        for (Node x = first; x != null; x = x.next) {
+            if (x.value.equals(e)) return i;
+            i++;
+        }
+        return -1;
+    }
+
+    public void add(E e) {
         Node rest = first;
         first = new Node();
-        first.value = item;
+        first.value = e;
         first.next = rest;
         N++;
     }
 
-    /** Delete the k-th element. Assume it exists. */
+    /**
+     * Delete the k-th element. Assume it exists.
+     */
     public void delete(int k) {
         N--;
         if (k == 0) {
@@ -48,8 +67,8 @@ public class MyLinkedList<Item> {
         }
     }
 
-    class Node {
-        Item value;
+    public class Node {
+        E value;
         Node next;
     }
 }

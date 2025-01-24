@@ -20,6 +20,34 @@ public class MyLinkedListTest {
     }
 
     @Test
+    public void testRank() {
+        list.add(2);
+        list.add(1);
+        list.add(0);
+        assertEquals(0, list.rank(0));
+        assertEquals(1, list.rank(1));
+        assertEquals(2, list.rank(2));
+        assertEquals(-1, list.rank(3));
+        list.add(3);
+        assertEquals(0, list.rank(3));
+        assertEquals(1, list.rank(0));
+        assertEquals(2, list.rank(1));
+        assertEquals(3, list.rank(2));
+        assertEquals(-1, list.rank(4));
+    }
+
+    @Test
+    public void testElemAt() {
+        list.add(3);
+        list.add(2);
+        list.add(1);
+        assertEquals(1, (int) list.elemAt(0));
+        assertEquals(2, (int) list.elemAt(1));
+        assertEquals(3, (int) list.elemAt(2));
+        assertNull(list.elemAt(3));
+    }
+
+    @Test
     public void testAdd() {
         list.add(1);
         assertFalse(list.isEmpty());
@@ -84,6 +112,9 @@ public class MyLinkedListTest {
     }
 
     private void addElems() {
-        list.add(1); list.add(2); list.add(3); list.add(4);
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        list.add(4);
     }
 }
