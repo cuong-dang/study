@@ -6,7 +6,7 @@ import edu.princeton.cs.algs4.BinaryStdOut;
 
 public class MoveToFront {
     private static final int R = 256;
-    private static MyLinkedList<Character> a;
+    private static final MyLinkedList<Character> a;
 
     static {
         a = new MyLinkedList<>();
