@@ -4,7 +4,7 @@ import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
 import edu.princeton.cs.algs4.LSD;
 import edu.princeton.cs.algs4.Queue;
-import edu.princeton.cs.algs4.ST;
+import edu.princeton.cs.algs4.TrieST;
 
 public class BurrowsWheeler {
 
@@ -38,28 +38,28 @@ public class BurrowsWheeler {
         int first = BinaryStdIn.readInt();
         String s = BinaryStdIn.readString();
         // build next
-        ST<Character, Queue<Integer>> st = new ST<>();
+        TrieST<Queue<Integer>> st = new TrieST<>();
         String[] sorted = new String[s.length()];
         for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
+            String c = "" + s.charAt(i);
             if (!st.contains(c)) {
                 st.put(c, new Queue<>());
             }
             st.get(c).enqueue(i);
-            sorted[i] = "" + c;
+            sorted[i] = c;
         }
         LSD.sort(sorted, 1);
-        int[] next = new int[sorted.length];
-        for (int i = 0; i < sorted.length; i++) {
-            char c = sorted[i].charAt(0);
+        int[] next = new int[s.length()];
+        for (int i = 0; i < s.length(); i++) {
+            String c = "" + sorted[i].charAt(0);
             next[i] = st.get(c).dequeue();
         }
         // reconstruct
         int i = first;
-        do {
+        for (int j = 0; j < s.length(); j++) {
             BinaryStdOut.write(sorted[i]);
             i = next[i];
-        } while (i != first);
+        }
         BinaryStdOut.close();
     }
 
