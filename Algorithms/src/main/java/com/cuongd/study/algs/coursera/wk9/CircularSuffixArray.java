@@ -44,5 +44,4 @@ public class CircularSuffixArray {
         assert t.index(5) == 5;
         assert t.index(6) == 8;
     }
-
 }
