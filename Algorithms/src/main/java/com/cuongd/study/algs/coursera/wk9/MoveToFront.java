@@ -6,9 +6,9 @@ import edu.princeton.cs.algs4.BinaryStdOut;
 
 public class MoveToFront {
     private static final int R = 256;
-    private static final MyLinkedList<Character> a;
+    private static MyLinkedList<Character> a;
 
-    static {
+    private static void init() {
         a = new MyLinkedList<>();
         for (int i = R - 1; i >= 0; i--) {
             a.add((char) i);
@@ -17,6 +17,7 @@ public class MoveToFront {
 
     // apply move-to-front encoding, reading from standard input and writing to standard output
     public static void encode() {
+        init();
         while (!BinaryStdIn.isEmpty()) {
             char c = BinaryStdIn.readChar();
             int i = a.rank(c);
@@ -31,6 +32,7 @@ public class MoveToFront {
 
     // apply move-to-front decoding, reading from standard input and writing to standard output
     public static void decode() {
+        init();
         while (!BinaryStdIn.isEmpty()) {
             int i = BinaryStdIn.readInt(8);
             char c = a.elemAt(i);

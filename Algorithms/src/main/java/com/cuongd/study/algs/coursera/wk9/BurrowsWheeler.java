@@ -1,6 +1,10 @@
 package com.cuongd.study.algs.coursera.wk9;
 
-import edu.princeton.cs.algs4.*;
+import edu.princeton.cs.algs4.BinaryStdIn;
+import edu.princeton.cs.algs4.BinaryStdOut;
+import edu.princeton.cs.algs4.LSD;
+import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.ST;
 
 public class BurrowsWheeler {
 
