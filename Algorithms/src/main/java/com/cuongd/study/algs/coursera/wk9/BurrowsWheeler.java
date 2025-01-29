@@ -2,9 +2,6 @@ package com.cuongd.study.algs.coursera.wk9;
 
 import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
-import edu.princeton.cs.algs4.LSD;
-import edu.princeton.cs.algs4.ResizingArrayQueue;
-import edu.princeton.cs.algs4.TrieST;
 
 public class BurrowsWheeler {
 
@@ -37,23 +34,34 @@ public class BurrowsWheeler {
     public static void inverseTransform() {
         int first = BinaryStdIn.readInt();
         String s = BinaryStdIn.readString();
+
         // build next
-        TrieST<ResizingArrayQueue<Integer>> st = new TrieST<>();
-        String[] sorted = new String[s.length()];
-        for (int i = 0; i < s.length(); i++) {
-            String c = String.valueOf(s.charAt(i));
-            if (!st.contains(c)) {
-                st.put(c, new ResizingArrayQueue<>());
-            }
-            st.get(c).enqueue(i);
-            sorted[i] = c;
+        int n = s.length();
+        int R = 256;   // extend ASCII alphabet size
+        char[] aux = new char[n];
+
+        // compute frequency counts
+        int[] count = new int[R + 1];
+        for (int i = 0; i < n; i++)
+            count[s.charAt(i) + 1]++;
+
+        // compute cumulates
+        for (int r = 0; r < R; r++)
+            count[r + 1] += count[r];
+
+        // move data
+        int[] next = new int[n];
+        for (int i = 0; i < n; i++) {
+            int j = count[s.charAt(i)]++;
+            next[j] = i;
+            aux[j] = s.charAt(i);
         }
-        LSD.sort(sorted, 1);
-        int[] next = new int[sorted.length];
-        for (int i = 0; i < sorted.length; i++) {
-            String c = String.valueOf(sorted[i].charAt(0));
-            next[i] = st.get(c).dequeue();
-        }
+
+        // copy back
+        char[] sorted = new char[n];
+        for (int i = 0; i < n; i++)
+            sorted[i] = aux[i];
+
         // reconstruct
         int i = first;
         for (int j = 0; j < s.length(); j++) {
