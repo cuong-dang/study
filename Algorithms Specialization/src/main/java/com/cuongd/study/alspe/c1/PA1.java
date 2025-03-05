@@ -2,8 +2,8 @@ package com.cuongd.study.alspe.c1;
 
 import java.math.BigInteger;
 
-public class PA1 {
-    private static String multiply(String x, String y) {
+class PA1 {
+    static String multiply(String x, String y) {
         if (x.length() == 1 || y.length() == 1) {
             return String.valueOf(Long.parseLong(x) * Long.parseLong(y));
         }
@@ -34,7 +34,7 @@ public class PA1 {
                 .toString();
     }
 
-    private static String pad0s(String s, int n) {
+    static String pad0s(String s, int n) {
         if (n == 0) return s;
         StringBuilder sb = new StringBuilder(s);
         while (n-- > 0) {
@@ -43,7 +43,7 @@ public class PA1 {
         return sb.toString();
     }
 
-    private static String pow10(String s, int n) {
+    static String pow10(String s, int n) {
         StringBuilder sb = new StringBuilder(s);
         while (n-- > 0) {
             sb.append('0');
