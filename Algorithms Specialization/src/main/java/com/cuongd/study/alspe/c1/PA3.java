@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Scanner;
 
+import static com.cuongd.study.alspe.Partition.partition;
+
 class PA3 {
     static long solve() throws FileNotFoundException, IOException {
         int[] a = new int[10_000];
@@ -25,23 +27,11 @@ class PA3 {
 
     static long sort(int[] a, int lo, int hi) {
         if (lo >= hi) return 0;
-        int j = partition(a, lo, hi);
+        int j = partition(a, lo, hi, choosePivot(a, lo, hi));
         long count = hi - lo;
         count += sort(a, lo, j - 1);
         count += sort(a, j + 1, hi);
         return count;
-    }
-
-    static int partition(int[] a, int lo, int hi) {
-        int k = choosePivot(a, lo, hi);
-        swap(a, lo, k);
-        int i = lo + 1;
-        for (int j = lo + 1; j <= hi; j++) {
-            if (a[j] > a[lo]) continue;
-            swap(a, j, i++);
-        }
-        swap(a, lo, i - 1);
-        return i - 1;
     }
 
     static int choosePivot(int[] a, int lo, int hi) {
@@ -56,12 +46,6 @@ class PA3 {
         if (a[hi] <= a[lo] && a[lo] <= a[me]) return lo;
 
         throw new AssertionError();
-    }
-
-    static void swap(int[] a, int i, int j) {
-        int t = a[i];
-        a[i] = a[j];
-        a[j] = t;
     }
 
     public static void main(String[] args) throws IOException {
