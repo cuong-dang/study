@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import static com.cuongd.study.alspe.Partition.partition;
 
-class DSelect {
+public class DSelect {
     public static int select(int[] a, int k) {
         return select(a, k, 0, a.length - 1);
     }
