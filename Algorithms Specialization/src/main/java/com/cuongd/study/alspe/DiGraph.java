@@ -24,6 +24,16 @@ public class DiGraph {
         return adj[v];
     }
 
+    public DiGraph reverse() {
+        DiGraph GRev = new DiGraph(V);
+        for (int v = 0; v < V; v++) {
+            for (DiEdge e : adj(v)) {
+                GRev.addEdge(new DiEdge(e.to, e.from));
+            }
+        }
+        return GRev;
+    }
+
     public static class DiEdge {
         public final int from;
         public final int to;

@@ -8,11 +8,10 @@ import java.util.Queue;
 
 class Problem811 {
     private final int[] id;
-    private final int[] in;
 
     public Problem811(DiGraph G) {
         id = new int[G.V];
-        in = new int[G.V];
+        int[] in = new int[G.V];
         Queue<Integer> q = new ArrayDeque<>();
         Arrays.fill(in, 0);
         for (int v = 0; v < G.V; v++) {
