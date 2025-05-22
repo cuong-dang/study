@@ -27,4 +27,8 @@ public class SCC {
             }
         }
     }
+
+    public int[] id() {
+        return id;
+    }
 }
