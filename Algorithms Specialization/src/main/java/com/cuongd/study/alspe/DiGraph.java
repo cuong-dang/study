@@ -5,7 +5,6 @@ import java.util.List;
 
 public class DiGraph {
     public final int V;
-    private int E;
     private final List<DiEdge>[] adj;
 
     public DiGraph(int V) {
@@ -37,10 +36,18 @@ public class DiGraph {
     public static class DiEdge {
         public final int from;
         public final int to;
+        public final double weight;
 
         public DiEdge(int from, int to) {
             this.from = from;
             this.to = to;
+            this.weight = 0;
+        }
+
+        public DiEdge(int from, int to, double weight) {
+            this.from = from;
+            this.to = to;
+            this.weight = weight;
         }
     }
 }
