@@ -1,20 +1,19 @@
 package com.cuongd.study.alspe;
 
 import java.util.Arrays;
-import java.util.PriorityQueue;
 
 public class Dijkstra {
     private final double[] distTo;
-    private final PriorityQueue<Integer> pq;
+    private final Heap<Integer> pq;
 
     public Dijkstra(DiGraph G, int s) {
         distTo = new double[G.V];
         Arrays.fill(distTo, Double.POSITIVE_INFINITY);
         distTo[s] = 0;
-        pq = new PriorityQueue<>((v, w) -> Double.compare(distTo[v], distTo[w]));
-        pq.add(s);
+        pq = new Heap<>((v, w) -> Double.compare(distTo[v], distTo[w]));
+        pq.insert(s);
         while (!pq.isEmpty()) {
-            relax(G, pq.poll());
+            relax(G, pq.remove());
         }
     }
 
@@ -24,7 +23,7 @@ public class Dijkstra {
             if (distTo[w] > distTo[v] + e.weight) {
                 distTo[w] = distTo[v] + e.weight;
                 pq.remove(w);
-                pq.add(w);
+                pq.insert(w);
             }
         }
     }
