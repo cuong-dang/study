@@ -4,39 +4,40 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static java.lang.Math.abs;
 
 class PA4 {
     private static int num2SumTargets(long[] a) {
-        Map<Long, Boolean> m = new HashMap<>();
-        for (int i = 0; i < a.length; i++) {
-            if (!m.containsKey(a[i])) {
-                m.put(a[i], true);
-            } else {
-                m.put(a[i], false);
-            }
+        Map<Long, Set<Long>> m = new HashMap<>();
+        for (long x : a) {
+            long key = abs(x / 10000);
+            Set<Long> s = m.getOrDefault(key, new HashSet<>());
+            s.add(x);
+            m.put(key, s);
         }
         int ans = 0;
-        for (long k = -10000; k <= 10000; k++) {
-            if (k % 1000 == 0) {
-                System.out.println("Checking: " + k);
-            }
-            if (twoSum(k, a, m)) {
-                ans++;
+        Set<Long> seen = new HashSet<>();
+        for (long x : a) {
+            for (int j = -1; j <= 1; j++) {
+                long key = x / 10000 + j;
+                if (m.containsKey(key)) {
+                    Set<Long> s = m.get(key);
+                    for (long y : s) {
+                        long t = x + y;
+                        if (!seen.contains(t) && -10000 <= t && t <= 10000 && x != y) {
+                            seen.add(t);
+                            ans += 1;
+                        }
+                    }
+                }
             }
         }
         return ans;
-    }
-
-    private static boolean twoSum(long k, long[] a, Map<Long, Boolean> m) {
-        for (int i = 0; i < a.length; i++) {
-            long t = k - a[i];
-            if (m.containsKey(t) && !m.get(t)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public static void main(String[] args) throws IOException {
