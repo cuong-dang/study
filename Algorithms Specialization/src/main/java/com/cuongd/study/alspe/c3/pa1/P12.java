@@ -9,7 +9,7 @@ import java.util.List;
 
 class P12 {
     public static void main(String[] args) throws IOException {
-        List<String> lines = Files.readAllLines(Path.of("data/c3pa12.txt"));
+        List<String> lines = Files.readAllLines(Path.of("data/c3pa1p12.txt"));
         List<Job> jobs = new ArrayList<>();
         for (int i = 1; i < lines.size(); i++) {
             String[] split = lines.get(i).split("\\s+");
