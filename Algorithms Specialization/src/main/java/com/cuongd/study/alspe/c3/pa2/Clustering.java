@@ -29,7 +29,13 @@ class Clustering {
             }
         }
         assert !pq.isEmpty();
-        minSpacing = pq.remove().weight;
+        while (true) {
+            Graph.Edge e = pq.remove();
+            if (uf.find(e.v) != uf.find(e.w)) {
+                minSpacing = e.weight;
+                break;
+            }
+        }
     }
 
     public double minSpacing() {

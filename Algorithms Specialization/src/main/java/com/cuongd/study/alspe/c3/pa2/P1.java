@@ -17,7 +17,7 @@ class P1 {
             G.addEdge(new Graph.Edge(v, w, c));
         }
 
-        Clustering c = new Clustering(G, 4);
+        Clustering c = new Clustering(G, 2);
         System.out.println("Min spacing: " + c.minSpacing());
     }
 }
