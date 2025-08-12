@@ -1,10 +1,12 @@
 package com.cuongd.study.alspe;
 
 public class UnionFind {
+    private int n;
     private final int[] parent;
     private final int[] rank;
 
     public UnionFind(int n) {
+        this.n = n;
         parent = new int[n];
         rank = new int[n];
         for (int i = 0; i < n; i++) {
@@ -24,6 +26,7 @@ public class UnionFind {
         if (increasingRank) {
             rank[promoted]++;
         }
+        n--;
     }
 
     public int find(int i) {
@@ -31,6 +34,10 @@ public class UnionFind {
             i = parent[i];
         }
         return i;
+    }
+
+    public int numUnions() {
+        return n;
     }
 
     public static void main(String[] args) {

@@ -7,7 +7,7 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 
 class Clustering {
-    private double minSpacing;
+    public final double minSpacing;
 
     public Clustering(Graph G, int k) {
         PriorityQueue<Graph.Edge> pq = new PriorityQueue<>(Comparator.comparingDouble(e -> e.weight));
@@ -36,9 +36,5 @@ class Clustering {
                 break;
             }
         }
-    }
-
-    public double minSpacing() {
-        return minSpacing;
     }
 }
