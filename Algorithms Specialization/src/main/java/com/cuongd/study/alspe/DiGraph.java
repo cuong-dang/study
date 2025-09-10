@@ -27,7 +27,7 @@ public class DiGraph {
         DiGraph GRev = new DiGraph(V);
         for (int v = 0; v < V; v++) {
             for (DiEdge e : adj(v)) {
-                GRev.addEdge(new DiEdge(e.to, e.from));
+                GRev.addEdge(new DiEdge(e.to, e.from, e.weight));
             }
         }
         return GRev;
@@ -48,6 +48,10 @@ public class DiGraph {
             this.from = from;
             this.to = to;
             this.weight = weight;
+        }
+
+        public int other(int v) {
+            return v == from ? to : from;
         }
     }
 }
