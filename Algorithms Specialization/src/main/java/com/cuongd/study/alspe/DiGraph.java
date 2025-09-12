@@ -1,7 +1,11 @@
 package com.cuongd.study.alspe;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.nio.file.Files.readAllLines;
 
 public class DiGraph {
     public final int V;
@@ -31,6 +35,19 @@ public class DiGraph {
             }
         }
         return GRev;
+    }
+
+    public static DiGraph fromFile(String filePath) throws IOException {
+        List<String> lines = readAllLines(Path.of(filePath));
+        int V = Integer.parseInt(lines.get(0).split("\\s+")[0]);
+        DiGraph G = new DiGraph(V);
+        for (int i = 1; i < lines.size(); i++) {
+            String[] split = lines.get(i).split("\\s+");
+            int v = Integer.parseInt(split[0]) - 1, w = Integer.parseInt(split[1]) - 1;
+            double weight = Double.parseDouble(split[2]);
+            G.addEdge(new DiEdge(v, w, weight));
+        }
+        return G;
     }
 
     public static class DiEdge {

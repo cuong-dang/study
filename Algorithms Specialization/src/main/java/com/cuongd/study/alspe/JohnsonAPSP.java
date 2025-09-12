@@ -37,6 +37,10 @@ public class JohnsonAPSP {
         return dss[v].distTo(w) - bf.dist(v) + bf.dist(w);
     }
 
+    public boolean hasNegativeCycles() {
+        return bf.hasNegativeCycles();
+    }
+
     public static void main(String[] args) {
         DiGraph G = new DiGraph(5);
         G.addEdge(new DiGraph.DiEdge(0, 1, 2));
