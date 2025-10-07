@@ -13,7 +13,7 @@ add_compile_options(
         -Wall
         -Wextra
         -Wpedantic
-
+        # Suggested by ChatGPT
         -Wconversion
         -Wformat=2
         -Wmissing-prototypes

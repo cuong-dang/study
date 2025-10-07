@@ -11,5 +11,8 @@ int main(void) {
     printf("%f\n", sqr(3.0));
     printf("%d\n", sqr(3));
     printf("%d\n", sqr(3 + 3));
+    printf("%d\n", !sqr(3));
+    printf("%f\n", sqr(*p++));
+    printf("%f\n", (sqr)(3 + 3));
     return 0;
 }
