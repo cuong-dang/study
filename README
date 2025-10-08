@@ -39,8 +39,9 @@ are truly rewarding to work through.
   - book: https://pages.cs.wisc.edu/~remzi/OSTEP
 - fpis: Functional Programming in Scala
   - book: https://a.co/d/bYkovN1
-- lc: LeetCode
+- pp: Programming Problems
   - web: https://leetcode.com/
+  - web: https://www.hackerrank.com/
 - idaa: Introduction to the Design and Analysis of Algorithms
   - book: https://a.co/d/g49sPNp
 - nanodb: Database System Implementation
