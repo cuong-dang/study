@@ -26,7 +26,19 @@ public class Common {
     a[j] = t;
   }
 
-  public static int partition(int[] a, int lo, int hi, int p) {
+  public static void partition(int[] a, int n) {
+    for (int i = 0, j = 0, k = a.length - 1; j <= k; ) {
+      if (a[j] < n) {
+        swap(a, i++, j++);
+      } else if (a[j] > n) {
+        swap(a, j, k--);
+      } else {
+        j++;
+      }
+    }
+  }
+
+  private static int partition(int[] a, int lo, int hi, int p) {
     swap(a, lo, p);
     int i = lo + 1;
     for (int j = lo + 1; j <= hi; j++) {
