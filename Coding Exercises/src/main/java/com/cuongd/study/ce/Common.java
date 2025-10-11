@@ -1,6 +1,7 @@
 package com.cuongd.study.ce;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class Common {
   public static int select(int[] a, int k) {
@@ -24,6 +25,12 @@ public class Common {
     int t = a[i];
     a[i] = a[j];
     a[j] = t;
+  }
+
+  public static <E> void swap(List<E> a, int i, int j) {
+    E t = a.get(i);
+    a.set(i, a.get(j));
+    a.set(j, t);
   }
 
   public static void partition(int[] a, int n) {
