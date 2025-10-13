@@ -1,5 +1,7 @@
 package com.cuongd.study.ce.leetcode;
 
+import static com.cuongd.study.ce.Common.listOf;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -26,7 +28,7 @@ public class Lc0018 {
     for (int k = j + 1; k < n; ++k) {
       long complement = target - nums[k];
       if (seen.contains(complement)) {
-        res.add(List.of(nums[i], nums[j], nums[k], (int) complement));
+        res.add(listOf(nums[i], nums[j], nums[k], (int) complement));
       }
       seen.add((long) nums[k]);
     }

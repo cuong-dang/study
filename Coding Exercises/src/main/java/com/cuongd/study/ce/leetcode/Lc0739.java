@@ -1,5 +1,7 @@
 package com.cuongd.study.ce.leetcode;
 
+import static com.cuongd.study.ce.Common.listOf;
+
 import java.util.List;
 import java.util.Stack;
 
@@ -13,7 +15,7 @@ public class Lc0739 {
         List<Integer> e = s.pop();
         res[e.get(1)] = i - e.get(1);
       }
-      s.push(List.of(t, i));
+      s.push(listOf(t, i));
     }
     while (!s.isEmpty()) {
       res[s.pop().get(1)] = 0;

@@ -1,5 +1,7 @@
 package com.cuongd.study.ce.leetcode;
 
+import static com.cuongd.study.ce.Common.listOf;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -107,10 +109,10 @@ public class Lc0721 {
     System.out.println(
         new Lc0721()
             .accountsMerge(
-                List.of(
-                    List.of("John", "johnsmith@mail.com", "john_newyork@mail.com"),
-                    List.of("John", "johnsmith@mail.com", "john00@mail.com"),
-                    List.of("Mary", "mary@mail.com"),
-                    List.of("John", "johnnybravo@mail.com"))));
+                listOf(
+                    listOf("John", "johnsmith@mail.com", "john_newyork@mail.com"),
+                    listOf("John", "johnsmith@mail.com", "john00@mail.com"),
+                    listOf("Mary", "mary@mail.com"),
+                    listOf("John", "johnnybravo@mail.com"))));
   }
 }

@@ -1,9 +1,18 @@
 package com.cuongd.study.ce;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Common {
+  @SafeVarargs
+  public static <E> List<E> listOf(E... elems) {
+    return Collections.unmodifiableList(Arrays.asList(elems));
+  }
+
+  @SafeVarargs
+  public static <E> Set<E> setOf(E... elems) {
+    return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(elems)));
+  }
+
   public static int select(int[] a, int k) {
     if (k < 0 || k > a.length - 1) throw new AssertionError();
     int[] aux = Arrays.copyOf(a, a.length);

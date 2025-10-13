@@ -1,5 +1,8 @@
 package com.cuongd.study.ce.leetcode;
 
+import static com.cuongd.study.ce.Common.listOf;
+import static com.cuongd.study.ce.Common.setOf;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -14,7 +17,7 @@ class Lc0126 {
   private String[] words;
 
   public List<List<String>> findLadders(String beginWord, String endWord, List<String> wordList) {
-    if (!wordList.contains(endWord)) return List.of();
+    if (!wordList.contains(endWord)) return new ArrayList<>();
     return solve(beginWord, wordList, endWord);
   }
 
@@ -31,9 +34,9 @@ class Lc0126 {
     Set<String> wordsToAdd = new HashSet<>(words);
     wordsToAdd.remove(begin);
     wordsToAdd.remove(end);
-    addWords(Set.of(begin));
+    addWords(setOf(begin));
     addWords(wordsToAdd);
-    addWords(Set.of(end));
+    addWords(setOf(end));
     bfs();
     List<List<String>> ans = new ArrayList<>();
     List<String> collector = new ArrayList<>();
@@ -108,6 +111,6 @@ class Lc0126 {
 
   public static void main(String[] args) {
     System.out.println(
-        new Lc0126().findLadders("hit", "cog", List.of("hot", "dot", "dog", "lot", "log", "cog")));
+        new Lc0126().findLadders("hit", "cog", listOf("hot", "dot", "dog", "lot", "log", "cog")));
   }
 }

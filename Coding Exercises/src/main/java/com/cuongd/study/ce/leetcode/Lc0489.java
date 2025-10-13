@@ -1,5 +1,7 @@
 package com.cuongd.study.ce.leetcode;
 
+import static com.cuongd.study.ce.Common.listOf;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,29 +15,29 @@ public class Lc0489 {
     this.robot = robot;
     dir = RobotDir.UP;
     seen = new HashSet<>();
-    seen.add(List.of(0, 0));
-    clean(List.of(0, 0), List.of(0, 0));
+    seen.add(listOf(0, 0));
+    clean(listOf(0, 0), listOf(0, 0));
   }
 
   private void clean(List<Integer> pos, List<Integer> prevPos) {
     robot.clean();
     int x = pos.get(0), y = pos.get(1);
-    List<Integer> up = List.of(x - 1, y);
+    List<Integer> up = listOf(x - 1, y);
     if (!seen.contains(up)) {
       seen.add(up);
       if (moveUp()) clean(up, pos);
     }
-    List<Integer> left = List.of(x, y - 1);
+    List<Integer> left = listOf(x, y - 1);
     if (!seen.contains(left)) {
       seen.add(left);
       if (moveLeft()) clean(left, pos);
     }
-    List<Integer> down = List.of(x + 1, y);
+    List<Integer> down = listOf(x + 1, y);
     if (!seen.contains(down)) {
       seen.add(down);
       if (moveDown()) clean(down, pos);
     }
-    List<Integer> right = List.of(x, y + 1);
+    List<Integer> right = listOf(x, y + 1);
     if (!seen.contains(right)) {
       seen.add(right);
       if (moveRight()) clean(right, pos);

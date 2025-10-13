@@ -1,5 +1,7 @@
 package com.cuongd.study.ce.leetcode;
 
+import static com.cuongd.study.ce.Common.listOf;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -35,7 +37,7 @@ class Lc0317 {
     boolean[][] marked = new boolean[g.length][g[0].length];
     int[][] deltas = new int[][] {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
     Queue<List<Integer>> q = new LinkedList<>();
-    q.add(List.of(i, j, 0));
+    q.add(listOf(i, j, 0));
     marked[i][j] = true;
     int steps = 0;
     while (!q.isEmpty()) {
@@ -47,7 +49,7 @@ class Lc0317 {
         if (nx < 0 || nx >= g.length || ny < 0 || ny >= g[0].length || marked[nx][ny]) continue;
         marked[nx][ny] = true;
         if (g[nx][ny] == 0) {
-          q.add(List.of(nx, ny, s + 1));
+          q.add(listOf(nx, ny, s + 1));
           continue;
         }
         if (g[nx][ny] == 1) {

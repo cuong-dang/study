@@ -1,5 +1,8 @@
 package com.cuongd.study.ce.leetcode;
 
+import static com.cuongd.study.ce.Common.listOf;
+import static com.cuongd.study.ce.Common.setOf;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,12 +16,12 @@ public class Lc0863 {
   public List<Integer> distanceK(TreeNode root, TreeNode target, int k) {
     Graph G = new Graph();
     translate(root, G);
-    Set<Integer> seen = new HashSet<>(Set.of(target.val));
+    Set<Integer> seen = new HashSet<>(setOf(target.val));
     Queue<Integer> q = new ArrayDeque<>();
     q.add(target.val);
     int steps = 0;
     while (true) {
-      if (q.isEmpty()) return List.of();
+      if (q.isEmpty()) return listOf();
       if (steps == k) {
         return new ArrayList<>(q);
       }

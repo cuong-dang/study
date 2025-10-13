@@ -1,5 +1,8 @@
 package com.cuongd.study.ce.leetcode;
 
+import static com.cuongd.study.ce.Common.listOf;
+import static com.cuongd.study.ce.Common.setOf;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,7 +20,7 @@ public class Lc0127 {
 
     Set<String> pc = wordToSubs.get(beginWord);
     Set<String> seenSubs = new HashSet<>(pc);
-    Set<String> seenWords = new HashSet<>(Set.of(beginWord));
+    Set<String> seenWords = new HashSet<>(setOf(beginWord));
     int steps = 1;
     while (!pc.isEmpty()) {
       steps++;
@@ -69,6 +72,6 @@ public class Lc0127 {
     System.out.println(
         new Lc0127()
             .ladderLength(
-                "talk", "tail", List.of("talk", "tons", "fall", "tail", "gale", "hall", "negs")));
+                "talk", "tail", listOf("talk", "tons", "fall", "tail", "gale", "hall", "negs")));
   }
 }

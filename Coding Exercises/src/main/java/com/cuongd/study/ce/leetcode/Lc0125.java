@@ -4,7 +4,7 @@ public class Lc0125 {
   public boolean isPalindrome(String s) {
     int n = s.length();
     if (n == 0 || n == 1) return true;
-    s = s.strip().toLowerCase();
+    s = s.trim().toLowerCase();
     int i = 0, j = s.length() - 1;
     while (i < j) {
       char c1 = s.charAt(i), c2 = s.charAt(j);
