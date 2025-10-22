@@ -1,0 +1,51 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, enumitem}
+
+\begin{document}
+
+\section*{Chapter 2}
+
+\begin{enumerate}[label=2-\arabic*.]
+    \item
+    \item The loop can be expressed as
+          \begin{align*}
+              \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}1
+               & = \sum_{i=1}^{n}\sum_{j=1}^{i}(i+1)
+               & \text{(innermost sum from $i$ to $2i$ has $i+1$ terms)} \\
+               & = \sum_{i=1}^{n}(i(i+1))                                \\
+               & = \sum_{i=1}^{n}i^2 + \sum_{i=1}^{n}i
+               & \text{(expand)}                                         \\
+               & = \frac{n(n+1)(2n+1)}{6} + \frac{n(n+1)}{2}
+               & \text{(apply explicit formulas)}                        \\
+               & = \frac{n(n+1)(n+2)}{3}
+               & \text{(simlify)}.                                       \\
+          \end{align*}
+          Thus, the expression is $\mathcal{O}(n^3)$.
+    \item The loop can be expressed as
+          \begin{align*}
+              \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}\sum_{l=1}^{i+j-k}1
+               & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}(i+j-k)              \\
+               & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=1}^{i}k
+               & \text{($\sum_{k=start}^{end}(end-k) = \sum_{k=1}^{end-start}(k)$)} \\
+               & = \sum_{i=1}^{n}\sum_{j=1}^{i}\frac{i(i+1)}{2}                     \\
+               & = \sum_{i=1}^{n}\frac{i^2(i+1)}{2}                                 \\
+               & = \frac{1}{2}(\sum_{i=1}^{n}i^3 + \sum_{i=1}^{n}i^2)               \\
+               & = \frac{1}{2}(\frac{n^2(n+1)^2}{4} + \frac{n(n+1)(2n+1)}{6}.
+          \end{align*}
+          Thus, the expression is $\mathcal{O}(n^4)$.
+    \item The loop can be expressed as
+          \begin{align*}
+              \sum_{i=1}^{n}\sum_{j=i+1}^{n}\sum_{k=i+j-1}^{n}1
+              %    & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}(i+j-k)              \\
+              %    & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=1}^{i}k
+              %    & \text{($\sum_{k=start}^{end}(end-k) = \sum_{k=1}^{end-start}(k)$)} \\
+              %    & = \sum_{i=1}^{n}\sum_{j=1}^{i}\frac{i(i+1)}{2}                     \\
+              %    & = \sum_{i=1}^{n}\frac{i^2(i+1)}{2}                                 \\
+              %    & = \frac{1}{2}(\sum_{i=1}^{n}i^3 + \sum_{i=1}^{n}i^2)               \\
+              %    & = \frac{1}{2}(\frac{n^2(n+1)^2}{4} + \frac{n(n+1)(2n+1)}{6}.
+          \end{align*}
+          %   Thus, the expression is $\mathcal{O}(n^4)$.
+\end{enumerate}
+
+\end{document}
