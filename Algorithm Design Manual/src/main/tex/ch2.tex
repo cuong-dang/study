@@ -7,45 +7,178 @@
 \section*{Chapter 2}
 
 \begin{enumerate}[label=2-\arabic*.]
-    \item
-    \item The loop can be expressed as
-          \begin{align*}
-              \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}1
-               & = \sum_{i=1}^{n}\sum_{j=1}^{i}(i+1)
-               & \text{(innermost sum from $i$ to $2i$ has $i+1$ terms)} \\
-               & = \sum_{i=1}^{n}(i(i+1))                                \\
-               & = \sum_{i=1}^{n}i^2 + \sum_{i=1}^{n}i
-               & \text{(expand)}                                         \\
-               & = \frac{n(n+1)(2n+1)}{6} + \frac{n(n+1)}{2}
-               & \text{(apply explicit formulas)}                        \\
-               & = \frac{n(n+1)(n+2)}{3}
-               & \text{(simlify)}.                                       \\
-          \end{align*}
-          Thus, the expression is $\mathcal{O}(n^3)$.
-    \item The loop can be expressed as
-          \begin{align*}
-              \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}\sum_{l=1}^{i+j-k}1
-               & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}(i+j-k)              \\
-               & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=1}^{i}k
-               & \text{($\sum_{k=start}^{end}(end-k) = \sum_{k=1}^{end-start}(k)$)} \\
-               & = \sum_{i=1}^{n}\sum_{j=1}^{i}\frac{i(i+1)}{2}                     \\
-               & = \sum_{i=1}^{n}\frac{i^2(i+1)}{2}                                 \\
-               & = \frac{1}{2}(\sum_{i=1}^{n}i^3 + \sum_{i=1}^{n}i^2)               \\
-               & = \frac{1}{2}(\frac{n^2(n+1)^2}{4} + \frac{n(n+1)(2n+1)}{6}.
-          \end{align*}
-          Thus, the expression is $\mathcal{O}(n^4)$.
-    \item The loop can be expressed as
-          \begin{align*}
-              \sum_{i=1}^{n}\sum_{j=i+1}^{n}\sum_{k=i+j-1}^{n}1
-              %    & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}(i+j-k)              \\
-              %    & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=1}^{i}k
-              %    & \text{($\sum_{k=start}^{end}(end-k) = \sum_{k=1}^{end-start}(k)$)} \\
-              %    & = \sum_{i=1}^{n}\sum_{j=1}^{i}\frac{i(i+1)}{2}                     \\
-              %    & = \sum_{i=1}^{n}\frac{i^2(i+1)}{2}                                 \\
-              %    & = \frac{1}{2}(\sum_{i=1}^{n}i^3 + \sum_{i=1}^{n}i^2)               \\
-              %    & = \frac{1}{2}(\frac{n^2(n+1)^2}{4} + \frac{n(n+1)(2n+1)}{6}.
-          \end{align*}
-          %   Thus, the expression is $\mathcal{O}(n^4)$.
+      \item
+      \item The loop can be expressed as
+            \begin{align*}
+                  \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}1
+                   & = \sum_{i=1}^{n}\sum_{j=1}^{i}(i+1)
+                   & \text{(innermost sum from $i$ to $2i$ has $i+1$ terms)} \\
+                   & = \sum_{i=1}^{n}(i(i+1))                                \\
+                   & = \sum_{i=1}^{n}i^2 + \sum_{i=1}^{n}i
+                   & \text{(expand)}                                         \\
+                   & = \frac{n(n+1)(2n+1)}{6} + \frac{n(n+1)}{2}
+                   & \text{(apply explicit formulas)}                        \\
+                   & = \frac{n(n+1)(n+2)}{3}
+                   & \text{(simlify)}.                                       \\
+            \end{align*}
+            Thus, the expression is $\mathcal{O}(n^3)$.
+      \item The loop can be expressed as
+            \begin{align*}
+                  \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}\sum_{l=1}^{i+j-k}1
+                   & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=j}^{i+j}(i+j-k)              \\
+                   & = \sum_{i=1}^{n}\sum_{j=1}^{i}\sum_{k=1}^{i}k
+                   & \text{($\sum_{k=start}^{end}(end-k) = \sum_{k=1}^{end-start}(k)$)} \\
+                   & = \sum_{i=1}^{n}\sum_{j=1}^{i}\frac{i(i+1)}{2}                     \\
+                   & = \sum_{i=1}^{n}\frac{i^2(i+1)}{2}                                 \\
+                   & = \frac{1}{2}(\sum_{i=1}^{n}i^3 + \sum_{i=1}^{n}i^2)               \\
+                   & = \frac{1}{2}(\frac{n^2(n+1)^2}{4} + \frac{n(n+1)(2n+1)}{6}.
+            \end{align*}
+            Thus, the expression is $\mathcal{O}(n^4)$.
+      \item The loop can be expressed as
+            \begin{align*}
+                  \sum_{i=1}^{n}\sum_{j=i+1}^{n}\sum_{k=i+j-1}^{n}1
+                   & = \sum_{i=1}^{n}\sum_{j=i+1}^{n}(i+j-1)                \\
+                   & = \sum_{i=1}^{n}\left(\sum_{j=i+1}^{n}i +
+                  \sum_{j=i+1}^{n}j -
+                  \sum_{j=i+1}^{n}1\right)                                  \\
+                   & = \sum_{i=1}^{n}\left((n-i)i +
+                  \left((n-i)i + \frac{(n-i)(n-i+1)}{2}\right) -
+                  (n-i)\right)                                              \\
+                   & = \sum_{i=1}^{n}\left(\frac{1}{2}(n-i)(5i-n+1)\right).
+            \end{align*}
+            Thus, the expression is $\mathcal{O}(n^3)$.
+      \item
+      \item \begin{enumerate}[label=(\alph*)]
+                  \item $2n$ multiplications. $n$ additions.
+                  \item $2n$ multiplications.
+                  \item Horner's method reduces the number of multiplications to $n$.
+            \end{enumerate}
+      \item
+      \item \begin{enumerate}[label=(\alph*)]
+                  \item Yes. Because $2^{n+1} = 2 \times 2^n \le c2^n$  when $c \ge 2$ and $n > 0$.
+                  \item No. Because $\forall c > 0, 2^n < 2^{2n}$ when $n > \log_2{c}$.
+            \end{enumerate}
+      \item \begin{enumerate}[label=(\alph*)]
+                  \item $\log{n^2}$ is $\Theta(g(n))$ because $\log{n^2} = 2\log{n}$.
+                  \item $\sqrt{n}$ is $\Omega(\log{n^2})$ because
+                        $\displaystyle \lim_{n \to \infty}\frac{\sqrt{n}}{\log{n^2}} = \infty$.
+                  \item $\log^2{n}$ is $\Omega(\log{n})$ because when $c = 1$, $f(n) \ge g(n)$ when
+                        $n \ge 2$.
+                  \item $n$ is $\Omega(\log^2{n})$ because
+                        $\displaystyle \lim_{n \to \infty}\frac{n}{\log^2{n}} = \infty$.
+                  \item $n\log{n} + n$ is $\Omega(\log{n})$.
+                  \item 10 is $\Theta(\log{10})$.
+                  \item $2^n$ is $\Omega(10n^2)$.
+                  \item $2^n \in \mathcal{O}(3^n)$ because $2^n \le 3^n$ $\forall n \ge 1$.
+            \end{enumerate}
+      \item \begin{enumerate}[label=(\alph*)]
+                  \item $g(n) \in \mathcal{O}(f(n))$.
+                  \item $f(n) \in \mathcal{O}(g(n))$.
+                  \item $f(n) \in \mathcal{O}(g(n))$.
+                  \item $g(n) \in \mathcal{O}(f(n))$.
+                  \item $f(n) \in \mathcal{O}(g(n))$ and $g(n) \in \mathcal{O}(f(n))$.
+                  \item $f(n) \in \mathcal{O}(g(n))$.
+            \end{enumerate}
+      \item \begin{enumerate}[label=(\alph*)]
+                  \item $\Theta(g(n))$.
+                  \item $\mathcal{O}(g(n))$.
+                  \item $\Theta(g(n))$.
+                  \item $\Theta(g(n))$.
+                  \item $\mathcal{O}(g(n))$.
+            \end{enumerate}
+      \item \begin{proof}
+                  \begin{align*}
+                        \lim_{n \to \infty}\frac{n^3-3n^2-n+1}{n^3} = 1.
+                  \end{align*}
+            \end{proof}
+      \item \begin{proof}
+                  \begin{align*}
+                        \lim_{n \to \infty}\frac{n^2}{2^n} = 0.
+                  \end{align*}
+            \end{proof}
+      \item \begin{proof}
+                  \begin{align*}
+                        \lim_{n \to \infty}\frac{n^2}{n^2+1} = 1.
+                  \end{align*}
+            \end{proof}
+      \item \begin{enumerate}[label=(\alph*)]
+                  \item \begin{itemize}
+                              \item $\displaystyle \frac{(2n)^2}{n^2} = 4$ times slower.
+                              \item $\displaystyle \frac{(n+1)^2}{n^2} =
+                                          1 + \frac{2}{n} + \frac{1}{n^2}$ times slower.
+                        \end{itemize}
+                  \item \begin{itemize}
+                              \item $\displaystyle \frac{(2n)^3}{n^3} = 8$ times slower.
+                              \item $\displaystyle \frac{(n+1)^3}{n^3} =
+                                          1 + \frac{3}{n} + \frac{3}{n^2} + \frac{1}{n^3}$
+                                    times slower.
+                        \end{itemize}
+                  \item \begin{itemize}
+                              \item $\displaystyle \frac{100(2n)^2}{100n^2} = 4$ times slower.
+                              \item $\displaystyle \frac{100(n+1)^2}{100n^2} =
+                                          1 + \frac{2}{n} + \frac{1}{n^2}$ times slower.
+                        \end{itemize}
+                  \item \begin{itemize}
+                              \item $\displaystyle \frac{(2n)\log(2n)}{n\log{n}} =
+                                          2 + \frac{2}{\log{n}}$ times slower.
+                              \item $\displaystyle \frac{(n+1)\log(n+1)}{n\log{n}}$ times slower.
+                        \end{itemize}
+                  \item \begin{itemize}
+                              \item $\displaystyle \frac{2^{2n}}{2^n} = 2^n$ times slower.
+                              \item $\displaystyle \frac{2^{n+1}}{2^n} = 2$ times slower.
+                        \end{itemize}
+            \end{enumerate}
+      \item \begin{enumerate}[label=(\alph*)]
+                  \item 6,000,000.
+                  \item 33,019.
+                  \item 600,000.
+                  \item $9 \times 10^{11}$.
+                  \item 45.
+                  \item 5.
+            \end{enumerate}
+      \item \begin{enumerate}[label=(\alph*)]
+                  \item $\displaystyle \frac{3}{2}$.
+                  \item 2.
+                  \item 2.
+            \end{enumerate}
+      \item Because $f_1(n) \in \mathcal{O}(g_1(n))$, $\exists c_1, n_1$ such that
+            $f_1(n) \le c_1g_1(n)$ for all $n \ge n_1$. Similarly, because
+            $f_2(n) \in \mathcal{O}(g_2(n))$, $\exists c_2, n_2$ such that $f_2(n) \le c_2g_2(n)$ for all
+            $n \ge n_2$. Choose $c_3 = \max\lbrace  c_1, c_2 \rbrace$, and
+            $n_3 = \max\lbrace  n_1, n_2 \rbrace$. When $n \ge n_3$, We have
+            \begin{align*}
+                  f_1(n) + f_2(n) & \le c_1g_1(n) + c_2g_2(n) \\
+                                  & \le c_3g_1(n) + c_3g_2(n) \\
+                                  & \le c_3(g_1(n) + g_2(n)).
+            \end{align*}
+            Thus, $f_1(n) + f_2(n) \in \mathcal{O}(g_1(n) + g_2(n))$ by definition.
+      \item
+      \item
+      \item \begin{proof}
+                  For all $n \ge 1$ and $i \le k$, $n^i \le n^k$. Because $a_i$ is any real number,
+                  \begin{align*}
+                        a_kn^k + \ldots + a_1n + a_0
+                         & \le |a_k|n^k + \ldots + |a_1|n + |a_0|      \\
+                         & \le |a_k|n^k + \ldots + |a_1|n^k + |a_0|n^k
+                         & \text{($k$ is the highest degree)}          \\
+                         & \le (|a_k| + \ldots + |a_1| + |a_0|)n^k.    \\
+                  \end{align*}
+                  Thus, if we choose $c = |a_k| + \ldots + |a_1| + |a_0|$ and $n_0 = 1$, then
+                  $a_kn^k + \ldots + a_1n + a_0 \le cn^k$ for all $n \ge n_0$.
+            \end{proof}
+      \item By exercise 2-21, $(n+a)^b \in \mathcal{O}(n^b)$. The following is a proof for
+            $(n+a)^b \in \Omega(n^b)$.
+            \begin{proof}
+                  Choose $n_0 = \max\left\{1, 2|a|\right\}$. Then for all $n \ge n_0$,
+                  $n+a \ge n - |a| \ge n - n/2 = n/2$. Because $b > 0$, the function
+                  $x \mapsto x^b$ is increasing on $[0,\infty)$; as a result, we have
+                  $\displaystyle (n-a)^b \ge \left(\frac{n}{2}\right)^b = 2^{-b}n^b$. Thus, if we
+                  choose $c = 2^{-b}$, by definition, $(n+a)^b \in \Omega(n^b)$.
+            \end{proof}
+      \item $n! \gg e^n \gg 2^n = 2^{n-1} \gg n-n^3+7n^5 \gg n^3 \gg n^2 + \log{n} = n^2 \gg
+                  n^{1+e} \gg n\log{n} \gg n \gg \sqrt{n} \gg (\log{n})^2 \gg \ln{n} = \log{n} \gg
+                  \log\log{n}$.
+      \item $\pi^n \gg \binom{n}{5} \gg n^\pi$.
 \end{enumerate}
 
 \end{document}
