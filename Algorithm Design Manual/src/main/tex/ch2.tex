@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath, amsthm, enumitem}
+\usepackage{amsmath, amsthm, enumitem, multicol}
 
 \begin{document}
 
@@ -178,7 +178,62 @@
       \item $n! \gg e^n \gg 2^n = 2^{n-1} \gg n-n^3+7n^5 \gg n^3 \gg n^2 + \log{n} = n^2 \gg
                   n^{1+e} \gg n\log{n} \gg n \gg \sqrt{n} \gg (\log{n})^2 \gg \ln{n} = \log{n} \gg
                   \log\log{n}$.
-      \item $\pi^n \gg \binom{n}{5} \gg n^\pi$.
+      \item $\pi^n \gg \sqrt{2^{\sqrt{n}}} \gg 2^{\log^4{n}} \gg n^4\binom{n}{n-4} \gg
+                  n^{5(\log{n})^2}\gg \binom{n}{5} \gg \binom{n}{n-4} \gg n^\pi$.
+      \item
+      \item
+      \item
+      \item \begin{multicols}{4}
+                  \begin{enumerate}[label=(\alph*)]
+                        \item True.
+                        \item False.
+                        \item True.
+                        \item False.
+                        \item True.
+                        \item True.
+                        \item False.
+                  \end{enumerate}
+            \end{multicols}
+      \item
+            \begin{enumerate}[label=(\alph*)]
+                  \item $f(n) = \Omega(g(n))$.
+                  \item $f(n) = \mathcal{O}(g(n))$.
+                  \item $f(n) = \Omega(g(n))$.
+            \end{enumerate}
+      \item
+      \item \begin{multicols}{4}
+                  \begin{enumerate}[label=(\alph*)]
+                        \item No.
+                        \item Yes.
+                        \item Yes.
+                        \item Yes.
+                  \end{enumerate}
+            \end{multicols}
+      \item
+      \item $f_4(n), f_2(n), f_1(n), f_3(n)$.
+      \item (c) is true.
+      \item \begin{multicols}{4}
+                  \begin{enumerate}[label=(\alph*)]
+                        \item $4^n$.
+                        \item $n\log{n}$.
+                        \item $(\log{n})^{10}$.
+                        \item $n^{100}$.
+                  \end{enumerate}
+            \end{multicols}
+      \item
+            \begin{enumerate}[label=(\alph*)]
+                  \item $\mathcal{O}, o$.
+                  \item $\mathcal{O}, o$.
+                  \item None.
+                  \item $\mathcal{O}, o$.
+                  \item To simplify, we will compare $n^{\ln{n}}$ and $(\ln{n})^n$. Rewriting them
+                        in exponential form, $n^{\ln{n}} = e^{\ln{n}\ln{n}}$ and $(\ln{n})^n =
+                              e^{(\ln\ln{n})n}$. Thus, we need to compare $(\ln{n})^2$ and
+                        $n\ln\ln{n}$. Let $x = \ln{n}$, then $n = e^x$. We have, $(\ln{n})^2 = x^2$
+                        and $n\ln\ln{n} = e^x\ln{x}$. It's easy to see that $x^2$ grows much slower
+                        than $e^x\ln{x}$. Therefore, $(\ln{n})^2$ grows slower than $n\ln\ln{n}$.
+                        And ultimately, $n^{\ln{n}}$ is $o((\ln{n})^n)$.
+            \end{enumerate}
 \end{enumerate}
 
 \end{document}
