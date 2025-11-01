@@ -1,5 +1,0 @@
-#ifndef THE_STANDARD_C_LIBRARY_CH0_H
-int square(int x);
-#define THE_STANDARD_C_LIBRARY_CH0_H
-
-#endif // THE_STANDARD_C_LIBRARY_CH0_H

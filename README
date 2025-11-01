@@ -15,13 +15,13 @@ are truly rewarding to work through.
   + book: https://a.co/d/dGoEB5A
 - *algs: Algorithms
   + book: https://www.amazon.com/Algorithms-4th-Robert-Sedgewick/dp/032157351X
-  + Coursera: https://www.coursera.org/learn/algorithms-part1
+  + course: https://www.course.org/learn/algorithms-part1
 - *csapp: Computer Systems, A Programmer's Perspective
   + book: http://csapp.cs.cmu.edu/3e/home.html
 - natda: Computer Networking, A Top-Down Approach
   + book: http://gaia.cs.umass.edu/kurose_ross/index.php
 - fpdis: Functional Program Design in Scala
-  + Coursera: https://www.coursera.org/learn/scala2-functional-program-design
+  + course: https://www.course.org/learn/scala2-functional-program-design
 - lcpis: Learning Concurrent Programming in Scala
   + book: https://www.packtpub.com/product/learning-concurrent-programming-in-scala/9781783281411
 - *xv6: xv6: a simple, Unix-like teaching operating system
@@ -30,7 +30,7 @@ are truly rewarding to work through.
   + book: https://www.db-book.com/
   + course: https://15445.courses.cs.cmu.edu/fall2021/
 - pcdp: Parallel, Concurrent, and Distributed Programming in Java
-  + course: https://www.coursera.org/specializations/pcdp
+  + course: https://www.course.org/specializations/pcdp
 - *dis: Distributed Systems
   + course: http://nil.csail.mit.edu/6.824/2020/
 - ascj: Advanced Software Construction in Java
@@ -48,15 +48,15 @@ are truly rewarding to work through.
   + course: http://courses.cms.caltech.edu/cs122/
 - *dragon: Compilers: Principles, Techniques, and Tools
   + book: https://a.co/d/6HBpbje
-- alspe: Coursera Algorithms Specialization
-  + Coursera: https://www.coursera.org/specializations/algorithms
+- alspe: course Algorithms Specialization
+  + course: https://www.course.org/specializations/algorithms
   + book: https://www.amazon.com/dp/0999282980
-- stdc: The Standard C Library
+- *stdc: The Standard C Library
   + book: https://www.amazon.com/dp/0131315099
 - adm: The Algorithm Design Manual
   + book: https://www.amazon.com/Algorithm-Design-Manual-Computer-Science-dp-3030542556/dp/3030542556
   + course: https://www3.cs.stonybrook.edu/~skiena/373/
 - tlam: How to Think Like a Mathematician
   + book: https://www.amazon.com/How-Think-Like-Mathematician-Undergraduate/dp/052171978X
-- ooad: Coursera Object-Oriented Analysis & Design Specialization
-  + Coursera: https://www.coursera.org/specializations/object-oriented-analysis-design
+- ooad: course Object-Oriented Analysis & Design Specialization
+  + course: https://www.course.org/specializations/object-oriented-analysis-design
