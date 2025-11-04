@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath, amsthm, enumitem, multicol}
+\everymath{\displaystyle}
 
 \begin{document}
 
@@ -143,8 +144,8 @@
             \end{enumerate}
       \item Because $f_1(n) \in \mathcal{O}(g_1(n))$, $\exists c_1, n_1$ such that
             $f_1(n) \le c_1g_1(n)$ for all $n \ge n_1$. Similarly, because
-            $f_2(n) \in \mathcal{O}(g_2(n))$, $\exists c_2, n_2$ such that $f_2(n) \le c_2g_2(n)$ for all
-            $n \ge n_2$. Choose $c_3 = \max\lbrace  c_1, c_2 \rbrace$, and
+            $f_2(n) \in \mathcal{O}(g_2(n))$, $\exists c_2, n_2$ such that $f_2(n) \le c_2g_2(n)$
+            for all $n \ge n_2$. Choose $c_3 = \max\lbrace  c_1, c_2 \rbrace$, and
             $n_3 = \max\lbrace  n_1, n_2 \rbrace$. When $n \ge n_3$, We have
             \begin{align*}
                   f_1(n) + f_2(n) & \le c_1g_1(n) + c_2g_2(n) \\
@@ -233,7 +234,29 @@
                         and $n\ln\ln{n} = e^x\ln{x}$. It's easy to see that $x^2$ grows much slower
                         than $e^x\ln{x}$. Therefore, $(\ln{n})^2$ grows slower than $n\ln\ln{n}$.
                         And ultimately, $n^{\ln{n}}$ is $o((\ln{n})^n)$.
+                  \item $\mathcal{O}, o$.
             \end{enumerate}
+      \item $S_i = 3^{i-1}$ for $i = 1 \ldots n$. Proof by induction.
+      \item \begin{align*}
+                  \sum_{i=1}^{n}(in - i(i-1))
+                   & = n\sum_{i=1}^{n}i - \sum_{i=1}^{n}i^2 + \sum_{i=1}^{n}i        \\
+                   & = n\frac{n(n+1)}{2} - \frac{n(n+1)(2n+1)}{6} + \frac{n(n+1)}{2} \\
+                   & = \frac{n^3+3n^2+2n}{6}.
+            \end{align*}
+      \item Subtract the sum of the numbers in the array from $\frac{(n+1)(n+2)}{2}$.
+      \item \begin{align*}
+                  \sum_{i=1}^{n}\sum_{j=i}^{2i}1 & = \sum_{i=1}^{n}\sum_{j=1}^{i+1}1  \\
+                                                 & = \sum_{i=1}^{n}(i+1)              \\
+                                                 & = \sum_{i=1}^{n} + \sum_{i=1}^{n}1 \\
+                                                 & = \frac{n(n+1)}{2} + n             \\
+                                                 & = \frac{n(n+3)}{2}.
+            \end{align*}
+      \item \begin{align*}
+                  \sum_{i=1}^{\frac{n}{2}}\sum_{j=i}^{n-i}\sum_{k=1}^{j}1
+                   & = \sum_{i=1}^{\frac{n}{2}}\sum_{j=i}^{n-i}j                       \\
+                   & = \sum_{i=1}^{\frac{n}{2}}\sum_{j=i}^{n-i}j                       \\
+                   & = \sum_{i=1}^{\frac{n}{2}}(\sum_{j=1}^{n-i}j - \sum_{j=1}^{i-1}j)
+            \end{align*}
 \end{enumerate}
 
 \end{document}
