@@ -255,8 +255,41 @@
                   \sum_{i=1}^{\frac{n}{2}}\sum_{j=i}^{n-i}\sum_{k=1}^{j}1
                    & = \sum_{i=1}^{\frac{n}{2}}\sum_{j=i}^{n-i}j                       \\
                    & = \sum_{i=1}^{\frac{n}{2}}\sum_{j=i}^{n-i}j                       \\
-                   & = \sum_{i=1}^{\frac{n}{2}}(\sum_{j=1}^{n-i}j - \sum_{j=1}^{i-1}j)
+                   & = \sum_{i=1}^{\frac{n}{2}}(\sum_{j=1}^{n-i}j - \sum_{j=1}^{i-1}j) \\
+                   & = \sum_{i=1}^{\frac{n}{2}}\frac{n(n-2i+1)}{2}                     \\
+                   & = \frac{n}{2}\sum_{i=1}^{\frac{n}{2}}(n-2i+1)                     \\
+                   & = \frac{n}{2}(\frac{n^2}{2} -
+                  \frac{n}{2}\left(\frac{n}{2}+1\right) + \frac{n}{2})                 \\
+                   & = \frac{n^3}{8}.
             \end{align*}
+      \item $\mathcal{O}(nb^n)$.
+      \item
+      \item
+      \item \begin{proof}
+                  Let $n \ge 1$ and $k = \lfloor\log{n}\rfloor$. By the definition of the floor
+                  function, $k \le \log{n} < k+1$; hence, $2^k \le n < 2^{k+1}$. Adding 1 gives
+                  $2^k + 1 \le n+1 \le 2^{k+1}$. Because the binary logarithm $\log$ is strictly
+                  increasing, taking $log$ yields $\log{2^k+1} \le \log(n+1) \le k+1$. Since
+                  $2^k + 1 > 2^k$, $\log{2^k+1} > k$. As a result, $k < \log(n+1) \le k+1$. Because
+                  $k+1$ is the only integer in the open interval, $\lceil\log(n+1)\rceil = k + 1 =
+                        \lfloor\log{n}\rfloor + 1$.
+            \end{proof}
+      \item \begin{proof}
+                  For $n \ge 1$, $n$ can be expressed as $n = 2^kb_k + 2^{k-1}b_{k-1} + \ldots +
+                        2^0b_0$ where $b_k = 1$ and $b_i$ equals 0 or 1 for $0 \le i \le k-1$. Thus,
+                  the number of bits necessary to represent $n$ is $k+1$. We now try to prove that
+                  $k+1 = \lfloor\log{n}\rfloor+1$. Based on the above expression, we have
+                  \begin{align*}
+                        2^k & \le n         & \le 2^{k+1} - 1 \\
+                        2^k & < n + 1       & \le 2^{k+1}     \\
+                        k   & < \log(n + 1) & \le k+1.
+                  \end{align*}
+                  From the definition of the ceiling function, we have $k+1 =
+                        \lceil\log(n+1)\rceil$. Hence, $k+1 = \lfloor\log{n}\rfloor + 1$, based on
+                  the previous exercise.
+            \end{proof}
+      \item $\mathcal{O}(n\log\sqrt{n})$ is still $\Omega(n\log{n})$.
+      \item
 \end{enumerate}
 
 \end{document}
