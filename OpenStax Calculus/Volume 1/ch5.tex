@@ -10,8 +10,8 @@
 
 \section*{5.3 | The Fundamental Theorem of Calculus}
 \begin{theorem*}[The Mean Value Theorem for Integrals]
-    If $f(x)$ is continuous over an interval $\left[a, b\right]$, then there is at least one point $c
-        \in \left[a, b\right]$ such that
+    If $f(x)$ is continuous over an interval $\left[a, b\right]$, then there is at least one point
+    $c \in \left[a, b\right]$ such that
     \[
         f(c) = \frac{1}{b-a}\int_{a}^{b}f(x)dx.
     \]
@@ -99,7 +99,7 @@
 \end{proof}
 
 \begin{theorem*}[The Fundamental Theorem of Calculus, Part 2]
-    If $f$ is continuous over the interval $\left[a, b\right]$ and $F(x)$ is any derivative of
+    If $f$ is continuous over the interval $\left[a, b\right]$ and $F(x)$ is any antiderivative of
     $f(x)$, then
     \[\int_{a}^{b}f(x)dx = F(b) - F(a).\]
 \end{theorem*}
@@ -122,5 +122,17 @@
                     & = \int_{a}^{b}f(x)dx.
     \end{align*}
 \end{proof}
+
+\section*{5.4 | Integration Formulas and the Net Change Theorem}
+A definite integral is either a number (when the limits of integration are constants) or a single
+function (when one or both of the limits of integration are variables). An indefinite integral
+represents a family of functions, all of which differ by a constant.
+\begin{theorem*}[Net Change Theorem]
+    The new value of a changing quantity equals the initial value plus the integral of the rate of
+    change:
+    \[F(b) = F(a) + \int_{a}^{b}F'(x)dx\]
+    or
+    \[\int_{a}^{b}F'(x)dx = F(b) - F(a).\]
+\end{theorem*}
 
 \end{document}
