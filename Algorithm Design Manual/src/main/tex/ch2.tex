@@ -289,6 +289,34 @@
                   the previous exercise.
             \end{proof}
       \item $\mathcal{O}(n\log\sqrt{n})$ is still $\Omega(n\log{n})$.
+      \item If $n$ is known, the algorithm is as follows.
+            \begin{enumerate}[label=\arabic*.]
+                  \item Randomly select an element whose index is between 0 to $n-1$.
+                  \item Add this element to the result, remove this element from the original list.
+                  \item Randomly select an element whose index is between 0 to $n-2$.
+                  \item Continue until we select $k$ elements.
+            \end{enumerate}
+            \begin{proof}
+                  The probability of an element that is not selected is
+                  \[\frac{n-1}{n}\times\frac{n-2}{n-1}\times\ldots\times\frac{n-k}{n-k+1} =
+                        \frac{n-k}{n}\]
+                  Thus, the probability of a selected element is $\frac{k}{n}$.
+            \end{proof}
+            If $n$ is not known, then, assuming we receive a stream of $n$ elements, one at a time,
+            the algorithm is as follows.
+            \begin{enumerate}[label=\arabic*.]
+                  \item Select first $k$ elements.
+                  \item For the $i^{th}$ element where $i > k$, randomly choose a number $r$ between
+                        0 and $i-1$. If $r \le i-1$, replace the element at index $r$ with the
+                        $i^{th}$ element.
+            \end{enumerate}
+            \begin{proof}
+                  For a given $i^{th}$ element, the probability for its to be selected is
+                  $\frac{k}{i}$. Let's say an $i_0^{th}$ element was selected. Its probability to
+                  still be selected after $j$ more elements, where $i_0 + j = n$, is
+                  \[\frac{k}{i_0}\times\frac{i_0}{i_0+1}\times\ldots\times\frac{i_0+j-1}{i_0+j} =
+                        \frac{k}{i_0+j} = \frac{k}{n}.\]
+            \end{proof}
       \item
 \end{enumerate}
 
