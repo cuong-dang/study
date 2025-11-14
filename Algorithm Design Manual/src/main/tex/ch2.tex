@@ -318,6 +318,15 @@
                         \frac{k}{i_0+j} = \frac{k}{n}.\]
             \end{proof}
       \item
+      \item
+      \item
+      \item Weigh 3 vs. 3. If they are balanced, weigh the other two. If one group is lighter, weigh
+            any two in that group.
+      \item Assume that only pairwise merges are allowed, not k-way merges. A total of $n-1$ merges
+            are required. At the first step, there are $\binom{n}{2}$ ways to merge. At the second
+            step, there are $\binom{n-1}{2}$ ways to merge. Thus, the total number of ways to merge
+            is
+            \[\prod_{i=0}^{n-2}\binom{n-i}{2} = \frac{n!(n-1)!}{2^n}.\]
 \end{enumerate}
 
 \end{document}
