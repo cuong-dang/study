@@ -135,4 +135,36 @@ represents a family of functions, all of which differ by a constant.
     \[\int_{a}^{b}F'(x)dx = F(b) - F(a).\]
 \end{theorem*}
 
+\section*{5.5 | Substitution}
+\begin{theorem*}[Substitution with Indefinite Integrals]
+    Let $u = g(x)$, where $g'(x)$ is continuous over an interval, let $f(x)$ be continuous over the
+    corresponding range of $g$, and let $F(x)$ be an antiderivative of $f(x)$. Then,
+    \begin{align*}
+        \int_{}^{}f[g(x)]g'(x)dx & = \int_{}^{}f(u)du \\
+                                 & = F(u) + C         \\
+                                 & = F(g(x)) + C.
+    \end{align*}
+\end{theorem*}
+\begin{proof}
+    Let $f, g, u$, and $F$ be as specified in the theore. Then
+    \[\frac{d}{dx}F(g(x)) = f[g(x)]g'(  x).\]
+    Integrating both sides with respect to $x$, we see that
+    \[\int_{}^{}f[g(x)]g'(x)dx = F(x) + C.\]
+    If we now substitute $u = g(x)$, and $du = g'(x)dx$, we get
+    \begin{align*}
+        \int_{}^{}f[g(x)]g'(x)dx & = \int_{}^{}f(u)du \\
+                                 & = F(u) + C         \\
+                                 & = F(g(x)) + C.
+    \end{align*}
+\end{proof}
+\begin{theorem*}[Substitution with Definite Integrals]
+    Let $u = g(x)$ and $g'$ be continuous over an interval $\left[a, b\right]$, and let $f$ be
+    continuous over the range of $u = g(x)$. Then,
+    \[\int_{a}^{b}f(g(x))g'(x)dx = \int_{g(a)}^{g(b)}f(u)du.\]
+\end{theorem*}
+
+\section*{5.6 | Integrals Involving Exponential and Logarithmic Functions}
+
+\section*{5.7 | Integrals Resulting in Inverse Trigonometric Functions}
+
 \end{document}
