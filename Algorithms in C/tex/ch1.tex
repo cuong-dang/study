@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, enumitem, listings}
+
+\everymath{\displaystyle}
+\newtheorem{property}{Property}
+\numberwithin{property}{section}
+
+\title{Algorithms in C}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\section{Introduction}
+\subsection{Algorithms}
+\subsection{A Sample Problem: Connectivity}
+\subsubsection*{Exercises}
+\begin{enumerate}[label=1-\arabic*]
+      \item
+            \begin{lstlisting}
+          0-2
+          1-4
+          2-5
+          3-6
+          0-4
+          6-0
+          \end{lstlisting}
+      \item
+      \item Initialize \textit{count} to be N for N objects. Iterate through the pairs. For each
+            \textit{union} call, decrease \textit{count} by 1.
+\end{enumerate}
+
+\subsection{Union-Find Algorithms}
+\begin{property}
+      The quick-find algorithm executes at least $MN$ instructions to solve a connectivity problem
+      with $N$ objects that involves $M$ \textup{union} operations.
+\end{property}
+\begin{proof}
+      For each of the $M$ \textit{union} operations, we iterate the \texttt{for} loop $N$ times. Each
+      iteration requires at least one instruction (if only to check whether the loop is finished).
+\end{proof}
+
+\end{document}
