@@ -37,8 +37,33 @@
       with $N$ objects that involves $M$ \textup{union} operations.
 \end{property}
 \begin{proof}
-      For each of the $M$ \textit{union} operations, we iterate the \texttt{for} loop $N$ times. Each
-      iteration requires at least one instruction (if only to check whether the loop is finished).
+      For each of the $M$ \textit{union} operations, we iterate the \texttt{for} loop $N$ times.
+      Each iteration requires at least one instruction (if only to check whether the loop is
+      finished).
 \end{proof}
-
+\begin{property}
+      For $M > N$, the quick-union algorithm could take more than $MN/2$ instructions to solve a
+      connectivity problem with $M$ pairs of $N$ objects.
+\end{property}
+\begin{proof}
+      Suppose that the input pairs come in the order $1-2$, then $2-3$, then $3-4$, and so forth.
+      After $N-1$ such pairs, we have $N$ objects all in the same set, and the tree that is formed
+      by the quick-union algorithmis a straight line, with $N$ pointing to $N-1$, which points to
+      $N-2$, which points to $N-3$, and so forth. To execute the \textit{find} operation for object
+      $N$, the program has to follow $N-1$ pointers. Thus, the average number of pointers followed
+      for the first $N$ pairs is
+      \[(0 + 1 + \ldots + (N-1))/N = (N-1)/2.\]
+      Now suppose that the remainder of the pairs all connect $N$ to some other object. The
+      \textit{find} operation for each of these pairs involves at least $(N-1)$ pointers. The grand
+      total for the $M$ \textit{find} operations for this sequence of input pairs is certainly
+      greater than $MN/2$.
+\end{proof}
+\paragraph{Note} The $N^{th}$ pair should connect $N$ with $1$ for the above formula to be correct.
+We want to show why the total number of pointers is greater than $MN/2$, as it is not obviously
+clear to me from the text. Since we are proving the worst case, we can assume that of the
+remaining pairs, there exists the pair $N$-$N$, which will result in $2(N-1)$ pointer operations.
+Thus, if we call the total number of pointer follows $T$, then we have
+\[T \ge N(N-1)/2 + (M-N-1)(N-1) + 2(N-1) = N(N-1)/2 + (M-N+1)(N-1).\]
+For all $N > 1$, $N-1 > N/2$. Therefore,
+\[T \ge N(N-1)/2 + (M-N+1)(N-1) > (N-1)N/2 + (M-N+1)N/2 = MN/2.\]
 \end{document}

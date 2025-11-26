@@ -1,22 +1,22 @@
-/* Quick-find */
+/* Quick-union */
 #include <stdio.h>
 #define N 10000
 
 int main(void) {
-  int i, p, q, t, id[N];
+  int i, j, p, q, id[N];
 
   for (i = 0; i < N; i++) {
     id[i] = i;
   }
   while (scanf("%d %d\n", &p, &q) == 2) {
-    if (id[p] == id[q]) {
+    for (i = p; i != id[i]; i = id[i])
+      ;
+    for (j = q; j != id[j]; j = id[j])
+      ;
+    if (i == j) {
       continue;
     }
-    for (t = id[p], i = 0; i < N; i++) {
-      if (id[i] == t) {
-        id[i] = id[q];
-      }
-    }
+    id[i] = j;
     printf("%d %d\n", p, q);
   }
 }
