@@ -66,4 +66,23 @@ Thus, if we call the total number of pointer follows $T$, then we have
 \[T \ge N(N-1)/2 + (M-N-1)(N-1) + 2(N-1) = N(N-1)/2 + (M-N+1)(N-1).\]
 For all $N > 1$, $N-1 > N/2$. Therefore,
 \[T \ge N(N-1)/2 + (M-N+1)(N-1) > (N-1)N/2 + (M-N+1)N/2 = MN/2.\]
+\begin{property}\label{prop:wqu}
+      The weighted quick-union algorithm follows at most $2\lg{N}$ pointers to determine whether two
+      of $N$ objects are connected.
+\end{property}
+\begin{proof}
+      We can prove that the \textit{union} operation preserves the property that the number of
+      pointers followed from any node to the root in a set of $k$ objects is no greater than
+      $\lg{k}$ (we do not count the self-pointer at the root). When we combine a set of $i$ nodes
+      with a set of $j$ nodes with $i \le j$, we increase the number of pointers that must be
+      followed in the smaller set by 1, but they are now in a set of size $i+j$, so the property
+      is preseved because $1 + \lg{i} = \lg(i+i) \le \lg(i+j)$.
+\end{proof}
+\paragraph{Note} The above proof can be seen as a proof by induction with $n$ as the number of the
+\textit{union} operations and the inductive hypothesis as for sets of size $k$, the number of
+pointers followed from any node is no greater than $\lg{k}$.
+\paragraph{Note} The practical implication of Property~\ref{prop:wqu} is that the weighted
+quick-union algorithm uses \emph{at most} a constant times $M\lg{N}$ instructions to process $M$
+edges (i.e., $M$ \textit{union} operations) on $N$ objects. This result is in stark constrast to our
+finding that quick find always (and quick union sometimes) uses \emph{at least} $MN/2$ instructions.
 \end{document}
