@@ -1,9 +1,8 @@
-/* Weighted quick-union */
 #include <stdio.h>
 #define N 10000
 
 int main(void) {
-  int i, j, p, q, id[N], sz[N];
+  int i, j, k, t, p, q, id[N], sz[N];
 
   for (i = 0; i < N; i++) {
     id[i] = i;
@@ -20,9 +19,18 @@ int main(void) {
     if (sz[i] < sz[j]) {
       id[i] = j;
       sz[j] += sz[i];
+      i = j;
     } else {
       id[j] = i;
       sz[i] += sz[j];
+      j = i;
+    }
+    /* Full path compression */
+    for (k = p, t = id[k]; t != i; k = t, t = id[k]) {
+      id[k] = i;
+    }
+    for (k = q, t = id[k]; k != j; k = t, t = id[k]) {
+      id[k] = j;
     }
     printf("%d %d\n", p, q);
   }
