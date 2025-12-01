@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath, amsthm, enumitem, listings}
+\usepackage{amsmath, amsthm, booktabs, enumitem, listings}
 
 \everymath{\displaystyle}
 \newtheorem{property}{Property}
@@ -16,7 +16,7 @@
 \subsection{Algorithms}
 \subsection{A Sample Problem: Connectivity}
 \subsubsection*{Exercises}
-\begin{enumerate}[label=1-\arabic*]
+\begin{enumerate}[label=1.\arabic*]
       \item
             \begin{lstlisting}
           0-2
@@ -85,4 +85,111 @@ pointers followed from any node is no greater than $\lg{k}$.
 quick-union algorithm uses \emph{at most} a constant times $M\lg{N}$ instructions to process $M$
 edges (i.e., $M$ \textit{union} operations) on $N$ objects. This result is in stark constrast to our
 finding that quick find always (and quick union sometimes) uses \emph{at least} $MN/2$ instructions.
+\subsubsection*{Exercises}
+\begin{enumerate}[label=1.\arabic*, resume]
+      \item
+            {\ttfamily
+            \begin{tabular}{cc|cccccccc|c}
+                  \toprule
+                  p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & n  \\
+                  \midrule
+                  0 & 2 & 2 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 13 \\
+                  1 & 4 & 2 & 4 & 2 & 3 & 4 & 5 & 6 & 7 & 13 \\
+                  2 & 5 & 5 & 4 & 5 & 3 & 4 & 5 & 6 & 7 & 15 \\
+                  3 & 6 & 5 & 4 & 5 & 6 & 4 & 5 & 6 & 7 & 13 \\
+                  0 & 4 & 4 & 4 & 4 & 6 & 4 & 4 & 6 & 7 & 19 \\
+                  6 & 0 & 4 & 4 & 4 & 4 & 4 & 4 & 4 & 7 & 17 \\
+                  1 & 3 & 4 & 4 & 4 & 4 & 4 & 4 & 4 & 7 & 2  \\
+                  \bottomrule
+            \end{tabular}
+            }
+      \item
+            {\ttfamily
+            \begin{tabular}{cc|cccccccc|c}
+                  \toprule
+                  p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & n \\
+                  \midrule
+                  0 & 2 & 2 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 3 \\
+                  1 & 4 & 2 & 4 & 2 & 3 & 4 & 5 & 6 & 7 & 3 \\
+                  2 & 5 & 2 & 4 & 5 & 3 & 4 & 5 & 6 & 7 & 3 \\
+                  3 & 6 & 2 & 4 & 5 & 6 & 4 & 5 & 6 & 7 & 3 \\
+                  0 & 4 & 4 & 4 & 5 & 6 & 4 & 5 & 6 & 7 & 7 \\
+                  6 & 0 & 4 & 4 & 5 & 6 & 4 & 5 & 4 & 7 & 5 \\
+                  1 & 3 & 4 & 4 & 5 & 6 & 4 & 5 & 4 & 7 & 8 \\
+                  \bottomrule
+            \end{tabular}
+            }
+      \item
+            Figure 1.7
+
+                  {\ttfamily
+                        \begin{tabular}{cc|cccccccccc}
+                              \toprule
+                              p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+                              \midrule
+                              3 & 4 & 0 & 1 & 2 & 3 & 3 & 5 & 6 & 7 & 8 & 9 \\
+                              4 & 9 & 0 & 1 & 2 & 3 & 3 & 5 & 6 & 7 & 8 & 3 \\
+                              8 & 0 & 8 & 1 & 2 & 3 & 3 & 5 & 6 & 7 & 8 & 3 \\
+                              2 & 3 & 8 & 1 & 3 & 3 & 3 & 5 & 6 & 7 & 8 & 3 \\
+                              5 & 6 & 8 & 1 & 3 & 3 & 3 & 5 & 5 & 7 & 8 & 3 \\
+                              5 & 9 & 8 & 1 & 3 & 3 & 3 & 3 & 5 & 7 & 8 & 3 \\
+                              7 & 3 & 8 & 1 & 3 & 3 & 3 & 3 & 5 & 3 & 8 & 3 \\
+                              4 & 8 & 8 & 1 & 3 & 3 & 3 & 3 & 5 & 3 & 3 & 3 \\
+                              6 & 1 & 8 & 3 & 3 & 3 & 3 & 3 & 5 & 3 & 3 & 3 \\
+                              \bottomrule
+                        \end{tabular}
+                  }
+
+            Figure 1.8
+
+                  {\ttfamily
+                        \begin{tabular}{cc|cccccccccc}
+                              \toprule
+                              p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+                              \midrule
+                              0 & 1 & 0 & 0 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+                              2 & 3 & 0 & 0 & 2 & 2 & 4 & 5 & 6 & 7 & 8 & 9 \\
+                              4 & 5 & 0 & 0 & 2 & 2 & 4 & 4 & 6 & 7 & 8 & 9 \\
+                              6 & 7 & 0 & 0 & 2 & 2 & 4 & 4 & 6 & 6 & 8 & 9 \\
+                              8 & 9 & 0 & 0 & 2 & 2 & 4 & 4 & 6 & 6 & 8 & 8 \\
+                              0 & 2 & 0 & 0 & 0 & 2 & 4 & 4 & 6 & 6 & 8 & 8 \\
+                              4 & 6 & 0 & 0 & 0 & 2 & 4 & 4 & 4 & 6 & 8 & 8 \\
+                              0 & 4 & 0 & 0 & 0 & 2 & 0 & 4 & 4 & 6 & 8 & 8 \\
+                              6 & 8 & 0 & 0 & 0 & 2 & 0 & 4 & 4 & 6 & 0 & 8 \\
+                              \bottomrule
+                        \end{tabular}
+                  }
+      \item
+            {\ttfamily
+            \begin{tabular}{cc|cccccccc|c}
+                  \toprule
+                  p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & n \\
+                  \midrule
+                  0 & 2 & 0 & 1 & 0 & 3 & 4 & 5 & 6 & 7 & 3 \\
+                  1 & 4 & 0 & 1 & 0 & 3 & 1 & 5 & 6 & 7 & 3 \\
+                  2 & 5 & 0 & 1 & 0 & 3 & 1 & 0 & 6 & 7 & 5 \\
+                  3 & 6 & 0 & 1 & 0 & 3 & 1 & 0 & 3 & 7 & 3 \\
+                  0 & 4 & 0 & 0 & 0 & 3 & 1 & 0 & 3 & 7 & 5 \\
+                  6 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 3 & 7 & 5 \\
+                  1 & 3 & 0 & 0 & 0 & 0 & 1 & 0 & 3 & 7 & 6 \\
+                  \bottomrule
+            \end{tabular}
+            }
+      \item
+            {\ttfamily
+            \begin{tabular}{cc|cccccccc|c}
+                  \toprule
+                  p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & n  \\
+                  \midrule
+                  0 & 2 & 0 & 1 & 0 & 3 & 4 & 5 & 6 & 7 & 3  \\
+                  1 & 4 & 0 & 1 & 0 & 3 & 1 & 5 & 6 & 7 & 3  \\
+                  2 & 5 & 0 & 1 & 0 & 3 & 1 & 0 & 6 & 7 & 8  \\
+                  3 & 6 & 0 & 1 & 0 & 3 & 1 & 0 & 3 & 7 & 3  \\
+                  0 & 4 & 0 & 0 & 0 & 3 & 1 & 0 & 3 & 7 & 8  \\
+                  6 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 3 & 7 & 8  \\
+                  1 & 3 & 0 & 0 & 0 & 0 & 1 & 0 & 3 & 7 & 12 \\
+                  \bottomrule
+            \end{tabular}
+            }
+\end{enumerate}
 \end{document}
