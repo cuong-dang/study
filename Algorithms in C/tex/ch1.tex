@@ -191,5 +191,21 @@ finding that quick find always (and quick union sometimes) uses \emph{at least} 
                   \bottomrule
             \end{tabular}
             }
+      \item To simplify, we will ignore any constant operations (such as variable declarations and
+            loop initializations). Based on Property~\ref{prop:wqu}, we have the following upper
+            bound.
+            \begin{align*}
+                  T \le &                   & \text{(total number of instructions)}               \\
+                        & 2cN               & \text{(init loop)}                                  \\
+                        & +M(2c\lg{N} + 2c) & \text{(two set of pointer follows and assignments)} \\
+            \end{align*}
+      \item Assuming that the initial loop takes $10^6$ instructions, the total time varies
+            depending on the input pairs. At absolute minimum, when each input pair just connects an
+            an object to itself (e.g., 0-0, 1-1), the \texttt{while} loop only requires the minimum
+            10 instructions. As a result, the total time required is 10.001 seconds. However,
+            supposing half of the while loops require iterating over $N$ objects, the total time
+            required is 5.8 days.
+      \item 100.001 seconds.
+      \item
 \end{enumerate}
 \end{document}
