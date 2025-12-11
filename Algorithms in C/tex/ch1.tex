@@ -1,0 +1,256 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, booktabs, enumitem, listings}
+\usepackage{forest}
+
+\everymath{\displaystyle}
+\newtheorem{property}{Property}
+\numberwithin{property}{section}
+
+\title{Algorithms in C}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\section{Introduction}
+\subsection{Algorithms}
+\subsection{A Sample Problem: Connectivity}
+\subsubsection*{Exercises}
+\begin{enumerate}[label=1.\arabic*]
+      \item
+            \begin{lstlisting}
+          0-2
+          1-4
+          2-5
+          3-6
+          0-4
+          6-0
+          \end{lstlisting}
+      \item
+      \item Initialize \textit{count} to be N for N objects. Iterate through the pairs. For each
+            \textit{union} call, decrease \textit{count} by 1.
+\end{enumerate}
+
+\subsection{Union-Find Algorithms}
+\begin{property}
+      The quick-find algorithm executes at least $MN$ instructions to solve a connectivity problem
+      with $N$ objects that involves $M$ \textup{union} operations.
+\end{property}
+\begin{proof}
+      For each of the $M$ \textit{union} operations, we iterate the \texttt{for} loop $N$ times.
+      Each iteration requires at least one instruction (if only to check whether the loop is
+      finished).
+\end{proof}
+\begin{property}
+      For $M > N$, the quick-union algorithm could take more than $MN/2$ instructions to solve a
+      connectivity problem with $M$ pairs of $N$ objects.
+\end{property}
+\begin{proof}
+      Suppose that the input pairs come in the order $1-2$, then $2-3$, then $3-4$, and so forth.
+      After $N-1$ such pairs, we have $N$ objects all in the same set, and the tree that is formed
+      by the quick-union algorithmis a straight line, with $N$ pointing to $N-1$, which points to
+      $N-2$, which points to $N-3$, and so forth. To execute the \textit{find} operation for object
+      $N$, the program has to follow $N-1$ pointers. Thus, the average number of pointers followed
+      for the first $N$ pairs is
+      \[(0 + 1 + \ldots + (N-1))/N = (N-1)/2.\]
+      Now suppose that the remainder of the pairs all connect $N$ to some other object. The
+      \textit{find} operation for each of these pairs involves at least $(N-1)$ pointers. The grand
+      total for the $M$ \textit{find} operations for this sequence of input pairs is certainly
+      greater than $MN/2$.
+\end{proof}
+\paragraph{Note} The $N^{th}$ pair should connect $N$ with $1$ for the above formula to be correct.
+We want to show why the total number of pointers is greater than $MN/2$, as it is not obviously
+clear to me from the text. Since we are proving the worst case, we can assume that of the
+remaining pairs, there exists the pair $N$-$N$, which will result in $2(N-1)$ pointer operations.
+Thus, if we call the total number of pointer follows $T$, then we have
+\[T \ge N(N-1)/2 + (M-N-1)(N-1) + 2(N-1) = N(N-1)/2 + (M-N+1)(N-1).\]
+For all $N > 1$, $N-1 > N/2$. Therefore,
+\[T \ge N(N-1)/2 + (M-N+1)(N-1) > (N-1)N/2 + (M-N+1)N/2 = MN/2.\]
+\begin{property}\label{prop:wqu}
+      The weighted quick-union algorithm follows at most $2\lg{N}$ pointers to determine whether two
+      of $N$ objects are connected.
+\end{property}
+\begin{proof}
+      We can prove that the \textit{union} operation preserves the property that the number of
+      pointers followed from any node to the root in a set of $k$ objects is no greater than
+      $\lg{k}$ (we do not count the self-pointer at the root). When we combine a set of $i$ nodes
+      with a set of $j$ nodes with $i \le j$, we increase the number of pointers that must be
+      followed in the smaller set by 1, but they are now in a set of size $i+j$, so the property
+      is preseved because $1 + \lg{i} = \lg(i+i) \le \lg(i+j)$.
+\end{proof}
+\paragraph{Note} The above proof can be seen as a proof by induction with $n$ as the number of the
+\textit{union} operations and the inductive hypothesis as for sets of size $k$, the number of
+pointers followed from any node is no greater than $\lg{k}$.
+\paragraph{Note} The practical implication of Property~\ref{prop:wqu} is that the weighted
+quick-union algorithm uses \emph{at most} a constant times $M\lg{N}$ instructions to process $M$
+edges (i.e., $M$ \textit{union} operations) on $N$ objects. This result is in stark constrast to our
+finding that quick find always (and quick union sometimes) uses \emph{at least} $MN/2$ instructions.
+\subsubsection*{Exercises}
+\begin{enumerate}[label=1.\arabic*, resume]
+      \item
+            {\ttfamily
+            \begin{tabular}{cc|cccccccc|c}
+                  \toprule
+                  p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & n  \\
+                  \midrule
+                  0 & 2 & 2 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 13 \\
+                  1 & 4 & 2 & 4 & 2 & 3 & 4 & 5 & 6 & 7 & 13 \\
+                  2 & 5 & 5 & 4 & 5 & 3 & 4 & 5 & 6 & 7 & 15 \\
+                  3 & 6 & 5 & 4 & 5 & 6 & 4 & 5 & 6 & 7 & 13 \\
+                  0 & 4 & 4 & 4 & 4 & 6 & 4 & 4 & 6 & 7 & 19 \\
+                  6 & 0 & 4 & 4 & 4 & 4 & 4 & 4 & 4 & 7 & 17 \\
+                  1 & 3 & 4 & 4 & 4 & 4 & 4 & 4 & 4 & 7 & 2  \\
+                  \bottomrule
+            \end{tabular}
+            }
+      \item
+            {\ttfamily
+            \begin{tabular}{cc|cccccccc|c}
+                  \toprule
+                  p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & n \\
+                  \midrule
+                  0 & 2 & 2 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 3 \\
+                  1 & 4 & 2 & 4 & 2 & 3 & 4 & 5 & 6 & 7 & 3 \\
+                  2 & 5 & 2 & 4 & 5 & 3 & 4 & 5 & 6 & 7 & 3 \\
+                  3 & 6 & 2 & 4 & 5 & 6 & 4 & 5 & 6 & 7 & 3 \\
+                  0 & 4 & 4 & 4 & 5 & 6 & 4 & 5 & 6 & 7 & 7 \\
+                  6 & 0 & 4 & 4 & 5 & 6 & 4 & 5 & 4 & 7 & 5 \\
+                  1 & 3 & 4 & 4 & 5 & 6 & 4 & 5 & 4 & 7 & 8 \\
+                  \bottomrule
+            \end{tabular}
+            }
+      \item
+            Figure 1.7
+
+                  {\ttfamily
+                        \begin{tabular}{cc|cccccccccc}
+                              \toprule
+                              p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+                              \midrule
+                              3 & 4 & 0 & 1 & 2 & 3 & 3 & 5 & 6 & 7 & 8 & 9 \\
+                              4 & 9 & 0 & 1 & 2 & 3 & 3 & 5 & 6 & 7 & 8 & 3 \\
+                              8 & 0 & 8 & 1 & 2 & 3 & 3 & 5 & 6 & 7 & 8 & 3 \\
+                              2 & 3 & 8 & 1 & 3 & 3 & 3 & 5 & 6 & 7 & 8 & 3 \\
+                              5 & 6 & 8 & 1 & 3 & 3 & 3 & 5 & 5 & 7 & 8 & 3 \\
+                              5 & 9 & 8 & 1 & 3 & 3 & 3 & 3 & 5 & 7 & 8 & 3 \\
+                              7 & 3 & 8 & 1 & 3 & 3 & 3 & 3 & 5 & 3 & 8 & 3 \\
+                              4 & 8 & 8 & 1 & 3 & 3 & 3 & 3 & 5 & 3 & 3 & 3 \\
+                              6 & 1 & 8 & 3 & 3 & 3 & 3 & 3 & 5 & 3 & 3 & 3 \\
+                              \bottomrule
+                        \end{tabular}
+                  }
+
+            Figure 1.8
+
+                  {\ttfamily
+                        \begin{tabular}{cc|cccccccccc}
+                              \toprule
+                              p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+                              \midrule
+                              0 & 1 & 0 & 0 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+                              2 & 3 & 0 & 0 & 2 & 2 & 4 & 5 & 6 & 7 & 8 & 9 \\
+                              4 & 5 & 0 & 0 & 2 & 2 & 4 & 4 & 6 & 7 & 8 & 9 \\
+                              6 & 7 & 0 & 0 & 2 & 2 & 4 & 4 & 6 & 6 & 8 & 9 \\
+                              8 & 9 & 0 & 0 & 2 & 2 & 4 & 4 & 6 & 6 & 8 & 8 \\
+                              0 & 2 & 0 & 0 & 0 & 2 & 4 & 4 & 6 & 6 & 8 & 8 \\
+                              4 & 6 & 0 & 0 & 0 & 2 & 4 & 4 & 4 & 6 & 8 & 8 \\
+                              0 & 4 & 0 & 0 & 0 & 2 & 0 & 4 & 4 & 6 & 8 & 8 \\
+                              6 & 8 & 0 & 0 & 0 & 2 & 0 & 4 & 4 & 6 & 0 & 8 \\
+                              \bottomrule
+                        \end{tabular}
+                  }
+      \item
+            {\ttfamily
+            \begin{tabular}{cc|cccccccc|c}
+                  \toprule
+                  p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & n \\
+                  \midrule
+                  0 & 2 & 0 & 1 & 0 & 3 & 4 & 5 & 6 & 7 & 3 \\
+                  1 & 4 & 0 & 1 & 0 & 3 & 1 & 5 & 6 & 7 & 3 \\
+                  2 & 5 & 0 & 1 & 0 & 3 & 1 & 0 & 6 & 7 & 5 \\
+                  3 & 6 & 0 & 1 & 0 & 3 & 1 & 0 & 3 & 7 & 3 \\
+                  0 & 4 & 0 & 0 & 0 & 3 & 1 & 0 & 3 & 7 & 5 \\
+                  6 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 3 & 7 & 5 \\
+                  1 & 3 & 0 & 0 & 0 & 0 & 1 & 0 & 3 & 7 & 6 \\
+                  \bottomrule
+            \end{tabular}
+            }
+      \item
+            {\ttfamily
+            \begin{tabular}{cc|cccccccc|c}
+                  \toprule
+                  p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & n  \\
+                  \midrule
+                  0 & 2 & 0 & 1 & 0 & 3 & 4 & 5 & 6 & 7 & 3  \\
+                  1 & 4 & 0 & 1 & 0 & 3 & 1 & 5 & 6 & 7 & 3  \\
+                  2 & 5 & 0 & 1 & 0 & 3 & 1 & 0 & 6 & 7 & 8  \\
+                  3 & 6 & 0 & 1 & 0 & 3 & 1 & 0 & 3 & 7 & 3  \\
+                  0 & 4 & 0 & 0 & 0 & 3 & 1 & 0 & 3 & 7 & 8  \\
+                  6 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 3 & 7 & 8  \\
+                  1 & 3 & 0 & 0 & 0 & 0 & 1 & 0 & 3 & 7 & 12 \\
+                  \bottomrule
+            \end{tabular}
+            }
+      \item To simplify, we will ignore any constant operations (such as variable declarations and
+            loop initializations). Based on Property~\ref{prop:wqu}, we have the following upper
+            bound.
+            \begin{align*}
+                  T \le &                   & \text{(total number of instructions)}               \\
+                        & 2cN               & \text{(init loop)}                                  \\
+                        & +M(2c\lg{N} + 2c) & \text{(two set of pointer follows and assignments)} \\
+            \end{align*}
+      \item Assuming that the initial loop takes $10^6$ instructions, the total time varies
+            depending on the input pairs. At absolute minimum, when each input pair just connects an
+            an object to itself (e.g., 0-0, 1-1), the \texttt{while} loop only requires the minimum
+            10 instructions. As a result, the total time required is 10.001 seconds. However,
+            supposing half of the while loops require iterating over $N$ objects, the total time
+            required is 5.8 days.
+      \item 100.001 seconds.
+      \item $\frac{1}{2} \times n$.
+      \item \begin{forest}
+                  for tree={draw}
+                  [0[1[2][3[4][5[6][7]]]]]
+            \end{forest}
+      \item\label{ex:14} 0-1, 2-3, 4-5, 6-7, 8-9, 10-11, 12-13, 14-15,
+
+            0-2, 4-6, 8-10, 12-14,
+
+            0-4, 8-12,
+
+            0-8.
+      \item Same answer as \ref{ex:14}.
+      \item \texttt{src/ch1/ex1\_16.c}.
+      \item {\ttfamily
+            \begin{tabular}{cc|cccccccc|c}
+                  \toprule
+                  p & q & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & n \\
+                  \midrule
+                  0 & 2 & 0 & 1 & 0 & 3 & 4 & 5 & 6 & 7 & 5 \\
+                  1 & 4 & 0 & 1 & 0 & 3 & 1 & 5 & 6 & 7 & 5 \\
+                  2 & 5 & 0 & 1 & 0 & 3 & 1 & 0 & 6 & 7 & 7 \\
+                  3 & 6 & 0 & 1 & 0 & 3 & 1 & 0 & 3 & 7 & 5 \\
+                  0 & 4 & 0 & 0 & 0 & 3 & 0 & 0 & 3 & 7 & 9 \\
+                  6 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 7 & 9 \\
+                  1 & 3 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 7 & 2 \\
+                  \bottomrule
+            \end{tabular}
+            }
+      \item Same answer as \ref{ex:14}. Maybe I'm understanding the prompt incorrectly.
+      \item Based on my implementation, if the input values only contain roots, then full path
+            compression has no effect.
+      \item \texttt{src/ch1/ex1\_20.c}.
+      \item At a union step, suppose we are merging a set of $i$ nodes to a set of $j$ nodes. Let
+            the height of the set of $i$ nodes be $h_i$ and the height of the set of $j$ nodes be
+            $h_j$. Because we are merging $i$ into $j$, it must be the case that $h_i \le h_j$. By
+            the inductive hypothesis, we have $j \ge 2^{h_j}$ and $i \ge 2^{h_i}$. Thus, $i+j \ge
+                  2^{h_i}+2^{h_j} \ge 2^{h_i}+2^{h_i} = 2^{h_i+1}$. Consequently, $\lg(i+j) \ge
+                  h_i+1$, which is the number of pointers followed by nodes within the set of $i$
+            objects to reach the root.
+      \item \texttt{src/ch1/ex1\_22.c}.
+      \item \texttt{src/ch1/ex1\_23.c}.
+      \item $\frac{N}{2}\ln{N}$.
+      \item $\frac{\frac{2\lg(10N)}{10}}{2\lg{N}} = 1 + \log_N{10}$ times longer.
+      \item 100 times slower.
+\end{enumerate}
+\end{document}
