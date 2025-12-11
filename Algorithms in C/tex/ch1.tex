@@ -240,5 +240,17 @@ finding that quick find always (and quick union sometimes) uses \emph{at least} 
       \item Based on my implementation, if the input values only contain roots, then full path
             compression has no effect.
       \item \texttt{src/ch1/ex1\_20.c}.
+      \item At a union step, suppose we are merging a set of $i$ nodes to a set of $j$ nodes. Let
+            the height of the set of $i$ nodes be $h_i$ and the height of the set of $j$ nodes be
+            $h_j$. Because we are merging $i$ into $j$, it must be the case that $h_i \le h_j$. By
+            the inductive hypothesis, we have $j \ge 2^{h_j}$ and $i \ge 2^{h_i}$. Thus, $i+j \ge
+                  2^{h_i}+2^{h_j} \ge 2^{h_i}+2^{h_i} = 2^{h_i+1}$. Consequently, $\lg(i+j) \ge
+                  h_i+1$, which is the number of pointers followed by nodes within the set of $i$
+            objects to reach the root.
+      \item \texttt{src/ch1/ex1\_22.c}.
+      \item \texttt{src/ch1/ex1\_23.c}.
+      \item $\frac{N}{2}\ln{N}$.
+      \item $\frac{\frac{2\lg(10N)}{10}}{2\lg{N}} = 1 + \log_N{10}$ times longer.
+      \item 100 times slower.
 \end{enumerate}
 \end{document}
