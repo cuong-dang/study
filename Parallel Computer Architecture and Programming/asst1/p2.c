@@ -1,3 +1,5 @@
+// WARNING: The following is not complete and does not compile.
+
 void clampedExpVector(float *values, int *exponents, float *output, int N) {
   __cmu418_vec_float ps, result, four18 = _cmu418_vset_float(4.18);
   __cmu418_vec_int es, ba, zeroes = _cmu418_vset_int(0),
@@ -14,7 +16,7 @@ void clampedExpVector(float *values, int *exponents, float *output, int N) {
     _cmu418_vload_int(es, exponents + i, maskAll);
     // xpower = x
     _cmu418_vload_float(ps, values + i, maskAll);
-    while (true) {
+    while (1) {
       maskActive = _cmu418_init_ones(0);
       maskOnes = _cmu418_init_ones(0);
       // while (y > 0)
@@ -38,4 +40,24 @@ void clampedExpVector(float *values, int *exponents, float *output, int N) {
     // store
     _cmu418_vstore_float(output + i, result, maskAll);
   }
+}
+
+float arraySumVector(float *values, int N) {
+  float result, y;
+  __cmu418_vec_float x;
+  __cmu418_mask maskAll, maskFirst;
+
+  result = 0;
+  maskAll = _cmu418_init_ones();
+  maskFirst = _cmu418_init_ones(1);
+  for (int i = 0; i < N; i += VECTOR_WIDTH) {
+    _cmu418_vload_float(x, values + i, maskAll);
+    for (int j = VECTOR_WIDTH; j > 1; j >>= 1) {
+      _cmu418_hadd_float(x, x);
+      _cmu418_interleave_float(x, x);
+    }
+    _cmu418_vstore_float(&y, x, maskFirst);
+    result += y;
+  }
+  return result;
 }
