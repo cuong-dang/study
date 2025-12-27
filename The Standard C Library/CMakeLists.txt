@@ -12,9 +12,8 @@ add_library(exercises OBJECT ${SOURCES})
 target_include_directories(exercises PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 # link libcc
-include_directories("/usr/local/include")
-link_directories("/usr/local/lib")
-target_link_libraries(exercises PRIVATE cc)
+find_package(cc CONFIG REQUIRED)
+target_link_libraries(exercises PRIVATE cc::cc)
 
 # tests
 include(CTest)
