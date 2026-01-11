@@ -11,33 +11,44 @@
 \maketitle
 \section{Chapter 11: Complexity and negation of quantifiers}
 \begin{enumerate}[label=11.\arabic*, start=12]
-    \item \begin{enumerate}[label=(\roman*)]
-              \item \begin{enumerate}[label=(\alph*)]
-                        \item $\forall a, b \in \mathbb{R}, a \neq 0, \exists x (ax+b=0)$.
+      \item \begin{enumerate}[label=(\roman*)]
+                  \item \begin{enumerate}[label=(\alph*)]
+                              \item $\forall a, b \in \mathbb{R}, a \neq 0, \exists x (ax+b=0)$.
 
-                        \item $\forall a, b \in \mathbb{R}, a \neq 0, \exists x (ax+b=0$ and
-                              $\forall y (ay+b=0 \Rightarrow y = x))$.
-                    \end{enumerate}
-              \item \begin{enumerate}[label=(\alph*)]
-                        \item All cats are grey.
-                        \item There exists a cats such that an owner doesn't exist.
-                        \item There exists an owner for whom there doesn't exist a grey cat.
-                        \item There exists a fire engine that is not read or an ambulance that is
-                              not white.
-                    \end{enumerate}
-              \item \begin{enumerate}[label=(\alph*)]
-                        \item All of the students in the class are here today.
-                        \item There does not exist an $x$ such that $P(x)$ is true or there exists
-                              an $y$ such that $P(y)$ is true and $y \ne x$.
-                        \item Some mathematics students are not hardworking.
-                        \item All of the students in the class are not here today.
-                        \item There are some integers $x$ such that $\sqrt{x}$ is not
-                              rational.
-                    \end{enumerate}
-              \item \begin{enumerate}[label=(\alph*)]
-                        \item
-                    \end{enumerate}
-          \end{enumerate}
+                              \item $\forall a, b \in \mathbb{R}, a \neq 0, \exists x (ax+b=0$ and
+                                    $\forall y (ay+b=0 \Rightarrow y = x))$.
+                        \end{enumerate}
+                  \item \begin{enumerate}[label=(\alph*)]
+                              \item All cats are grey.
+                              \item There exists a cats such that an owner doesn't exist.
+                              \item There exists an owner for whom there doesn't exist a grey cat.
+                              \item There exists a fire engine that is not read or an ambulance that
+                                    is not white.
+                        \end{enumerate}
+                  \item \begin{enumerate}[label=(\alph*)]
+                              \item All of the students in the class are here today.
+                              \item There does not exist an $x$ such that $P(x)$ is true or there
+                                    exists an $y$ such that $P(y)$ is true and $y \ne x$.
+                              \item Some mathematics students are not hardworking.
+                              \item All of the students in the class are not here today.
+                              \item There are some integers $x$ such that $\sqrt{x}$ is not
+                                    rational.
+                        \end{enumerate}
+                  \item \begin{enumerate}[label=(\alph*)]
+                              \item $\exists y\forall x(\neg P(x, y) \land Q(x, y))$
+                              \item $\forall x, y \exists z (\forall u \exists v P(u, v, x, y ,z))$
+                              \item $\forall x, y \in \mathbb{R} (\exists z \in
+                                          \mathbb{Q} (x < z \lor z < y))$
+                              \item $\forall x, y \in \mathbb{R}(x < y \land \exists z \in
+                                          \mathbb{Q}(x < z \land z < y))$
+                        \end{enumerate}
+                  \item \begin{enumerate}[label=(\alph*)]
+                              \item $N = 926$
+                              \item $N = 45$
+                              \item $N = \lfloor\frac{1}{\epsilon}+1\rfloor$
+                              \item $N = \lfloor\frac{\sqrt{2\epsilon}}{\epsilon}+1\rfloor$
+                        \end{enumerate}
+            \end{enumerate}
 
 \end{enumerate}
 \end{document}
