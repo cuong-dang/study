@@ -8,8 +8,8 @@ set(CMAKE_C_EXTENSIONS OFF)
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
   ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
 )
-add_library(exercises OBJECT ${SOURCES})
-target_include_directories(exercises PUBLIC ${CMAKE_SOURCE_DIR}/include)
+add_library(${PROJECT_NAME} OBJECT ${SOURCES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 # link libcc
 find_package(cc CONFIG REQUIRED)
