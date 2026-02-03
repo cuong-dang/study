@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath, booktabs, enumitem}
+\usepackage{amsmath, amsthm, booktabs, enumitem}
 
 \everymath{\displaystyle}
 
@@ -257,4 +257,14 @@
       \item $R\left(-\frac{r^2}{2\left(\sqrt{1-\frac{r^2}{4}}-1\right)}, 0\right)$.
             $\lim_{r\to0}R = (4, 0)$.
 \end{enumerate}
+
+\subsection{The Precise Definition of a Limit}
+\subsubsection*{Example 4} Prove that $\lim_{x\to3}x^2 = 9$.
+\begin{proof}
+      Given $\epsilon > 0$, let $\delta = \min\left\{1, \epsilon / 7\right\}$. If $0 < |x-3| <
+            \delta$, then $|x-3| < 1 \implies -1 < x-3 < 1 \implies 5 < x+3 < 7$, or $|x+3| < 7$.
+      We also have $|x-3| < \epsilon/7$, so
+      \[\left|x^2-9\right| = |x-3||x+3| < \frac{\epsilon}{7}\cdot7 = \epsilon.\]
+      This shows that $\lim_{x\to3}x^2 = 9$.
+\end{proof}
 \end{document}
