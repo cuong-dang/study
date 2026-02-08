@@ -306,6 +306,22 @@
       \item Choose $\delta = \epsilon$. For $0<|x-0|=|x|<\delta$, $\left||x|-0\right| =
                   \left||x|\right| = |x| < \delta = \epsilon$. Thus, $\lim_{x\to0}|x| = 0$.
             \setcounter{enumi}{29}
-      \item
+      \item Choose $\delta = \min\left\{1, \epsilon/7\right\}$. Then, $0<|x-2|<\delta \implies
+                  0<|x-2|<1 \implies x+4<7$. Thus, $\left|(x^2+2x-7)-1\right| =
+                  \left|x^2+2x-8\right| = |(x+4)(x-2)|<7\cdot\frac{\epsilon}{7} = \epsilon$. Thus,
+            $\lim_{x\to2}\left(x^2+2x-7\right) = 1$.
+      \item Choose $\delta=\min\left\{5, \epsilon\right\}$.
+            \setcounter{enumi}{33}
+      \item \begin{proof}
+                  Proof by contraction. Suppose that $\delta=\sqrt{9+\epsilon}-3$ is not the
+                  largest possible choice, we want to show that for any choice of larger $\delta$,
+                  there exists a value $x$ such that for any $\epsilon>0$,
+                  $\left|x^2-9\right|\ge\epsilon$. For any larger $\delta$, let
+                  $x-3=\sqrt{9+\epsilon}-3 < \delta$. Then, $x+3=\sqrt{9+\epsilon}+3$. We also have
+                  $\left|x^2-9\right|=|(x-3)(x+3)|=(\sqrt{9+\epsilon}-3)(\sqrt{9+\epsilon}+3)=
+                        9+\epsilon-9=\epsilon$.
+            \end{proof}
+            \setcounter{enumi}{36}
+      \item Choose $\delta=\min\left\{1, \frac{\epsilon}{\sqrt{1+a}+\sqrt{a}}\right\}$.
 \end{enumerate}
 \end{document}
