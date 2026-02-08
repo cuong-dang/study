@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, enumitem}
+
+\everymath{\displaystyle}
+
+\title{How to Think Like a Mathematician}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\section*{Chapter 16: How to read a theorem}
+\begin{enumerate}[label=16.\arabic*]
+  \item \begin{enumerate}[label=(\roman*)]
+          \item \begin{enumerate}[label=(\alph*)]
+                  \item `if' part is true; `only if' part is false.
+                        \setcounter{enumiii}{2}
+                  \item True.
+                  \item True. Proof by induction.
+                  \item True.
+                        \begin{proof}
+                          Because $n \ge 7$,
+                          \begin{align*}
+                                     & \frac{8n-12}{n(n-2)(n-6)}                                  & \ge & 0            \\
+                            \implies & \frac{n^2-\left(n^2-8n+12\right)}{n\left(n^2-8n+12\right)} & \ge & 0            \\
+                            \implies & \frac{n}{n^2-8n+12} - \frac{1}{n}                          & \ge & 0            \\
+                            \implies & \frac{n}{n^2-8n+12}                                        & \ge & \frac{1}{n}. \\
+                          \end{align*}
+                        \end{proof}
+                  \item True by induction. In the induction step, divide the the set $S_{k+1}$
+                        to two subsets. The subset without the element has $|S_k|$ elements; the
+                        subset with the new element is constructed by adding the new element to each
+                        element in $S_k$, as a result, it also has $|S_k|$ elements.
+                \end{enumerate}
+        \end{enumerate}
+\end{enumerate}
+\end{document}
