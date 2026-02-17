@@ -323,5 +323,22 @@
             \end{proof}
             \setcounter{enumi}{36}
       \item Choose $\delta=\min\left\{1, \frac{\epsilon}{\sqrt{1+a}+\sqrt{a}}\right\}$.
+      \item Assume that such a limit $L$ exists. Let $\epsilon = \frac{1}{2}|L|$. There must exist a
+            $\delta$ such that if $0 < |x| < \delta$, then $|H(x) - L| < \epsilon$. $0 < |x| <
+                  \delta \implies -\delta < x < 0$ or $0 < x < \delta$. If $-\delta < x < 0$, then
+            $|H(x)-L| = |0-L| = |L| \ge \frac{1}{2}|L| = \epsilon$. This is a contradiction. Thus,
+            such a limit does not exist.
+      \item Suppose that $\lim_{x\to0}f(x)=L$. Given $\varepsilon=\frac{1}{2}$, there exists $\delta
+                  >0$ such that $0<|x|<\delta \implies |f(x)-L|<\frac{1}{2}$. Take any rational
+            number $r$ with $0 < |r| < \delta$. Then $f(r)=0$, so $|0-L|<\frac{1}{2}$, so $L\le|L|<
+                  \frac{1}{2}$. Now take any irrational number $s$ with $0<|s|<\delta$. Then $f(s)=
+                  1$, so $|1-L|<\frac{1}{2}$. Hence, $1-L<\frac{1}{2}$, so $L>\frac{1}{2}$. This
+            contradicts $L<\frac{1}{2}$, so $\lim_{x\to0}f(x)$ does not exist.
+            \setcounter{enumi}{41}
+      \item Choose $\delta=\sqrt[4]{\frac{1}{M}}$.
+      \item Choose $\delta=-\sqrt[3]{\frac{5}{N}}$.
+      \item \begin{enumerate}
+                  \item We have $\lim_{x \to a}f(x)=\infty$.
+            \end{enumerate}
 \end{enumerate}
 \end{document}
