@@ -338,7 +338,13 @@
       \item Choose $\delta=\sqrt[4]{\frac{1}{M}}$.
       \item Choose $\delta=-\sqrt[3]{\frac{5}{N}}$.
       \item \begin{enumerate}
-                  \item We have $\lim_{x \to a}f(x)=\infty$.
+                  \item We need to show that $\forall M > 0, \exists\delta>0$ such that if $0<
+                        |x-a|<\delta$, then $f(x)+g(x)>M$. $\forall M>0, \epsilon>0$, $\exists
+                        \delta_1$ such that if $0<|x-a|<\delta_1$, then $f(x)>M+\epsilon-c$. Also,
+                        $\exists\delta_2$ such that if $0<|x-a|<\delta_2$, then $|g(x)-c|<\epsilon$.
+                        Choose $\delta=\min\{\delta_1, \delta_2\}$. Then if $0<|x-a|<\delta$, then
+                        $f(x)+g(x)>M+\epsilon-c + -\epsilon+c = M$. Thus, $\lim_{x \to a}(f(x)+g(x))
+                        = \infty$.
             \end{enumerate}
 \end{enumerate}
 \end{document}
