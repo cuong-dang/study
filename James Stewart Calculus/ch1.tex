@@ -360,7 +360,12 @@
             Then $N-f(c)>0$. Let $\epsilon=N-f(c)>0$. $f$ is continuous $\implies \lim_{x \to c} =
                   f(c)\implies\exists\delta: 0<|x-c|<\delta\implies|f(x)-f(c)|<\epsilon=N-f(c)$.
             Choose $x=c+\frac{\delta}{2}$. Then, $f(x)-f(c)<N-f(c)\implies f(x)<N\implies c+
-                  \frac{\delta}{2}\in H$. This contradicts the fact that $c=\sup(H)$.
+                  \frac{\delta}{2}\in H$. This contradicts the fact that $c=\sup(H)$. Suppose $f(c)
+                  > N$. Then $f(c)-N>0$. Let $\varepsilon=f(c)-N>0$. Again, $f$ is continuous
+            $\implies\lim_{x \to c}=f(c)\implies\exists\delta: 0<|x-c|<\delta\implies|f(x)-f(c)|<
+                  \varepsilon=f(c)-N$. Choose $x=c-\frac{\delta}{2}$. Then, $N-f(c)<f(x)-f(c)
+                  \implies f(x)>N\implies c-\frac{\delta}{2}>N$. Then $c$ cannot be $\sup(H)$, a
+            contradiction. Therefore, $f(c) = N$.
       \end{proof}
 \end{theorem*}
 
