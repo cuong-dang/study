@@ -3,6 +3,7 @@
 \usepackage{amsmath, amsthm, booktabs, enumitem}
 
 \everymath{\displaystyle}
+\newtheorem*{theorem*}{Theorem}
 
 \title{James Stewart Calculus}
 \author{}
@@ -339,12 +340,28 @@
       \item Choose $\delta=-\sqrt[3]{\frac{5}{N}}$.
       \item \begin{enumerate}
                   \item We need to show that $\forall M > 0, \exists\delta>0$ such that if $0<
-                        |x-a|<\delta$, then $f(x)+g(x)>M$. $\forall M>0, \epsilon>0$, $\exists
-                        \delta_1$ such that if $0<|x-a|<\delta_1$, then $f(x)>M+\epsilon-c$. Also,
+                              |x-a|<\delta$, then $f(x)+g(x)>M$. $\forall M>0, \epsilon>0$, $\exists
+                              \delta_1$ such that if $0<|x-a|<\delta_1$, then $f(x)>M+\epsilon-c$. Also,
                         $\exists\delta_2$ such that if $0<|x-a|<\delta_2$, then $|g(x)-c|<\epsilon$.
                         Choose $\delta=\min\{\delta_1, \delta_2\}$. Then if $0<|x-a|<\delta$, then
                         $f(x)+g(x)>M+\epsilon-c + -\epsilon+c = M$. Thus, $\lim_{x \to a}(f(x)+g(x))
-                        = \infty$.
+                              = \infty$.
             \end{enumerate}
 \end{enumerate}
+
+\subsection{Continuity}
+\begin{theorem*}[The Intermediate Value Theorem]
+      Suppose that $f$ is continuous on the closed interval $[a, b]$ and let $N$ be any number
+      between $f(a)$ and $f(b)$, where $f(a) \neq f(b)$. Then there exists a number $c$ in $(a, b)$
+      such that $f(c) = N$.
+      \begin{proof}
+            Let set $H = \left\{x\in[a,b]:f(x)<N\right\} \neq \emptyset$. Then, $\exists c =
+                  \sup(H)$. We will now show that $f(c) = N$ by contradiction. Suppose $f(c) < N$.
+            Then $N-f(c)>0$. Let $\epsilon=N-f(c)>0$. $f$ is continuous $\implies \lim_{x \to c} =
+                  f(c)\implies\exists\delta: 0<|x-c|<\delta\implies|f(x)-f(c)|<\epsilon=N-f(c)$.
+            Choose $x=c+\frac{\delta}{2}$. Then, $f(x)-f(c)<N-f(c)\implies f(x)<N\implies c+
+                  \frac{\delta}{2}\in H$. This contradicts the fact that $c=\sup(H)$.
+      \end{proof}
+\end{theorem*}
+
 \end{document}
