@@ -341,11 +341,11 @@
       \item \begin{enumerate}
                   \item We need to show that $\forall M > 0, \exists\delta>0$ such that if $0<
                               |x-a|<\delta$, then $f(x)+g(x)>M$. $\forall M>0, \epsilon>0$, $\exists
-                              \delta_1$ such that if $0<|x-a|<\delta_1$, then $f(x)>M+\epsilon-c$. Also,
-                        $\exists\delta_2$ such that if $0<|x-a|<\delta_2$, then $|g(x)-c|<\epsilon$.
-                        Choose $\delta=\min\{\delta_1, \delta_2\}$. Then if $0<|x-a|<\delta$, then
-                        $f(x)+g(x)>M+\epsilon-c + -\epsilon+c = M$. Thus, $\lim_{x \to a}(f(x)+g(x))
-                              = \infty$.
+                              \delta_1$ such that if $0<|x-a|<\delta_1$, then $f(x)>M+\epsilon-c$.
+                        Also, $\exists\delta_2$ such that if $0<|x-a|<\delta_2$, then $|g(x)-c|<
+                              \epsilon$. Choose $\delta=\min\{\delta_1, \delta_2\}$. Then if
+                        $0<|x-a|<\delta$, then $f(x)+g(x)>M+\epsilon-c + -\epsilon+c = M$. Thus,
+                        $\lim_{x \to a}(f(x)+g(x)) = \infty$.
             \end{enumerate}
 \end{enumerate}
 
@@ -368,5 +368,42 @@
             contradiction. Therefore, $f(c) = N$.
       \end{proof}
 \end{theorem*}
+\subsubsection*{Exercises}
+\begin{enumerate}
+      \item $\lim_{x\to4}f(x)=4$.
+            \setcounter{enumi}{3}
+      \item $(-3, -2), (-2, -1), (-1, 0), (0, 1), (1, 3)$
+            \setcounter{enumi}{22}
+      \item Define $f(2) = 3$.
+      \item Define $f(2) = 3$.
+            \setcounter{enumi}{33}
+      \item Discontinuous at $x = \frac{\pi^2}{4} + \left(n^2+n\right)\pi^2$, where $n$ is an
+            integer.
+            \setcounter{enumi}{44}
+      \item $\frac{2}{3}$
+            \setcounter{enumi}{46}
+      \item 4
+            \setcounter{enumi}{48}
+      \item \begin{enumerate}
+                  \item Yes.
+                  \item Yes. $x(x+1)$.
+                  \item No.
+            \end{enumerate}
+            \setcounter{enumi}{62}
+      \item We first prove that if $\lim_{h\to0}f(a+h)=f(a)$, then $f$ is continuous at $a$. For all
+            $\varepsilon>0$, $\exists\delta>0: 0<|h|<\delta\implies|f(a+h)-f(a)|<\varepsilon$. Let
+            $x=a+h$. $0<|h|<\delta \iff 0<|x-a|<\delta$. Consequently, $|f(x)-f(a)|<\varepsilon$.
+            As a result, $\lim_{x \to a}f(x) = f(a)$ by definition of limit. Thus, $f$ is continuous
+            at $a$.
+
+            We now prove that if $f$ is continuous at $a$, then $\lim_{h\to0}f(a+h)=f(a)$. Let
+            $g(h)=a+h$. $\lim_{h\to0}g(h)=a$. Because $f$ is continuous at $a$ and
+            $\lim_{h\to0}g(h)=a$, it follows that $\lim_{h\to0}f(a+h) = \lim_{h\to0}f(g(h)) =
+                  f\left(\lim_{h\to0}g(h)\right) = f(a)$.
+      \item $\lim_{h\to0}\sin(a+h)=\lim_{h\to0}(\sin{a}\cos{h}+\cos{a}\sin{h})=
+                  \lim_{h\to0}\sin{a}\cos{h} + \lim_{h\to0}\cos{a}\sin{h} =
+                  \sin{a}\lim_{h\to0}\cos{h} + \cos{a}\lim_{h\to0}\sin{h} = \sin{a}$ since we have
+            $\lim_{h\to0}\cos{h}=1$ and $\lim_{h\to0}\sin{h}=0$ from the textbook.
+\end{enumerate}
 
 \end{document}
