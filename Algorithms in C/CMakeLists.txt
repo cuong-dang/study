@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.28)
 project(aic LANGUAGES C)
 set(CMAKE_C_STANDARD 90)
+set(C_STANDARD_REQUIRED ON)
+set(C_EXTENSIONS OFF)
 
 # Chapter 1
 add_executable(prog1_1)
@@ -19,3 +21,7 @@ add_executable(ex1_22)
 target_sources(ex1_22 PRIVATE src/ch1/ex1_22.c)
 add_executable(ex1_23)
 target_sources(ex1_23 PRIVATE src/ch1/ex1_23.c)
+
+# Chapter 2
+add_executable(ex2_2)
+target_sources(ex2_2 PRIVATE src/ch2/ex2_2.c)
