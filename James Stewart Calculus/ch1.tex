@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath, amsthm, booktabs, enumitem}
+\usepackage{amsmath, amsthm, booktabs, enumitem, multicol}
 
 \everymath{\displaystyle}
 \newtheorem*{theorem*}{Theorem}
@@ -420,5 +420,38 @@
         some time $t_0$ between 0 and 12 such that $(u-d)(t_0)=0 \iff u(t_0)=d(t_0)$. So at time
         $t_0$ after 7:00 AM, the monk will be at the same place on both days.
 \end{enumerate}
+
+\subsection*{Review}
+\subsubsection*{True-False Quize}
+\begin{enumerate}
+  \begin{multicols}{10}
+    \item F \item F \item F \item T \item T \item F \item F \item T \item T \item F \item T \item F
+    \item F \item F \item T \item F \item T \item F \item F \item F \item T \item T \item T \item F
+    \item T \item T \item F
+  \end{multicols}
+\end{enumerate}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \setcounter{enumi}{17}
+  \item \[
+          f(x) = \begin{cases}
+            -2x-2,        & -2 \le x \le -1 \\
+            \sqrt{1-x^2}, & -1 \le x \le 1
+          \end{cases}
+        \]
+        \setcounter{enumi}{43}
+  \item We need to show that $\forall M>0, \exists\delta>0: 0<x-4<\delta \implies f(x)>M$. Choose
+        $\delta=\frac{4}{M^2}$. Suppose $0<x-4<\delta = \frac{4}{M^2}$. $\sqrt{x-4}<\frac{2}{M}
+          \implies 2>M\sqrt{x-4}\implies2-M\sqrt{x-4}>0\implies\frac{2-M\sqrt{x-4}}{\sqrt{x-4}}>0
+          \implies\frac{2}{\sqrt{x-4}}>M \implies f(x)>M$. Thus, $\lim_{x\to4+}\frac{2}{\sqrt{x-4}}
+          =\infty$.
+        \setcounter{enumi}{50}
+  \item \begin{enumerate}
+          \item $\lim_{x \to a}f(x) = -1$ for all $a$.
+          \item $f$ is discontinuous at all integers.
+        \end{enumerate}
+\end{enumerate}
+
+\subsection*{Principles of Problem Solving}
 
 \end{document}
