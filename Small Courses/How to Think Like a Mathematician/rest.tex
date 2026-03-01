@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath, amsthm, enumitem}
+\usepackage{amsmath, amssymb, amsthm, enumitem}
 
 \everymath{\displaystyle}
 
@@ -44,10 +44,14 @@
                   \times(-y) = (-1 \times x)\times(-1 \times y) = (-1)\times(-1) \times xy = 1
                   \times xy$ (by the proven collorary). Because $x$ and $y$ are positive, $1 \times
                   xy = xy$ is clearly positive. Thus, $(-x)\times(-y)>0$.
-                \setcounter{enumii}{3}
-          \item \begin{enumerate}[label=(\alph*)]
-                  \item Suppose that $f(x) \in f(A \cup B)$.
-                \end{enumerate}
+        \end{enumerate}
+        \setcounter{enumi}{13}
+  \item \begin{enumerate}[label=(\roman*)]
+          \setcounter{enumii}{6}
+          \item Because $x<y$, $y-x>0$. Suppose that $y-x=\delta>0$. Consider the number $z=x+\frac
+                  {\delta}{\delta+1}$. This number is clearly a rational number. In addition,
+                because $\frac{\delta}{\delta+1}>0$, $x > z$. Also, $\frac{\delta}{\delta+1}<\delta
+                  \implies z < y$. Hence, $\exists z\in\mathbb{Q}: x<z<y$.
         \end{enumerate}
 \end{enumerate}
 \end{document}
