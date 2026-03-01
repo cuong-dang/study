@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath, amsthm, enumitem}
+\usepackage{amsmath, amssymb, amsthm, enumitem}
 
 \everymath{\displaystyle}
 
@@ -33,6 +33,25 @@
                         subset with the new element is constructed by adding the new element to each
                         element in $S_k$, as a result, it also has $|S_k|$ elements.
                 \end{enumerate}
+        \end{enumerate}
+\end{enumerate}
+
+\section*{Chapter 20: Techniques of proof I: Direct method}
+\begin{enumerate}[label=20.\arabic*]
+  \setcounter{enumi}{5}
+  \item \begin{enumerate}[label=(\roman*)]
+          \item We want to show that $(-x)\times(-y)>0$ if $x$ and $y$ are positive. We have $(-x)
+                  \times(-y) = (-1 \times x)\times(-1 \times y) = (-1)\times(-1) \times xy = 1
+                  \times xy$ (by the proven collorary). Because $x$ and $y$ are positive, $1 \times
+                  xy = xy$ is clearly positive. Thus, $(-x)\times(-y)>0$.
+        \end{enumerate}
+        \setcounter{enumi}{13}
+  \item \begin{enumerate}[label=(\roman*)]
+          \setcounter{enumii}{6}
+          \item Because $x<y$, $y-x>0$. Suppose that $y-x=\delta>0$. Consider the number $z=x+\frac
+                  {\delta}{\delta+1}$. This number is clearly a rational number. In addition,
+                because $\frac{\delta}{\delta+1}>0$, $x > z$. Also, $\frac{\delta}{\delta+1}<\delta
+                  \implies z < y$. Hence, $\exists z\in\mathbb{Q}: x<z<y$.
         \end{enumerate}
 \end{enumerate}
 \end{document}
