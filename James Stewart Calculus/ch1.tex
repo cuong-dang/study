@@ -4,6 +4,7 @@
 
 \everymath{\displaystyle}
 \newtheorem*{theorem*}{Theorem}
+\newtheorem*{proposition*}{Proposition}
 
 \title{James Stewart Calculus}
 \author{}
@@ -453,5 +454,30 @@
 \end{enumerate}
 
 \subsection*{Principles of Problem Solving}
-
+\begin{proposition*}
+  Suppose $f$ and $g$ are functions. If $\lim_{t \to b}f(t)=L$, $\lim_{x \to a}g(x)=b$, and $g(x)
+    \neq b$ for all x sufficiently close to $a$, then $\lim_{x \to a}f\left(g(x)\right)=L$.
+\end{proposition*}
+\begin{proof}
+  $\lim_{x \to a}g(x)=b\implies\forall\varepsilon>0, \exists\delta_1:0<|x-a|<\delta_1\implies
+    |g(x)-b|<\varepsilon$. $\lim_{t \to b}f(t)=L\implies\forall\varepsilon>0, \exists\delta_2:0<|t-
+    b|<\delta_2\implies|g(x)-b|<\varepsilon$. $\forall\varepsilon>0$, choose $\delta_1$ such that
+  $0<|x-a|<\delta_1\implies0<|g(x)-b|<\varepsilon=\delta_2$. By the second and third assumptions,
+  such a $delta_1$ exists. In addition, $0<|g(x)-b|<\varepsilon=\delta_2\implies\left|f\left(
+    g(x)\right)\right|<\varepsilon$. Therefore, $\lim_{x \to a}f\left(g(x)\right)=L$ by definition.
+\end{proof}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \item $\left\{-\frac{7}{3}, 9\right\}$
+        \setcounter{enumi}{8}
+  \item 40 mi/h.
+        \setcounter{enumi}{14}
+  \item Let $g(x) = \sqrt[6]{x}$; $\lim_{x\to1}g(x)=1$. Let $f(x)=\frac{x^2-1}{x^3-1}$;
+        $\lim_{x\to1}f(x)=\lim_{x\to1}\frac{x^2-1}{x^3-1}=\lim_{x\to1}\frac{(x-1)(x+1)}
+          {(x-1)(x^2+x+1)}=\lim_{x\to1}\frac{x+1}{x^2+x+1}=\frac{2}{3}$. Thus, $\lim_{x\to1}
+          f(g(x))=\lim_{x\to1}\frac{\sqrt[3]{x}-1}{\sqrt{x}-1}=\frac{2}{3}$.
+  \item $a=4, b=4$.
+  \item $-4$
+  \item $Q$ approaches the point $(0, \frac{1}{2})$.
+\end{enumerate}
 \end{document}
