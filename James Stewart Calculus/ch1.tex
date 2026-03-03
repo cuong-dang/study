@@ -1,0 +1,508 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, booktabs, enumitem, multicol}
+
+\everymath{\displaystyle}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem*{proposition*}{Proposition}
+
+\title{James Stewart Calculus}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\section{Functions and Limits}
+\subsection{Four Ways to Represent a Function}
+\begin{enumerate}
+  \item Yes
+  \item No
+  \item \begin{enumerate}[label=(\alph*)]
+          \item 3
+          \item $-0.2$
+          \item 0, 3
+          \item $-0.8$
+          \item $[-2, 4], [-1, 3]$
+          \item $[-2, 1]$
+        \end{enumerate}
+        \setcounter{enumi}{25}
+  \item $A(r) = V(r+1) - V(r)$
+        \setcounter{enumi}{36}
+  \item $[0, 4]$
+        \setcounter{enumi}{52}
+  \item $y = 1-\sqrt{-x}$
+  \item $y = \sqrt{4-x^2}+2$
+        \setcounter{enumi}{58}
+  \item $A(x) = \frac{\sqrt{3}x^2}{4}$
+        \setcounter{enumi}{60}
+  \item $S(a) = a^2 + \frac{8}{a}$
+  \item $A(x) = 15x - \frac{3\pi+4}{8}x^2$
+        \setcounter{enumi}{64}
+  \item \[
+          f(x) =
+          \begin{cases}
+            15(40-x), & 0 \le x < 40    \\
+            0,        & 40 \le x \le 65 \\
+            15(x-65), & 65 < x \le 100
+          \end{cases}
+        \]
+\end{enumerate}
+
+\subsection{Mathematical Models: A Catalog of Essential Functions}
+\begin{enumerate}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item Logarithmic
+          \item Root
+          \item Rational
+          \item Polynomial
+          \item Exponential
+          \item Trigonometric
+        \end{enumerate}
+        \setcounter{enumi}{2}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item $h$
+          \item $f$
+          \item $g$
+        \end{enumerate}
+        \setcounter{enumi}{4}
+  \item $\left\{x | x \ne \frac{\pi}{2} + n2\pi\right\}$
+        \setcounter{enumi}{6}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item $y = 2x + b$
+          \item $y = \frac{1-b}{2}x + b$
+          \item $y = 2x - 3$
+        \end{enumerate}
+        \setcounter{enumi}{10}
+  \item $f(x) = -3x^3+3x^2+6x$
+        \setcounter{enumi}{18}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item $y = -0.434x + 15$
+          \item $\approx -196$ ft
+        \end{enumerate}
+        \setcounter{enumi}{28}
+  \item 4 times brighter.
+  \item \begin{enumerate}[label=(\alph*)]
+          \item 2
+          \item $\approx 334$ $\text{m}^2$
+        \end{enumerate}
+\end{enumerate}
+
+\subsection{New Functions from Old Functions}
+\begin{enumerate}
+  \setcounter{enumi}{6}
+  \item $-\sqrt{3(x+4)-(x+4)^2}-1$
+        \setcounter{enumi}{25}
+  \item $0.35\cos\left(\frac{2\pi}{5.4}x\right)+5$
+  \item $5\cos\left(\frac{2\pi}{12}(x-6.75)\right)+7$
+        \setcounter{enumi}{52}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item 4
+          \item 3
+          \item 0
+          \item Undefined.
+          \item 4
+          \item -2
+        \end{enumerate}
+        \setcounter{enumi}{54}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item $r(t) = 60t$
+          \item $(A \circ r)(t) = \pi(60t)^2$
+        \end{enumerate}
+        \setcounter{enumi}{56}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item $s = f(d) = \sqrt{6^2+d^2}$
+          \item $d = g(t) = 30t$
+          \item $s = (f \circ g)(t) = \sqrt{6^2+(30t)^2}$
+        \end{enumerate}
+        \setcounter{enumi}{60}
+  \item $(f \circ g)(x) = m_1(m_2x+b_2)+b_1 = m_1m_2x+m_1b_2+b_1$
+        \setcounter{enumi}{62}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item $f(x) = x^2 + 6$
+          \item $g(x) = x^2 + x - 1$
+        \end{enumerate}
+        \setcounter{enumi}{63}
+  \item Yes.
+\end{enumerate}
+
+\subsection{The Tangent and Velocity Problems}
+\begin{enumerate}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item \begin{tabular}{rccccc}
+                  \toprule
+                  $t$      & 5       & 10      & 20      & 25      & 30       \\
+                  $m_{PQ}$ & $-44.4$ & $-38.8$ & $-27.8$ & $-22.2$ & $-16.67$ \\
+                  \bottomrule
+                \end{tabular}
+          \item $-33.3$
+        \end{enumerate}
+        \setcounter{enumi}{4}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item \begin{enumerate}[label=(\roman*)]
+                  \item $-32$
+                  \item $-25.6$
+                  \item $-24.8$
+                  \item $-24.16$
+                \end{enumerate}
+          \item $-24$
+        \end{enumerate}
+        \setcounter{enumi}{8}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item \begin{tabular}{rccccc}
+                  \toprule
+                  $x$      & 2 & 1.5      & 1.4       & 1.3       & 1.2      \\
+                  $m_{PQ}$ & 0 & $1.7321$ & $-1.0847$ & $-2.7433$ & $4.3301$ \\
+                  \bottomrule
+                \end{tabular}
+          \item $-31.4127$
+        \end{enumerate}
+\end{enumerate}
+
+\subsection{The Limit of a Function}
+\begin{enumerate}
+  \setcounter{enumi}{12}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item 1
+          \item 0
+          \item Does not exist.
+        \end{enumerate}
+        \setcounter{enumi}{28}
+  \item $\infty$
+  \item $-\infty$
+  \item $\infty$
+  \item $-\infty$
+  \item $-\infty$
+  \item $-\infty$
+  \item $-\infty$
+  \item $-\infty$
+  \item $-\infty$
+  \item $-\infty$
+  \item $\infty$
+        \setcounter{enumi}{46}
+  \item $x = \arcsin\left(\frac{\pi}{4}\right),
+          x = \pi - \arcsin\left(\frac{\pi}{4}\right),
+          x = \arcsin\left(-\frac{\pi}{4}\right),
+          x = -\pi - \arcsin\left(-\frac{\pi}{4}\right)$
+\end{enumerate}
+
+\subsection{Calculating Limits Using the Limit Laws}
+\begin{enumerate}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item $-6$
+          \item $-8$
+          \item 2
+          \item $-6$
+          \item Does not exist.
+          \item 0
+        \end{enumerate}
+        \setcounter{enumi}{16}
+  \item $-10$
+        \setcounter{enumi}{28}
+  \item $-\frac{1}{2}$
+        \setcounter{enumi}{39}
+  \item For all $x \ne 0$, $0 \le \sin^2(2\pi/2) \le 1$. Adding 1 to each side, we have $ 1 \le
+          1+\sin^2(2\pi/2) \le 2$. Because, $\sqrt{x} \ge 0$ for all $x \ge 0$, multiplying
+        each side of the inequality gives $\sqrt{x} \le \sqrt{x}[1+\sin^2(2\pi/2)] \le
+          2\sqrt{x}$. It is true that $\lim_{x \to 0^+}{\sqrt{x}} = 0$ and $\lim_{x \to 0^+}
+          {2\sqrt{x}} = 0$. Applying the Squeeze Theorem proves that $\lim_{x \to 0^+}
+          {[1+\sin^2(2\pi/2)]} = 0$.
+  \item $\lim_{x\to3^+}\left(2x+|x-3|\right) = \lim_{x\to3^+}(2x+x-3) = 6$. $\lim_{x\to3^-}
+          \left(2x+|x-3|\right) = \lim_{x\to3^-}(2x+3-x) = 6$. Thus, $\lim_{x\to3}
+          \left(2x+|x-3|\right) = 6$.
+        \setcounter{enumi}{42}
+  \item $\lim_{x\to0.5^-}\frac{2x-1}{\left|2x^3-x^2\right|} =
+          \lim_{x\to0.5^-}\frac{2x-1}{-(2x^3-x^2)} = \lim_{x\to0.5^-}\frac{2x-1}{-x^2(2x-1)}
+          = \lim_{x\to0.5^-}\frac{1}{-x^2} = 4.$
+  \item 1
+  \item $-\infty$
+  \item 0
+  \item \begin{enumerate}[label=(\alph*), start=2]
+          \item \begin{enumerate}[label=(\roman*)]
+                  \item 1
+                  \item $-1$
+                  \item Does not exit.
+                  \item 1
+                \end{enumerate}
+        \end{enumerate}
+        \setcounter{enumi}{50}
+  \item 7
+        \setcounter{enumi}{52}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item \begin{enumerate}[label=(\roman*)]
+                  \item $-2$
+                  \item Does not exist.
+                  \item $-2$
+                \end{enumerate}
+          \item \begin{enumerate}[label=(\roman*)]
+                  \item $n-1$
+                  \item $n$
+                \end{enumerate}
+          \item $n+\epsilon$, where $n$ is an integer and $0 < \epsilon < 1$.
+        \end{enumerate}
+        \setcounter{enumi}{54}
+  \item $f(2) = 0, \lim_{x\to2}f(x) = -1$
+        \setcounter{enumi}{58}
+  \item 8
+  \item \begin{enumerate}[label=(\roman*)]
+          \item 0
+          \item 0
+        \end{enumerate}
+  \item By definition, $0 \le f(x) \le x^2$. Since $\lim_{x\to0}0 = \lim_{x\to0}x^2 = 0$,
+        $\lim_{x\to0}f(x) = 0$ by the Squeeze Theorem.
+  \item $f(x) = \frac{x}{x+1}, g(x) = \frac{1}{x+1}, \lim_{x\to-1}[f(x)+g(x)] = 1$.
+  \item $f(x) = \sqrt{x}, g(x) = \sqrt{x^3}, \lim_{x\to-1}[f(x)g(x)] = 1$.
+  \item $\lim_{x\to2}\frac{\sqrt{6-x}-2}{\sqrt{3-x}-1} =
+          \lim_{x\to2}\frac{2-x}{(\sqrt{3-x}-1)(\sqrt{6-x}+2)} =
+          \lim_{x\to2}\frac{(2-x)(\sqrt{3-x}+1)}{(2-x)(\sqrt{6-x}+2)} =
+          \lim_{x\to2}\frac{\sqrt{3-x}+1}{\sqrt{6-x}+2} = \frac{1}{2}$
+  \item $a=15, \lim_{f\to-2}f(x) = -1$.
+  \item $R\left(-\frac{r^2}{2\left(\sqrt{1-\frac{r^2}{4}}-1\right)}, 0\right)$.
+        $\lim_{r\to0}R = (4, 0)$.
+\end{enumerate}
+
+\subsection{The Precise Definition of a Limit}
+\subsubsection*{Example 4} Prove that $\lim_{x\to3}x^2 = 9$.
+\begin{proof}
+  Given $\epsilon > 0$, let $\delta = \min\left\{1, \epsilon / 7\right\}$. If $0 < |x-3| <
+    \delta$, then $|x-3| < 1 \implies -1 < x-3 < 1 \implies 5 < x+3 < 7$, or $|x+3| < 7$.
+  We also have $|x-3| < \epsilon/7$, so
+  \[\left|x^2-9\right| = |x-3||x+3| < \frac{\epsilon}{7}\cdot7 = \epsilon.\]
+  This shows that $\lim_{x\to3}x^2 = 9$.
+\end{proof}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \item 0.1
+  \item 0.4
+  \item 1.44
+        \setcounter{enumi}{4}
+  \item 0.09
+        \setcounter{enumi}{8}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item 0.4
+          \item $\lim_{x\to4^+}\frac{x^2+4}{\sqrt{x-4}} = \infty$
+        \end{enumerate}
+        \setcounter{enumi}{10}
+  \item \begin{enumerate}[label=(\alph*)]
+          \item $\sqrt{100\div\pi}$
+          \item $\pm0.04$ cm.
+          \item $x$ is the radius. $a$ is the ideal radius. $L$ is the target area.
+                $\epsilon$ is 5 $\text{cm}^2$. $\delta$ is 0.04.
+        \end{enumerate}
+        \setcounter{enumi}{14}
+  \item Choose $\delta = 3\epsilon$. For $0<|x-3|<\delta$, $\left|1+\frac{1}{3}x-2\right| =
+          \left|\frac{1}{3}x-1\right| = \left|\frac{1}{3}(x-3)\right| < \frac{1}{3}\delta
+          = \epsilon$. Thus, $\lim_{x\to3}\left(1+\frac{1}{3}x\right) = 2$.
+        \setcounter{enumi}{16}
+  \item Choose $\delta = \frac{\epsilon}{4}$. For $0<|x-(-3)|=|x+3|<\delta$, $\left|(1-4x)-13
+          \right| = \left|-4x-12\right| = \left|-4(x+3)\right| = 4\left|x+3\right| <
+          4\delta = \epsilon$. Thus, $\lim_{x\to-3}(1-4x) = 13$.
+        \setcounter{enumi}{20}
+  \item Choose $\delta = \epsilon$. For $0<|x-4|<\delta$, $\left|\frac{x^2-2x-8}{x-4}-6
+          \right| = \left|\frac{x^2-2x-8-6(x-4)}{x-4}\right| = \left|\frac{x^2-8x+16}{x-4}
+          \right| = \left|\frac{(x+4)^2}{x-4}\right| = \left|x-4\right| <
+          \delta = \epsilon$. Thus, $\lim_{x\to4}\frac{x^2-2x-8}{x-4} = 6$.
+        \setcounter{enumi}{24}
+  \item Choose $\delta = \sqrt{\epsilon}$. For $0<|x-0|<\delta$, $\left|x^2-0\right| =
+          \left|x^2\right| < \delta^2 = \epsilon$. Thus, $\lim_{x\to0}x^2 = 0$.
+        \setcounter{enumi}{26}
+  \item Choose $\delta = \epsilon$. For $0<|x-0|=|x|<\delta$, $\left||x|-0\right| =
+          \left||x|\right| = |x| < \delta = \epsilon$. Thus, $\lim_{x\to0}|x| = 0$.
+        \setcounter{enumi}{29}
+  \item Choose $\delta = \min\left\{1, \epsilon/7\right\}$. Then, $0<|x-2|<\delta \implies
+          0<|x-2|<1 \implies x+4<7$. Thus, $\left|(x^2+2x-7)-1\right| =
+          \left|x^2+2x-8\right| = |(x+4)(x-2)|<7\cdot\frac{\epsilon}{7} = \epsilon$. Thus,
+        $\lim_{x\to2}\left(x^2+2x-7\right) = 1$.
+  \item Choose $\delta=\min\left\{5, \epsilon\right\}$.
+        \setcounter{enumi}{33}
+  \item \begin{proof}
+          Proof by contraction. Suppose that $\delta=\sqrt{9+\epsilon}-3$ is not the
+          largest possible choice, we want to show that for any choice of larger $\delta$,
+          there exists a value $x$ such that for any $\epsilon>0$,
+          $\left|x^2-9\right|\ge\epsilon$. For any larger $\delta$, let
+          $x-3=\sqrt{9+\epsilon}-3 < \delta$. Then, $x+3=\sqrt{9+\epsilon}+3$. We also have
+          $\left|x^2-9\right|=|(x-3)(x+3)|=(\sqrt{9+\epsilon}-3)(\sqrt{9+\epsilon}+3)=
+            9+\epsilon-9=\epsilon$.
+        \end{proof}
+        \setcounter{enumi}{36}
+  \item Choose $\delta=\min\left\{1, \frac{\epsilon}{\sqrt{1+a}+\sqrt{a}}\right\}$.
+  \item Assume that such a limit $L$ exists. Let $\epsilon = \frac{1}{2}|L|$. There must exist a
+        $\delta$ such that if $0 < |x| < \delta$, then $|H(x) - L| < \epsilon$. $0 < |x| <
+          \delta \implies -\delta < x < 0$ or $0 < x < \delta$. If $-\delta < x < 0$, then
+        $|H(x)-L| = |0-L| = |L| \ge \frac{1}{2}|L| = \epsilon$. This is a contradiction. Thus,
+        such a limit does not exist.
+  \item Suppose that $\lim_{x\to0}f(x)=L$. Given $\varepsilon=\frac{1}{2}$, there exists $\delta
+          >0$ such that $0<|x|<\delta \implies |f(x)-L|<\frac{1}{2}$. Take any rational
+        number $r$ with $0 < |r| < \delta$. Then $f(r)=0$, so $|0-L|<\frac{1}{2}$, so $L\le|L|<
+          \frac{1}{2}$. Now take any irrational number $s$ with $0<|s|<\delta$. Then $f(s)=
+          1$, so $|1-L|<\frac{1}{2}$. Hence, $1-L<\frac{1}{2}$, so $L>\frac{1}{2}$. This
+        contradicts $L<\frac{1}{2}$, so $\lim_{x\to0}f(x)$ does not exist.
+        \setcounter{enumi}{41}
+  \item Choose $\delta=\sqrt[4]{\frac{1}{M}}$.
+  \item Choose $\delta=-\sqrt[3]{\frac{5}{N}}$.
+  \item \begin{enumerate}
+          \item We need to show that $\forall M > 0, \exists\delta>0$ such that if $0<
+                  |x-a|<\delta$, then $f(x)+g(x)>M$. $\forall M>0, \epsilon>0$, $\exists
+                  \delta_1$ such that if $0<|x-a|<\delta_1$, then $f(x)>M+\epsilon-c$.
+                Also, $\exists\delta_2$ such that if $0<|x-a|<\delta_2$, then $|g(x)-c|<
+                  \epsilon$. Choose $\delta=\min\{\delta_1, \delta_2\}$. Then if
+                $0<|x-a|<\delta$, then $f(x)+g(x)>M+\epsilon-c + -\epsilon+c = M$. Thus,
+                $\lim_{x \to a}(f(x)+g(x)) = \infty$.
+        \end{enumerate}
+\end{enumerate}
+
+\subsection{Continuity}
+\begin{theorem*}[The Intermediate Value Theorem]
+  Suppose that $f$ is continuous on the closed interval $[a, b]$ and let $N$ be any number
+  between $f(a)$ and $f(b)$, where $f(a) \neq f(b)$. Then there exists a number $c$ in $(a, b)$
+  such that $f(c) = N$.
+  \begin{proof}
+    Let set $H = \left\{x\in[a,b]:f(x)<N\right\} \neq \emptyset$. Then, $\exists c =
+      \sup(H)$. We will now show that $f(c) = N$ by contradiction. Suppose $f(c) < N$.
+    Then $N-f(c)>0$. Let $\epsilon=N-f(c)>0$. $f$ is continuous $\implies \lim_{x \to c} =
+      f(c)\implies\exists\delta: 0<|x-c|<\delta\implies|f(x)-f(c)|<\epsilon=N-f(c)$.
+    Choose $x=c+\frac{\delta}{2}$. Then, $f(x)-f(c)<N-f(c)\implies f(x)<N\implies c+
+      \frac{\delta}{2}\in H$. This contradicts the fact that $c=\sup(H)$. Suppose $f(c)
+      > N$. Then $f(c)-N>0$. Let $\varepsilon=f(c)-N>0$. Again, $f$ is continuous
+    $\implies\lim_{x \to c}=f(c)\implies\exists\delta: 0<|x-c|<\delta\implies|f(x)-f(c)|<
+      \varepsilon=f(c)-N$. Choose $x=c-\frac{\delta}{2}$. Then, $N-f(c)<f(x)-f(c)
+      \implies f(x)>N\implies c-\frac{\delta}{2}>N$. Then $c$ cannot be $\sup(H)$, a
+    contradiction. Therefore, $f(c) = N$.
+  \end{proof}
+\end{theorem*}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \item $\lim_{x\to4}f(x)=4$.
+        \setcounter{enumi}{3}
+  \item $(-3, -2), (-2, -1), (-1, 0), (0, 1), (1, 3)$
+        \setcounter{enumi}{22}
+  \item Define $f(2) = 3$.
+  \item Define $f(2) = 3$.
+        \setcounter{enumi}{33}
+  \item Discontinuous at $x = \frac{\pi^2}{4} + \left(n^2+n\right)\pi^2$, where $n$ is an
+        integer.
+        \setcounter{enumi}{44}
+  \item $\frac{2}{3}$
+        \setcounter{enumi}{46}
+  \item 4
+        \setcounter{enumi}{48}
+  \item \begin{enumerate}
+          \item Yes.
+          \item Yes. $x(x+1)$.
+          \item No.
+        \end{enumerate}
+        \setcounter{enumi}{62}
+  \item We first prove that if $\lim_{h\to0}f(a+h)=f(a)$, then $f$ is continuous at $a$. For all
+        $\varepsilon>0$, $\exists\delta>0: 0<|h|<\delta\implies|f(a+h)-f(a)|<\varepsilon$. Let
+        $x=a+h$. $0<|h|<\delta \iff 0<|x-a|<\delta$. Consequently, $|f(x)-f(a)|<\varepsilon$.
+        As a result, $\lim_{x \to a}f(x) = f(a)$ by definition of limit. Thus, $f$ is continuous
+        at $a$.
+
+        We now prove that if $f$ is continuous at $a$, then $\lim_{h\to0}f(a+h)=f(a)$. Let
+        $g(h)=a+h$. $\lim_{h\to0}g(h)=a$. Because $f$ is continuous at $a$ and
+        $\lim_{h\to0}g(h)=a$, it follows that $\lim_{h\to0}f(a+h) = \lim_{h\to0}f(g(h)) =
+          f\left(\lim_{h\to0}g(h)\right) = f(a)$.
+  \item $\lim_{h\to0}\sin(a+h)=\lim_{h\to0}(\sin{a}\cos{h}+\cos{a}\sin{h})=
+          \lim_{h\to0}\sin{a}\cos{h} + \lim_{h\to0}\cos{a}\sin{h} =
+          \sin{a}\lim_{h\to0}\cos{h} + \cos{a}\lim_{h\to0}\sin{h} = \sin{a}$ since we have
+        $\lim_{h\to0}\cos{h}=1$ and $\lim_{h\to0}\sin{h}=0$ from the textbook.
+        \setcounter{enumi}{66}
+  \item $f(x)$ is not continuous anywhere. For any value $a$ and any $\delta>0$, there are
+        an infinite number of rational and irrational numbers within the interval $(a-\delta,
+          a+\delta)$. $f(a)$ is either 1 or 0. However, there are infinitely many $x$ such that $
+          0<|x-a|<\delta$ but $|f(x)-f(a)|=1$; in other words, $f(x) \neq f(a)$.
+  \item 0.
+        \setcounter{enumi}{72}
+  \item Define $u(t)$ to be the monk's distance from the monastery, as a function of time $t$ (in
+        hours), on the first day, and define $d(t)$ to be his distance from the monastery, as the
+        function of time, on the second day. Let $D$ be the distance from the monastery to the top
+        of the mountain. From the given information we know that $u(0) = 0, u(12) = D, d(0) = D$ and
+        $d(12) = 0$. Now consider the function $u-d$, which is clearly continuous We calculate that
+        $(u-d)(0) = -D$ and $(u-d)(12) = D$. So by the Intermediate Value Theorem, there must be
+        some time $t_0$ between 0 and 12 such that $(u-d)(t_0)=0 \iff u(t_0)=d(t_0)$. So at time
+        $t_0$ after 7:00 AM, the monk will be at the same place on both days.
+\end{enumerate}
+
+\subsection*{Review}
+\subsubsection*{True-False Quize}
+\begin{enumerate}
+  \begin{multicols}{10}
+    \item F \item F \item F \item T \item T \item F \item F \item T \item T \item F \item T \item F
+    \item F \item F \item T \item F \item T \item F \item F \item F \item T \item T \item T \item F
+    \item T \item T \item F
+  \end{multicols}
+\end{enumerate}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \setcounter{enumi}{17}
+  \item \[
+          f(x) = \begin{cases}
+            -2x-2,        & -2 \le x \le -1 \\
+            \sqrt{1-x^2}, & -1 \le x \le 1
+          \end{cases}
+        \]
+        \setcounter{enumi}{43}
+  \item We need to show that $\forall M>0, \exists\delta>0: 0<x-4<\delta \implies f(x)>M$. Choose
+        $\delta=\frac{4}{M^2}$. Suppose $0<x-4<\delta = \frac{4}{M^2}$. $\sqrt{x-4}<\frac{2}{M}
+          \implies 2>M\sqrt{x-4}\implies2-M\sqrt{x-4}>0\implies\frac{2-M\sqrt{x-4}}{\sqrt{x-4}}>0
+          \implies\frac{2}{\sqrt{x-4}}>M \implies f(x)>M$. Thus, $\lim_{x\to4+}\frac{2}{\sqrt{x-4}}
+          =\infty$.
+        \setcounter{enumi}{50}
+  \item \begin{enumerate}
+          \item $\lim_{x \to a}f(x) = -1$ for all $a$.
+          \item $f$ is discontinuous at all integers.
+        \end{enumerate}
+\end{enumerate}
+
+\subsection*{Principles of Problem Solving}
+\begin{proposition*}
+  Suppose $f$ and $g$ are functions. If $\lim_{t \to b}f(t)=L$, $\lim_{x \to a}g(x)=b$, and $g(x)
+    \neq b$ for all x sufficiently close to $a$, then $\lim_{x \to a}f\left(g(x)\right)=L$.
+\end{proposition*}
+\begin{proof}
+  $\lim_{x \to a}g(x)=b\implies\forall\varepsilon>0, \exists\delta_1:0<|x-a|<\delta_1\implies
+    |g(x)-b|<\varepsilon$. $\lim_{t \to b}f(t)=L\implies\forall\varepsilon>0, \exists\delta_2:0<|t-
+    b|<\delta_2\implies|g(x)-b|<\varepsilon$. $\forall\varepsilon>0$, choose $\delta_1$ such that
+  $0<|x-a|<\delta_1\implies0<|g(x)-b|<\varepsilon=\delta_2$. By the second and third assumptions,
+  such a $delta_1$ exists. In addition, $0<|g(x)-b|<\varepsilon=\delta_2\implies\left|f\left(
+    g(x)\right)\right|<\varepsilon$. Therefore, $\lim_{x \to a}f\left(g(x)\right)=L$ by definition.
+\end{proof}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \item $\left\{-\frac{7}{3}, 9\right\}$
+        \setcounter{enumi}{8}
+  \item 40 mi/h.
+        \setcounter{enumi}{14}
+  \item Let $g(x) = \sqrt[6]{x}$; $\lim_{x\to1}g(x)=1$. Let $f(x)=\frac{x^2-1}{x^3-1}$;
+        $\lim_{x\to1}f(x)=\lim_{x\to1}\frac{x^2-1}{x^3-1}=\lim_{x\to1}\frac{(x-1)(x+1)}
+          {(x-1)(x^2+x+1)}=\lim_{x\to1}\frac{x+1}{x^2+x+1}=\frac{2}{3}$. Thus, $\lim_{x\to1}
+          f(g(x))=\lim_{x\to1}\frac{\sqrt[3]{x}-1}{\sqrt{x}-1}=\frac{2}{3}$.
+  \item $a=4, b=4$.
+  \item $-4$
+  \item $Q$ approaches the point $(0, \frac{1}{2})$.
+  \item \begin{enumerate}
+          \setcounter{enumii}{1}
+          \item Based on the definition of the floor function, we have
+                \[\frac{1}{x}-1 < \left\lfloor\frac{1}{x}\right\rfloor \le \frac{1}{x}.\]
+                \textbf{Case 1:} $x>0$. Multiplying both sides with $x$ gives
+                \[1-x < x\left\lfloor\frac{1}{x}\right\rfloor \le 1.\]
+                As $\lim_{x\to0^+}(1-x) = \lim_{x\to0^+}1 = 1$, applying the Squeeze Theorem gives
+                $\lim_{x\to0^+}\left(x\left\lfloor\frac{1}{x}\right\rfloor\right)=1$.
+
+                \textbf{Case 2:} $x<0$. Multiplying both sides with $x$ gives
+                \[1\le\left\lfloor\frac{1}{x}\right\rfloor<1-x.\]
+                As $\lim_{x\to0^-}(1-x) = \lim_{x\to0^-}1 = 1$, applying the Squeeze Theorem gives
+                $\lim_{x\to0^-}\left(x\left\lfloor\frac{1}{x}\right\rfloor\right)=1$.
+
+                Thus, $\lim_{x\to0}\left(x\left\lfloor\frac{1}{x}\right\rfloor\right)=1$.
+        \end{enumerate}
+        \setcounter{enumi}{20}
+  \item $x=\frac{1\pm\sqrt{5}}{2}$
+        \setcounter{enumi}{22}
+  \item $\frac{3}{4}$
+  \item \begin{enumerate}
+          \item Let the length of $MC$ be $r$, and the height of $AM$ be $h$. The point P has
+                coordinates $(\frac{r}{3}, \frac{2h}{3})$. Thus, as $h$ approaches 3, $P$ approaches
+                $(\frac{r}{3}, 0)$.
+        \end{enumerate}
+\end{enumerate}
+\end{document}

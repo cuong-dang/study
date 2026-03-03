@@ -1,6 +1,4 @@
 .DS_Store
 build/
 data/
-indent.log
-out/
 target/
