@@ -3,7 +3,8 @@ const base64 = @import("base64.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const out = try base64.encode("Hi", gpa.allocator());
-    defer gpa.free(out);
-    std.debug.print("{any}\n", .{out});
+    const allocator = gpa.allocator();
+    const out = try base64.encode("Testing some more stuff", allocator);
+    defer allocator.free(out);
+    std.debug.print("{s}\n", .{out});
 }
