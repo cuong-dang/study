@@ -1,8 +1,9 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath, amssymb, enumitem}
+\usepackage{amsmath, amssymb, amsthm, enumitem}
 
 \everymath{\displaystyle}
+\newtheorem*{theorem*}{Theorem}
 
 \title{Linear Algebra: A Modern Introduction}
 \author{David Poole}
@@ -56,4 +57,29 @@
                 divisor ($\gcd$) of $a$ and $m$ is 1).
         \end{enumerate}
 \end{enumerate}
+
+\subsection{Length and Angle: The Dot Product}
+\begin{theorem*}[The Cauchy-Schwarz Inequality]
+  For all vectors $\mathbf{u}$ and $\mathbf{v}$ in $\mathbb{R}^n$,
+  \[|\mathbf{u}\cdot\mathbf{v}|\le\left\|\mathbf{u}\right\|\left\|\mathbf{v}\right\|.\]
+\end{theorem*}
+\begin{theorem*}[The Triangle Inequality]
+  For all vectors $\mathbf{u}$ and $\mathbf{v}$ in $\mathbb{R}^n$,
+  \[\lVert\mathbf{u}+\mathbf{v}\rVert\le\left\|\mathbf{u}\right\|+\left\|\mathbf{v}\right\|.\]
+\end{theorem*}
+\begin{proof}
+  \begin{align*}
+    \lVert\mathbf{u}+\mathbf{v}\rVert^2 & = (\mathbf{u}+\mathbf{v})\cdot(\mathbf{u}+\mathbf{v}) \\
+                                        & = \mathbf{u}\cdot\mathbf{u} +
+    2(\mathbf{u}\cdot\mathbf{v}) + \mathbf{v}\cdot\mathbf{v}                                    \\
+                                        & \le \mathbf{u}\cdot\mathbf{u} +
+    2\left|\mathbf{u}\cdot\mathbf{v}\right| + \mathbf{v}\cdot\mathbf{v}                         \\
+                                        & \le \lVert\mathbf{u}\rVert^2 +
+    2\lVert\mathbf{u}\rVert\lVert\mathbf{v}\rVert + \lVert\mathbf{v}\rVert^2                    \\
+                                        & =
+    \left(\lVert\mathbf{u}\rVert+\lVert\mathbf{v}\rVert\right)^2.
+  \end{align*}
+  Since both sides are non-negative, taking the square root gives,
+  \[\lVert\mathbf{u}+\mathbf{v}\rVert\le\left\|\mathbf{u}\right\|+\left\|\mathbf{v}\right\|.\]
+\end{proof}
 \end{document}
