@@ -63,4 +63,25 @@
                 even.
         \end{enumerate}
 \end{enumerate}
+
+\section*{Chapter 22: Techniques of proof II: Proof by cases}
+\begin{enumerate}[label=22.\arabic*]
+  \setcounter{enumi}{9}
+  \item \begin{enumerate}[label=(\roman*)]
+          \item Examine 3 cases: $3k, 3k+1, 3k+2$.
+          \item Examine 3 cases: $3k, 3k+1, 3k+2$.
+          \item \begin{enumerate}[label=(\alph*)]
+                  \setcounter{enumiii}{1}
+                  \item Proving $|x| \le y \implies -y \le x \le y$.
+
+                        \textbf{Case 1:} $x\ge0\implies|x|=x \le y\implies-x\ge-y$. Because $x\ge0$,
+                        $x\ge-x$. Thus, $-y \le x \le y$.
+
+                        \textbf{Case 2:} $x<0\implies|x|=-x \le y\implies x\ge-y$. And $x<y$ because
+                        $x<0$ and $0<|x| \le y$. Thus, $-y \le x \le y$.
+                \end{enumerate}
+                \setcounter{enumii}{6}
+          \item $\min(x, y) = \frac{x+y-|x-y|}{2}$
+        \end{enumerate}
+\end{enumerate}
 \end{document}
