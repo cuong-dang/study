@@ -1,0 +1,124 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm, enumitem, multicol}
+
+\everymath{\displaystyle}
+\newtheorem*{theorem*}{Theorem}
+
+\title{Linear Algebra: A Modern Introduction}
+\author{David Poole}
+\date{}
+
+\begin{document}
+\maketitle
+\section{Vectors}
+\subsection{The Geometry and Algebra of Vectors}
+\begin{enumerate}
+  \setcounter{enumi}{3}
+  \item \begin{enumerate}
+          \item (3, 0, 1)
+          \item (0, 0, 0)
+          \item (2, 4, 0)
+          \item (4, 3, 3)
+        \end{enumerate}
+        \setcounter{enumi}{12}
+  \item $\mathbf{u}=(\frac{1}{2}, \frac{\sqrt{3}}{2})$,
+        $\mathbf{v}=(-\frac{\sqrt{3}}{2}, -\frac{1}{2})$,
+        $\mathbf{u}+\mathbf{v}=(\frac{1-\sqrt{3}}{2}, \frac{\sqrt{3}-1}{2})$,
+        $\mathbf{u}-\mathbf{v}=(\frac{1+\sqrt{3}}{2}, \frac{\sqrt{3}+1}{2})$
+  \item \begin{enumerate}
+          \item $\mathbf{b}-\mathbf{a}$
+          \item $-\mathbf{a}$
+          \item $-2\mathbf{a}$
+          \item $2(\mathbf{a}-\mathbf{b})$
+          \item $\mathbf{b}-2\mathbf{a}$
+          \item $\mathbf{a}-\mathbf{a}$
+        \end{enumerate}
+        \setcounter{enumi}{20}
+  \item $-2\mathbf{u}+4\mathbf{v}$
+        \setcounter{enumi}{39}
+  \item 1
+        \setcounter{enumi}{43}
+  \item 4
+  \item 2
+  \item 2
+  \item No solution.
+  \item 3
+  \item 3
+  \item No solution.
+  \item No solution.
+  \item 8
+  \item 2
+        \setcounter{enumi}{56}
+  \item \begin{enumerate}
+          \item $a=\{1, 2, 3, 4\}$
+          \item $a=\{1, 5\}$
+          \item $a$ and $m$ can have no common factors other than 1 (i.e., the greatest common
+                divisor ($\gcd$) of $a$ and $m$ is 1).
+        \end{enumerate}
+\end{enumerate}
+
+\subsection{Length and Angle: The Dot Product}
+\begin{theorem*}[The Cauchy-Schwarz Inequality]
+  For all vectors $\mathbf{u}$ and $\mathbf{v}$ in $\mathbb{R}^n$,
+  \[|\mathbf{u}\cdot\mathbf{v}|\le\left\|\mathbf{u}\right\|\left\|\mathbf{v}\right\|.\]
+\end{theorem*}
+\begin{theorem*}[The Triangle Inequality]
+  For all vectors $\mathbf{u}$ and $\mathbf{v}$ in $\mathbb{R}^n$,
+  \[\lVert\mathbf{u}+\mathbf{v}\rVert\le\left\|\mathbf{u}\right\|+\left\|\mathbf{v}\right\|.\]
+\end{theorem*}
+\begin{proof}
+  \begin{align*}
+    \lVert\mathbf{u}+\mathbf{v}\rVert^2 & = (\mathbf{u}+\mathbf{v})\cdot(\mathbf{u}+\mathbf{v}) \\
+                                        & = \mathbf{u}\cdot\mathbf{u} +
+    2(\mathbf{u}\cdot\mathbf{v}) + \mathbf{v}\cdot\mathbf{v}                                    \\
+                                        & \le \mathbf{u}\cdot\mathbf{u} +
+    2\left|\mathbf{u}\cdot\mathbf{v}\right| + \mathbf{v}\cdot\mathbf{v}                         \\
+                                        & \le \lVert\mathbf{u}\rVert^2 +
+    2\lVert\mathbf{u}\rVert\lVert\mathbf{v}\rVert + \lVert\mathbf{v}\rVert^2                    \\
+                                        & =
+    \left(\lVert\mathbf{u}\rVert+\lVert\mathbf{v}\rVert\right)^2.
+  \end{align*}
+  Since both sides are non-negative, taking the square root gives,
+  \[\lVert\mathbf{u}+\mathbf{v}\rVert\le\left\|\mathbf{u}\right\|+\left\|\mathbf{v}\right\|.\]
+\end{proof}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \begin{multicols}{6}
+    \item -1
+    \item 0
+    \item 11
+    \item 2.62
+    \item 2
+    \item 3.6265
+  \end{multicols}
+  \item $\sqrt{5}$; $\left[\frac{-1}{\sqrt{5}}, \frac{2}{\sqrt{5}}\right]$
+  \item $\sqrt{13}; \left[\frac{3}{\sqrt{13}}, \frac{-2}{\sqrt{13}}\right]$
+  \item $\sqrt{14}; \left[\frac{1}{\sqrt{14}}, \frac{2}{\sqrt{14}}, \frac{3}{\sqrt{14}}\right]$
+        \setcounter{enumi}{12}
+  \item $\sqrt{17}$
+  \item $\sqrt{65}$
+  \item $\sqrt{6}$
+  \item $\approx5.14$
+  \item \begin{enumerate}
+          \item Taking the length (or the norm) of $\mathbf{u}\cdot\mathbf{v}$, which is a scalar doesn't
+                make sense.
+          \item $\mathbf{u}\cdot\mathbf{v}$ is a scalar which cannot be added to a vector.
+          \item $\mathbf{v}\cdot\mathbf{w}$ is a scalar, which does not have a dot product operation
+                with a vector.
+          \item $c$ is a scalar which does not have a dot product operation with $\mathbf{u}+
+                  \mathbf{v}$, which is a vector.
+        \end{enumerate}
+  \item Obtuse.
+  \item Acute.
+  \item Right angle.
+  \item Acute.
+  \item Obtuse.
+  \item Acute.
+        \setcounter{enumi}{24}
+  \item $\frac{\pi}{3}$
+        \setcounter{enumi}{26}
+  \item $\approx1.5376$
+        \setcounter{enumi}{28}
+\end{enumerate}
+\end{document}
