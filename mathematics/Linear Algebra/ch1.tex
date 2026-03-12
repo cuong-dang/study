@@ -5,6 +5,9 @@
 \everymath{\displaystyle}
 \newtheorem*{theorem*}{Theorem}
 \newcommand{\vct}[1]{\langle #1 \rangle}
+\newcommand{\vu}{\mathbf{u}}
+\newcommand{\vv}{\mathbf{v}}
+\newcommand{\vw}{\mathbf{w}}
 
 \title{Linear Algebra: A Modern Introduction}
 \author{David Poole}
@@ -86,13 +89,13 @@
 \subsubsection*{Exercises}
 \begin{enumerate}
   \begin{multicols}{6}
-    \item -1
-    \item 0
-    \item 11
-    \item 2.62
-    \item 2
-    \item 3.6265
-  \end{multicols}
+  \item -1
+  \item 0
+  \item 11
+  \item 2.62
+  \item 2
+  \item 3.6265
+        \end{multicols}
   \item $\sqrt{5}$; $\left[\frac{-1}{\sqrt{5}}, \frac{2}{\sqrt{5}}\right]$
   \item $\sqrt{13}; \left[\frac{3}{\sqrt{13}}, \frac{-2}{\sqrt{13}}\right]$
   \item $\sqrt{14}; \left[\frac{1}{\sqrt{14}}, \frac{2}{\sqrt{14}}, \frac{3}{\sqrt{14}}\right]$
@@ -102,8 +105,8 @@
   \item $\sqrt{6}$
   \item $\approx5.14$
   \item \begin{enumerate}
-          \item Taking the length (or the norm) of $\mathbf{u}\cdot\mathbf{v}$, which is a scalar doesn't
-                make sense.
+          \item Taking the length (or the norm) of $\mathbf{u}\cdot\mathbf{v}$, which is a scalar
+                doesn't make sense.
           \item $\mathbf{u}\cdot\mathbf{v}$ is a scalar which cannot be added to a vector.
           \item $\mathbf{v}\cdot\mathbf{w}$ is a scalar, which does not have a dot product operation
                 with a vector.
@@ -152,5 +155,21 @@
           \item $\theta=0$.
           \item $\theta=\pi$.
         \end{enumerate}
+        \setcounter{enumi}{58}
+  \item Applying the triangle inequality to vector $\vu-\vv+\vv$ gives
+        \begin{align*}
+          \|\vu-\vv+\vv\|           & \le \|\vu-\vv\|+\|\vv\| \\
+          \|\vu-\vv+\vv\| - \|\vv\| & \le \|\vu-\vv\|         \\
+          \|\vu\| - \|\vv\|         & \le \|\vu-\vv\|         \\
+          \|\vu-\vv\|               & \ge \|\vu\| - \|\vv\|
+        \end{align*}
+  \item No. For example, $\vu = \langle1, 1\rangle, \vv = \langle1, -1\rangle,
+          \vw = \langle2, -2\rangle$.
+        \setcounter{enumi}{65}
+  \item 9
+  \item Given that $\vu\cdot\vv=3$, we can assume that they are non-zero vectors. Consider the
+        vector $\vu-\vv$, it should be the case that $\|\vu-\vv\|>0$. However, $\|\vu-\vv\|=
+          \|\vu\|^2-2\vu\cdot\vv+\|\vv\|^2=1-6+4=-1<0$, a contradiction. Thus, such vectors do not
+        exist.
 \end{enumerate}
 \end{document}
