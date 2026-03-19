@@ -30,6 +30,13 @@
     #2
   \end{cases}
 }
+\newcommand{\casesThree}[3]{
+  \begin{cases}
+    #1 \\
+    #2 \\
+    #3
+  \end{cases}
+}
 
 \title{Linear Algebra: A Modern Introduction}
 \author{David Poole}
@@ -201,5 +208,38 @@
   \item $\colvecTwo{3}{-4}\cdot\colvecTwo{x}{y}=\colvecTwo{3}{-4}\cdot\colvecTwo{1}{2}$, $3x-4y=-5$
   \item $\vx=\colvecTwo{1}{0}+t\colvecTwo{-1}{3}$, $\casesTwo{x=1-t}{y=3t}$
   \item $\vx=\colvecTwo{-4}{4}+t\colvecTwo{1}{1}$, $\casesTwo{x=-4+t}{y=4+t}$
+  \item \begin{enumerate}
+          \item $\vx=\colvecThree{0}{0}{0}+t\colvecThree{1}{-1}{4}$
+          \item $\casesThree{x=0+t}{y=0-t}{z=0+4t}$
+        \end{enumerate}
+  \item \begin{enumerate}
+          \item $\vx=\colvecThree{3}{0}{-2}+t\colvecThree{2}{5}{0}$
+          \item $\casesThree{x=3+2t}{y=5t}{z=-2}$
+        \end{enumerate}
+  \item \begin{enumerate}
+          \item $\colvecThree{3}{2}{1}\cdot\colvecThree{x}{y}{z}=2$
+          \item $3x+2y+z=2$
+        \end{enumerate}
+  \item \begin{enumerate}
+          \item $\colvecThree{2}{5}{0}\cdot\colvecThree{x}{y}{z}=6$
+          \item $2x+5y=6$
+        \end{enumerate}
+  \item \begin{enumerate}
+          \item $\vx=s\colvecThree{2}{1}{2}+t\colvecThree{-3}{2}{1}$
+          \item $\casesThree{x=2s-3t}{y=s+2t}{z=2s+t}$
+        \end{enumerate}
+  \item \begin{enumerate}
+          \item $\vx=\colvecThree{6}{-4}{-3}+s\colvecThree{0}{1}{1}+t\colvecThree{-1}{1}{1}$
+          \item $\casesThree{x=6-t}{y=-4+s+t}{z=-3+s+t}$
+        \end{enumerate}
+  \item $\vx=\colvecTwo{1}{-2}+t\colvecTwo{2}{2}$
+  \item $\vx=\colvecThree{0}{1}{-1}+t\colvecThree{-2}{0}{4}$
+  \item $\vx=\colvecThree{1}{1}{1}+s\colvecThree{3}{-1}{1}+t\colvecThree{-1}{0}{-2}$
+  \item $\vx=\colvecThree{1}{1}{0}+s\colvecThree{0}{-1}{1}+t\colvecThree{-1}{0}{1}$
+  \item \begin{enumerate}
+          \item $\vx=\colvecTwo{0}{-1}+t\colvecTwo{1}{3}$, $\casesTwo{x=t}{y=-1+3t}$
+          \item $\vx=\colvecTwo{0}{\frac{5}{2}}+t\colvecTwo{10}{-15}$,
+                $\casesTwo{x=10t}{y=\frac{5}{2}-15t}$
+        \end{enumerate}
 \end{enumerate}
 \end{document}
