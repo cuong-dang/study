@@ -9,6 +9,7 @@
 \newcommand{\vv}{\mathbf{v}}
 \newcommand{\vw}{\mathbf{w}}
 \newcommand{\vx}{\mathbf{x}}
+\newcommand{\vn}{\mathbf{n}}
 
 \newcommand{\colvecTwo}[2]{
   \begin{bmatrix}
@@ -47,31 +48,33 @@
 \section{Vectors}
 \subsection{The Geometry and Algebra of Vectors}
 \begin{enumerate}
-  \setcounter{enumi}{3}
-  \item \begin{enumerate}
-          \item (3, 0, 1)
-          \item (0, 0, 0)
-          \item (2, 4, 0)
-          \item (4, 3, 3)
-        \end{enumerate}
-        \setcounter{enumi}{12}
+    \setcounter{enumi}{3}
+  \item
+    \begin{enumerate}
+      \item (3, 0, 1)
+      \item (0, 0, 0)
+      \item (2, 4, 0)
+      \item (4, 3, 3)
+    \end{enumerate}
+    \setcounter{enumi}{12}
   \item $\mathbf{u}=(\frac{1}{2}, \frac{\sqrt{3}}{2})$,
-        $\mathbf{v}=(-\frac{\sqrt{3}}{2}, -\frac{1}{2})$,
-        $\mathbf{u}+\mathbf{v}=(\frac{1-\sqrt{3}}{2}, \frac{\sqrt{3}-1}{2})$,
-        $\mathbf{u}-\mathbf{v}=(\frac{1+\sqrt{3}}{2}, \frac{\sqrt{3}+1}{2})$
-  \item \begin{enumerate}
-          \item $\mathbf{b}-\mathbf{a}$
-          \item $-\mathbf{a}$
-          \item $-2\mathbf{a}$
-          \item $2(\mathbf{a}-\mathbf{b})$
-          \item $\mathbf{b}-2\mathbf{a}$
-          \item $\mathbf{a}-\mathbf{a}$
-        \end{enumerate}
-        \setcounter{enumi}{20}
+    $\mathbf{v}=(-\frac{\sqrt{3}}{2}, -\frac{1}{2})$,
+    $\mathbf{u}+\mathbf{v}=(\frac{1-\sqrt{3}}{2}, \frac{\sqrt{3}-1}{2})$,
+    $\mathbf{u}-\mathbf{v}=(\frac{1+\sqrt{3}}{2}, \frac{\sqrt{3}+1}{2})$
+  \item
+    \begin{enumerate}
+      \item $\mathbf{b}-\mathbf{a}$
+      \item $-\mathbf{a}$
+      \item $-2\mathbf{a}$
+      \item $2(\mathbf{a}-\mathbf{b})$
+      \item $\mathbf{b}-2\mathbf{a}$
+      \item $\mathbf{a}-\mathbf{a}$
+    \end{enumerate}
+    \setcounter{enumi}{20}
   \item $-2\mathbf{u}+4\mathbf{v}$
-        \setcounter{enumi}{39}
+    \setcounter{enumi}{39}
   \item 1
-        \setcounter{enumi}{43}
+    \setcounter{enumi}{43}
   \item 4
   \item 2
   \item 2
@@ -82,13 +85,14 @@
   \item No solution.
   \item 8
   \item 2
-        \setcounter{enumi}{56}
-  \item \begin{enumerate}
-          \item $a=\{1, 2, 3, 4\}$
-          \item $a=\{1, 5\}$
-          \item $a$ and $m$ can have no common factors other than 1 (i.e., the greatest common
-                divisor ($\gcd$) of $a$ and $m$ is 1).
-        \end{enumerate}
+    \setcounter{enumi}{56}
+  \item
+    \begin{enumerate}
+      \item $a=\{1, 2, 3, 4\}$
+      \item $a=\{1, 5\}$
+      \item $a$ and $m$ can have no common factors other than 1 (i.e., the greatest common
+        divisor ($\gcd$) of $a$ and $m$ is 1).
+    \end{enumerate}
 \end{enumerate}
 
 \subsection{Length and Angle: The Dot Product}
@@ -103,13 +107,13 @@
 \begin{proof}
   \begin{align*}
     \lVert\mathbf{u}+\mathbf{v}\rVert^2 & = (\mathbf{u}+\mathbf{v})\cdot(\mathbf{u}+\mathbf{v}) \\
-                                        & = \mathbf{u}\cdot\mathbf{u} +
+    & = \mathbf{u}\cdot\mathbf{u} +
     2(\mathbf{u}\cdot\mathbf{v}) + \mathbf{v}\cdot\mathbf{v}                                    \\
-                                        & \le \mathbf{u}\cdot\mathbf{u} +
+    & \le \mathbf{u}\cdot\mathbf{u} +
     2\left|\mathbf{u}\cdot\mathbf{v}\right| + \mathbf{v}\cdot\mathbf{v}                         \\
-                                        & \le \lVert\mathbf{u}\rVert^2 +
+    & \le \lVert\mathbf{u}\rVert^2 +
     2\lVert\mathbf{u}\rVert\lVert\mathbf{v}\rVert + \lVert\mathbf{v}\rVert^2                    \\
-                                        & =
+    & =
     \left(\lVert\mathbf{u}\rVert+\lVert\mathbf{v}\rVert\right)^2.
   \end{align*}
   Since both sides are non-negative, taking the square root gives,
@@ -117,44 +121,45 @@
 \end{proof}
 \subsubsection*{Exercises}
 \begin{enumerate}
-  \begin{multicols}{6}
-  \item -1
-  \item 0
-  \item 11
-  \item 2.62
-  \item 2
-  \item 3.6265
-        \end{multicols}
+    \begin{multicols}{6}
+    \item -1
+    \item 0
+    \item 11
+    \item 2.62
+    \item 2
+    \item 3.6265
+    \end{multicols}
   \item $\sqrt{5}$; $\left[\frac{-1}{\sqrt{5}}, \frac{2}{\sqrt{5}}\right]$
   \item $\sqrt{13}; \left[\frac{3}{\sqrt{13}}, \frac{-2}{\sqrt{13}}\right]$
   \item $\sqrt{14}; \left[\frac{1}{\sqrt{14}}, \frac{2}{\sqrt{14}}, \frac{3}{\sqrt{14}}\right]$
-        \setcounter{enumi}{12}
+    \setcounter{enumi}{12}
   \item $\sqrt{17}$
   \item $\sqrt{65}$
   \item $\sqrt{6}$
   \item $\approx5.14$
-  \item \begin{enumerate}
-          \item Taking the length (or the norm) of $\mathbf{u}\cdot\mathbf{v}$, which is a scalar
-                doesn't make sense.
-          \item $\mathbf{u}\cdot\mathbf{v}$ is a scalar which cannot be added to a vector.
-          \item $\mathbf{v}\cdot\mathbf{w}$ is a scalar, which does not have a dot product operation
-                with a vector.
-          \item $c$ is a scalar which does not have a dot product operation with $\mathbf{u}+
-                  \mathbf{v}$, which is a vector.
-        \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item Taking the length (or the norm) of $\mathbf{u}\cdot\mathbf{v}$, which is a scalar
+        doesn't make sense.
+      \item $\mathbf{u}\cdot\mathbf{v}$ is a scalar which cannot be added to a vector.
+      \item $\mathbf{v}\cdot\mathbf{w}$ is a scalar, which does not have a dot product operation
+        with a vector.
+      \item $c$ is a scalar which does not have a dot product operation with $\mathbf{u}+
+        \mathbf{v}$, which is a vector.
+    \end{enumerate}
   \item Obtuse.
   \item Acute.
   \item Right angle.
   \item Acute.
   \item Obtuse.
   \item Acute.
-        \setcounter{enumi}{24}
+    \setcounter{enumi}{24}
   \item $\frac{\pi}{3}$
-        \setcounter{enumi}{26}
+    \setcounter{enumi}{26}
   \item $\approx1.5376$
-        \setcounter{enumi}{28}
+    \setcounter{enumi}{28}
   \item $\approx0.2502$
-        \setcounter{enumi}{30}
+    \setcounter{enumi}{30}
   \item $\overrightarrow{AB}$ is orthogonal to $\overrightarrow{AC}$.
   \item Angle between the diagonal $[1, 1, 1]$ and edge $[1, 0, 0]$ is $\approx0.9553$.
   \item Their dot products are not 0.
@@ -162,44 +167,46 @@
   \item $(-2, 1, 1)$.
   \item $(200, -40)$
   \item $(4, 3)$
-  \item \begin{enumerate}
-          \item $0.5$ km
-          \item 6 minutes
-        \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $0.5$ km
+      \item 6 minutes
+    \end{enumerate}
   \item Suppose Bert's velocity is $\mathbf{s}=\langle s_x, s_y \rangle$. We have
-        $\|s\|=2$. To swim straight across the river with a flowing rate of $1$ mph, $s_x$
-        needs to be $-1$. Solving for $s_y$, $\sqrt{s_x^2+s_y^2}=2 \implies s_y=\sqrt{3}$.
-        Thus, the angle between $\mathbf{s}$ and the river bank is $60^\circ$.
+    $\|s\|=2$. To swim straight across the river with a flowing rate of $1$ mph, $s_x$
+    needs to be $-1$. Solving for $s_y$, $\sqrt{s_x^2+s_y^2}=2 \implies s_y=\sqrt{3}$.
+    Thus, the angle between $\mathbf{s}$ and the river bank is $60^\circ$.
   \item $\vct{-3, 3}$
   \item $\vct{\frac{-3}{5}, \frac{4}{5}}$
-        \setcounter{enumi}{42}
+    \setcounter{enumi}{42}
   \item $\vct{3/2, -3/2, 3/2, -3/2}$
-        \setcounter{enumi}{46}
+    \setcounter{enumi}{46}
   \item $\frac{3\sqrt{5}}{2}$
   \item $\frac{1}{5}$
   \item $\{3, 2\}$
   \item All vectors in standard position whose heads lie on the line $y=-3x$.
   \item All vectors in standard position whose heads lie on the line $y=-\frac{a}{b}x$.
-  \item \begin{enumerate}
-          \item $\theta=0$.
-          \item $\theta=\pi$.
-        \end{enumerate}
-        \setcounter{enumi}{58}
+  \item
+    \begin{enumerate}
+      \item $\theta=0$.
+      \item $\theta=\pi$.
+    \end{enumerate}
+    \setcounter{enumi}{58}
   \item Applying the triangle inequality to vector $\vu-\vv+\vv$ gives
-        \begin{align*}
-          \|\vu-\vv+\vv\|           & \le \|\vu-\vv\|+\|\vv\| \\
-          \|\vu-\vv+\vv\| - \|\vv\| & \le \|\vu-\vv\|         \\
-          \|\vu\| - \|\vv\|         & \le \|\vu-\vv\|         \\
-          \|\vu-\vv\|               & \ge \|\vu\| - \|\vv\|
-        \end{align*}
+    \begin{align*}
+      \|\vu-\vv+\vv\|           & \le \|\vu-\vv\|+\|\vv\| \\
+      \|\vu-\vv+\vv\| - \|\vv\| & \le \|\vu-\vv\|         \\
+      \|\vu\| - \|\vv\|         & \le \|\vu-\vv\|         \\
+      \|\vu-\vv\|               & \ge \|\vu\| - \|\vv\|
+    \end{align*}
   \item No. For example, $\vu = \langle1, 1\rangle, \vv = \langle1, -1\rangle,
-          \vw = \langle2, -2\rangle$.
-        \setcounter{enumi}{65}
+    \vw = \langle2, -2\rangle$.
+    \setcounter{enumi}{65}
   \item 9
   \item Given that $\vu\cdot\vv=3$, we can assume that they are non-zero vectors. Consider the
-        vector $\vu-\vv$, it should be the case that $\|\vu-\vv\|>0$. However, $\|\vu-\vv\|=
-          \|\vu\|^2-2\vu\cdot\vv+\|\vv\|^2=1-6+4=-1<0$, a contradiction. Thus, such vectors do not
-        exist.
+    vector $\vu-\vv$, it should be the case that $\|\vu-\vv\|>0$. However, $\|\vu-\vv\|=
+    \|\vu\|^2-2\vu\cdot\vv+\|\vv\|^2=1-6+4=-1<0$, a contradiction. Thus, such vectors do not
+    exist.
 \end{enumerate}
 
 \subsection{Lines and Planes}
@@ -208,71 +215,94 @@
   \item $\colvecTwo{3}{-4}\cdot\colvecTwo{x}{y}=\colvecTwo{3}{-4}\cdot\colvecTwo{1}{2}$, $3x-4y=-5$
   \item $\vx=\colvecTwo{1}{0}+t\colvecTwo{-1}{3}$, $\casesTwo{x=1-t}{y=3t}$
   \item $\vx=\colvecTwo{-4}{4}+t\colvecTwo{1}{1}$, $\casesTwo{x=-4+t}{y=4+t}$
-  \item \begin{enumerate}
-          \item $\vx=\colvecThree{0}{0}{0}+t\colvecThree{1}{-1}{4}$
-          \item $\casesThree{x=0+t}{y=0-t}{z=0+4t}$
-        \end{enumerate}
-  \item \begin{enumerate}
-          \item $\vx=\colvecThree{3}{0}{-2}+t\colvecThree{2}{5}{0}$
-          \item $\casesThree{x=3+2t}{y=5t}{z=-2}$
-        \end{enumerate}
-  \item \begin{enumerate}
-          \item $\colvecThree{3}{2}{1}\cdot\colvecThree{x}{y}{z}=2$
-          \item $3x+2y+z=2$
-        \end{enumerate}
-  \item \begin{enumerate}
-          \item $\colvecThree{2}{5}{0}\cdot\colvecThree{x}{y}{z}=6$
-          \item $2x+5y=6$
-        \end{enumerate}
-  \item \begin{enumerate}
-          \item $\vx=s\colvecThree{2}{1}{2}+t\colvecThree{-3}{2}{1}$
-          \item $\casesThree{x=2s-3t}{y=s+2t}{z=2s+t}$
-        \end{enumerate}
-  \item \begin{enumerate}
-          \item $\vx=\colvecThree{6}{-4}{-3}+s\colvecThree{0}{1}{1}+t\colvecThree{-1}{1}{1}$
-          \item $\casesThree{x=6-t}{y=-4+s+t}{z=-3+s+t}$
-        \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $\vx=\colvecThree{0}{0}{0}+t\colvecThree{1}{-1}{4}$
+      \item $\casesThree{x=0+t}{y=0-t}{z=0+4t}$
+    \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $\vx=\colvecThree{3}{0}{-2}+t\colvecThree{2}{5}{0}$
+      \item $\casesThree{x=3+2t}{y=5t}{z=-2}$
+    \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $\colvecThree{3}{2}{1}\cdot\colvecThree{x}{y}{z}=2$
+      \item $3x+2y+z=2$
+    \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $\colvecThree{2}{5}{0}\cdot\colvecThree{x}{y}{z}=6$
+      \item $2x+5y=6$
+    \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $\vx=s\colvecThree{2}{1}{2}+t\colvecThree{-3}{2}{1}$
+      \item $\casesThree{x=2s-3t}{y=s+2t}{z=2s+t}$
+    \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $\vx=\colvecThree{6}{-4}{-3}+s\colvecThree{0}{1}{1}+t\colvecThree{-1}{1}{1}$
+      \item $\casesThree{x=6-t}{y=-4+s+t}{z=-3+s+t}$
+    \end{enumerate}
   \item $\vx=\colvecTwo{1}{-2}+t\colvecTwo{2}{2}$
   \item $\vx=\colvecThree{0}{1}{-1}+t\colvecThree{-2}{0}{4}$
   \item $\vx=\colvecThree{1}{1}{1}+s\colvecThree{3}{-1}{1}+t\colvecThree{-1}{0}{-2}$
   \item $\vx=\colvecThree{1}{1}{0}+s\colvecThree{0}{-1}{1}+t\colvecThree{-1}{0}{1}$
-  \item \begin{enumerate}
-          \item $\vx=\colvecTwo{0}{-1}+t\colvecTwo{1}{3}$, $\casesTwo{x=t}{y=-1+3t}$
-          \item $\vx=\colvecTwo{0}{\frac{5}{2}}+t\colvecTwo{10}{-15}$,
-                $\casesTwo{x=10t}{y=\frac{5}{2}-15t}$
-        \end{enumerate}
-  \item \begin{enumerate}
-          \item $\mathbf{q}-\mathbf{p}$ is the directional vector. Thus, $\vx=\mathbf{p}+
-                  t(\mathbf{q}-\mathbf{p})$ is the vector form of the equation. Because $t$ varies
-                from 0 to 1, the line segment is from $\mathbf{p}$ to $\mathbf{q}$.
-          \item $\frac{1}{2}$. $\vx=\frac{1}{2}(\mathbf{p}+\mathbf{q})$.
-          \item $(1, -1)$
-          \item $(\frac{5}{2}, \frac{1}{2}, -\frac{1}{2})$
-          \item $(\frac{4}{3}, -\frac{5}{3}), (\frac{2}{3}, -\frac{1}{3})$
-        \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $\vx=\colvecTwo{0}{-1}+t\colvecTwo{1}{3}$, $\casesTwo{x=t}{y=-1+3t}$
+      \item $\vx=\colvecTwo{0}{\frac{5}{2}}+t\colvecTwo{10}{-15}$,
+        $\casesTwo{x=10t}{y=\frac{5}{2}-15t}$
+    \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $\mathbf{q}-\mathbf{p}$ is the directional vector. Thus, $\vx=\mathbf{p}+
+        t(\mathbf{q}-\mathbf{p})$ is the vector form of the equation. Because $t$ varies
+        from 0 to 1, the line segment is from $\mathbf{p}$ to $\mathbf{q}$.
+      \item $\frac{1}{2}$. $\vx=\frac{1}{2}(\mathbf{p}+\mathbf{q})$.
+      \item $(1, -1)$
+      \item $(\frac{5}{2}, \frac{1}{2}, -\frac{1}{2})$
+      \item $(\frac{4}{3}, -\frac{5}{3}), (\frac{2}{3}, -\frac{1}{3})$
+    \end{enumerate}
   \item Direction vectors for the two lines are $\mathbf{d_1}=\colvecTwo{1}{m_1}$ and
-        $\mathbf{d_2}=\colvecTwo{1}{m_2}$ The lines are perpendicular if and only if
-        $\mathbf{d_1}$ and $\mathbf{d_2}$ are orthogonal. But $\mathbf{d_1}\cdot
-          \mathbf{d_2}=0$ if and only if $1+m_1m_2=0$ or, equivalently, $m_1m_2=-1$.
-  \item \begin{enumerate}
-          \item Perpendicular.
-          \item Parallel.
-          \item Parallel.
-          \item Perpendicular.
-        \end{enumerate}
-  \item \begin{enumerate}
-          \item Perpendicular.
-          \item Parallel.
-          \item Perpendicular.
-          \item Perpendicular.
-        \end{enumerate}
+    $\mathbf{d_2}=\colvecTwo{1}{m_2}$ The lines are perpendicular if and only if
+    $\mathbf{d_1}$ and $\mathbf{d_2}$ are orthogonal. But $\mathbf{d_1}\cdot
+    \mathbf{d_2}=0$ if and only if $1+m_1m_2=0$ or, equivalently, $m_1m_2=-1$.
+  \item
+    \begin{enumerate}
+      \item Perpendicular.
+      \item Parallel.
+      \item Parallel.
+      \item Perpendicular.
+    \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item Perpendicular.
+      \item Parallel.
+      \item Perpendicular.
+      \item Perpendicular.
+    \end{enumerate}
   \item $\vx=\colvecTwo{2}{-1}+t\colvecTwo{2}{-3}$
   \item $\vx=\colvecTwo{2}{-1}+t\colvecTwo{-3}{2}$
   \item $\vx=\colvecThree{-1}{0}{3}+t\colvecThree{1}{-3}{2}$
   \item $\vx=\colvecThree{-1}{0}{3}+t\colvecThree{-1}{3}{-1}$
   \item $\colvecThree{6}{-1}{2}\cdot\vx=12$
-  \item \begin{enumerate}
-          \item $x=0, x=1, y=0, y=1, z=0, z=1$
-        \end{enumerate}
+  \item
+    \begin{enumerate}
+      \item $x=0, x=1, y=0, y=1, z=0, z=1$
+      \item The plane is perpendicular to the $xy$-plane whose normal is $(0, 0, 1)$; thus, the
+        plane's normal must have the form $(a, b, 0)$. The plane contains the diagonal
+        $\vx=(1, 1, 1)$. $\mathbf{n}\cdot\vx=0\implies(a, b, 0)\cdot(1, 1, 1)=a+b+0=0 \implies
+        b=-a$. Thus, $n$ can be $(1, -1, 0)$. The plane passes through the origin, thus its equation
+        is $\vn\cdot\vx=0$, which is $x-y=0$.
+      \item $x+y-z=0$.
+    \end{enumerate}
+  \item $2x+y+3z=10$
+  \item $\frac{3\sqrt{2}}{2}$
+  \item $\frac{5\sqrt{13}}{13}$
+  \item $\frac{2\sqrt{3}}{3}$
+  \item $\frac{1}{3}$
+  \item $\left(\frac{1}{2}, \frac{1}{2}\right)$
 \end{enumerate}
 \end{document}
