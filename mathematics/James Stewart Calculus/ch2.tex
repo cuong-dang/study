@@ -48,4 +48,34 @@
     and $\sin{h_2}=-1$. Then $L$ such that $\left|\sin\frac{1}{h_1}-L\right|<\varepsilon=
     \frac{1}{2}$ and $\left|\sin\frac{1}{h_2}-L\right|<\varepsilon=\frac{1}{2}$ cannot exist.
 \end{enumerate}
+
+\subsection{The Derivative as a Function}
+\begin{theorem*}
+  If $f$ is differentiable at $a$, then $f$ is continuous at $a$.
+\end{theorem*}
+\begin{proof}
+  To prove that $f$ is continuous at $a$, we have to show that $\lim_{x \to a}f(x)=f(a)$. We do this
+  by showing that the difference $f(x)-f(a)$ approaches 0.
+
+  $f$ is differentiable at $a$, that is, $f'(a)=\lim_{x \to a}\frac{f(x)-f(a)}{x-a}$. We also have,
+  \[f(x)-f(a)=\frac{f(x)-f(a)}{x-a}(x-a)\text{, when $x \neq a.$}\]
+
+  Taking the limit of both sides,
+  \begin{align*}
+    \lim_{x \to a}\left[f(x)-f(a)\right] & = \lim_{x \to a}\frac{f(x)-f(a)}{x-a}(x-a) \\
+    & = \lim_{x \to a}\frac{f(x)-f(a)}{x-a}\lim_{x \to a}(x-a) \\z
+    & = f'(a)\cdot0 = 0.
+  \end{align*}
+  Thus,
+  \begin{align*}
+    \lim_{x \to a}f(x) & = \lim_{x \to a}\left[f(a) + \left(f(x)-f(a)\right)\right] \\
+    & = \lim_{x \to a}f(a) + \lim_{x \to a}(f(x)-f(a)) \\
+    & = f(a) + 0 = f(a).
+  \end{align*}
+  Therefore $f$ is continuous at $a$.
+\end{proof}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \item
+\end{enumerate}
 \end{document}
