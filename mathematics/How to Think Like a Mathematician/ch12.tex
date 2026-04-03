@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, enumitem}
+\everymath{\displaystyle}
+
+\title{How to Think Like a Mathematician}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\section{Chapter 12: Examples and counterexamples}
+\begin{enumerate}[label=12.\arabic*, start=4]
+    \item 0
+          \setcounter{enumi}{5}
+    \item \begin{enumerate}[label=(\roman*)]
+              \item \begin{enumerate}[label=(\alph*)]
+                        \item $f(x) = x$
+                        \item $f(x) = \sin{x}$
+                        \item $f(x) = \sin{x} + 2x$
+                        \item $f(x)= \begin{cases}
+                                      x,  & x \ge 0 \\
+                                      -x, & x<0
+                                  \end{cases}$
+                        \item $f(x) = \frac{x^3}{3}-\frac{5x^2}{2}-14$
+                    \end{enumerate}
+              \item \begin{enumerate}[label=(\alph*)]
+                        \item True.
+                        \item True.
+                        \item False. Counterexample: $x=1$.
+                    \end{enumerate}
+              \item \begin{enumerate}[label=(\alph*)]
+                        \item $x = -1$
+                        \item $a = 1, b = 1$
+                        \item $x = 1, y = 1$
+                        \item $x = -1, y = 1$
+                        \item $x = y+\frac{1}{2n}$
+                        \item $a = -2, b = -1, c = -2, d = -1$
+                        \item $n = 2$
+                    \end{enumerate}
+              \item $f(c) = c^3$
+          \end{enumerate}
+\end{enumerate}
+\end{document}

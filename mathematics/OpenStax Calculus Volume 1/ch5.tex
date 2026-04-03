@@ -1,0 +1,170 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, enumitem}
+
+\everymath{\displaystyle}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem*{lemma*}{Lemma}
+
+\begin{document}
+
+\section*{5.3 | The Fundamental Theorem of Calculus}
+\begin{theorem*}[The Mean Value Theorem for Integrals]
+    If $f(x)$ is continuous over an interval $\left[a, b\right]$, then there is at least one point
+    $c \in \left[a, b\right]$ such that
+    \[
+        f(c) = \frac{1}{b-a}\int_{a}^{b}f(x)dx.
+    \]
+    This formula can also be stated as
+    \[
+        \int_{a}^{b}f(x)dx = f(c)(b-a).
+    \]
+\end{theorem*}
+\begin{proof}
+    Since $f(x)$ is continuous on $\left[a, b\right]$, by the extreme value theorem, it assumes
+    minimum and maximum values---$m$ and $M$, respectively---on $\left[a, b\right]$. Then, for all
+    $x$ in $\left[a, b\right]$, we have $m \le f(x) \le M$. Therefore, by the comparison theorem, we
+    have
+    \[
+        m(b-a) \le \int_{a}^{b}f(x)dx \le M(b-a).
+    \]
+    Dividing by $b-a$ gives us
+    \[
+        m \le \frac{1}{b-a}\int_{a}^{b}f(x)dx \le M.
+    \]
+    Sine $\frac{1}{b-a}\int_{a}^{b}f(x)dx$ is a number between $m$ and $M$, and since
+    $f(x)$ is continuous and assumes the values $m$ and $M$ over $\left[a, b\right]$, by the
+    Intermediate Value Theorem, there is a number $c$ over $\left[a, b\right]$ such that
+    \[
+        f(c) = \frac{1}{b-a}\int_{a}^{b}f(x)dx,
+    \]
+    and the proof is complete.
+\end{proof}
+
+\begin{theorem*}[Fundamental Theorem of Calculus, Part 1]
+    If $f(x)$ is continuous over an interval $\left[a, b\right]$, and the function $F(x)$ is defined
+    by
+    \[F(x) = \int_{a}^{x}f(t)dt,\]
+    then $F'(x) = f(x)$ over $\left[a, b\right]$.
+\end{theorem*}
+\begin{proof}
+    Applying the definition of the derivative, we have
+    \begin{align*}
+        F'(x) & = \lim_{h \to 0}\frac{F(x+h) - F(x)}{h}                                           \\
+              & = \lim_{h \to 0}\frac{1}{h}\left(\int_{a}^{x+h}f(t)dt - \int_{a}^{x}f(t)dt\right) \\
+              & = \lim_{h \to 0}\frac{1}{h}\left(\int_{a}^{x+h}f(t)dt + \int_{x}^{a}f(t)dt\right) \\
+              & = \lim_{h \to 0}\frac{1}{h}\int_{x}^{x+h}f(t)dt.
+    \end{align*}
+    $\frac{1}{h}\int_{x}^{x+h}f(t)dt$ is the average value of function $f(x)$ over the interval
+    $\left[x, x+h\right]$. Therefore, by The Mean Value Theorem for Integrals, there is some number
+    $c$ in $\left[x, x+h\right]$ such that
+    \[\frac{1}{h}\int_{x}^{x+h}f(x)dx = f(c).\]
+    In addition, since $c$ is between $x$ and $x+h$, $c$ approaches $x$ as $h$ approaches zero.
+    Also, since $f(x)$ is continuous, we have $\lim_{h \to 0}f(c) = \lim_{c \to x}f(c) = f(x)$.
+    Putting all these pieces together, we have
+    \begin{align*}
+        F'(x) & = \lim_{h \to 0}\frac{1}{h}\int_{x}^{x+h}f(x)dx \\
+              & = \lim_{h \to 0}f(c)                            \\
+              & = f(x),
+    \end{align*}
+    and the proof is complete.
+\end{proof}
+\begin{lemma*}
+    Let $c$ be a value between the interval $\left[x, x+h\right]$, $c$ approaches $x$ as $h$
+    approaches 0.
+\end{lemma*}
+\begin{proof}
+    We can regard $c$ as defined by some function of $h$, $c = f(h)$. We are trying to prove
+    \[\lim_{h \to 0}f(h) = x.\]
+    By the definition of limit, we want to show that for all $\epsilon > 0$, there exists a $\delta
+        > 0$ such that if $0 < |h| < \delta$, then $|f(h) - x| < \epsilon$. Because $c$ is a value
+    between $\left[x, x+h\right]$, if $h > 0$,
+    \begin{align*}
+        x & \le  c        & \le & x+h  \\
+        x & \le  f(h)     & \le & x+h  \\
+        0 & \le  f(h)-x   & \le & h    \\
+        0 & \le  |f(h)-x| & \le & |h|.
+    \end{align*}
+    Similarly, if $h < 0$,
+    \begin{align*}
+        x +h & \le  c        & \le & x    \\
+        x+h  & \le  f(h)     & \le & x    \\
+        h    & \le  f(h)-x   & \le & 0    \\
+        |h|  & \ge  |f(h)-x| & \ge & 0    \\
+        0    & \le  |f(h)-x| & \le & |h|.
+    \end{align*}
+    In either case, $|f(h) - x| \le |h|$. Choose $\delta = \epsilon$. Consequently, if
+    $0 < |h| < \delta$, then $|f(h) - x| \le |h| < \delta = \epsilon.$ By definition,
+    $\lim_{h \to 0}f(h) = x$, or $\lim_{h \to 0}c = x$.
+\end{proof}
+
+\begin{theorem*}[The Fundamental Theorem of Calculus, Part 2]
+    If $f$ is continuous over the interval $\left[a, b\right]$ and $F(x)$ is any antiderivative of
+    $f(x)$, then
+    \[\int_{a}^{b}f(x)dx = F(b) - F(a).\]
+\end{theorem*}
+\begin{proof}
+    Let $P = \left\{x_i\right\}, i = 0, 1, \ldots, n$ be a regular partition of $\left[a, b\right]$.
+    Then, we can write
+    \begin{align*}
+        F(b) - F(a) & = F(x_n) - F(x_0)                                                          \\
+                    & = F(x_n) - F(x_{n-1}) + F(x_{n-1}) - F(x_{n-2}) + \ldots + F(x_1) - F(x_0) \\
+                    & = \sum_{i=1}^{n}(F(x_i) - F(x_{i-1})).
+    \end{align*}
+    Now, we know $F$ is an antiderivative of $f$ over $\left[a, b\right]$, so by the Mean Value
+    Theorem for $i = 0, 1, \ldots, n$ we can find $c_i$ in $\left[x_{i-1}, x_i\right]$ such that
+    \[F(x_{i}) - F(x_{i-1}) = F'(c_i)(x_i - x_{i-1}) = f(c_i)\Delta{x}.\]
+    Then, substituing into the previous equation, we have
+    \[F(b) - F(a) = \sum_{i=1}^{n}f(c_i)\Delta{x}.\]
+    Taking the limit of both sides as $n \to \infty$, we obtain
+    \begin{align*}
+        F(b) - F(a) & = \lim_{n \to \infty}\sum_{i=1}^{n}f(c_i)\Delta{x} \\
+                    & = \int_{a}^{b}f(x)dx.
+    \end{align*}
+\end{proof}
+
+\section*{5.4 | Integration Formulas and the Net Change Theorem}
+A definite integral is either a number (when the limits of integration are constants) or a single
+function (when one or both of the limits of integration are variables). An indefinite integral
+represents a family of functions, all of which differ by a constant.
+\begin{theorem*}[Net Change Theorem]
+    The new value of a changing quantity equals the initial value plus the integral of the rate of
+    change:
+    \[F(b) = F(a) + \int_{a}^{b}F'(x)dx\]
+    or
+    \[\int_{a}^{b}F'(x)dx = F(b) - F(a).\]
+\end{theorem*}
+
+\section*{5.5 | Substitution}
+\begin{theorem*}[Substitution with Indefinite Integrals]
+    Let $u = g(x)$, where $g'(x)$ is continuous over an interval, let $f(x)$ be continuous over the
+    corresponding range of $g$, and let $F(x)$ be an antiderivative of $f(x)$. Then,
+    \begin{align*}
+        \int_{}^{}f[g(x)]g'(x)dx & = \int_{}^{}f(u)du \\
+                                 & = F(u) + C         \\
+                                 & = F(g(x)) + C.
+    \end{align*}
+\end{theorem*}
+\begin{proof}
+    Let $f, g, u$, and $F$ be as specified in the theore. Then
+    \[\frac{d}{dx}F(g(x)) = f[g(x)]g'(  x).\]
+    Integrating both sides with respect to $x$, we see that
+    \[\int_{}^{}f[g(x)]g'(x)dx = F(x) + C.\]
+    If we now substitute $u = g(x)$, and $du = g'(x)dx$, we get
+    \begin{align*}
+        \int_{}^{}f[g(x)]g'(x)dx & = \int_{}^{}f(u)du \\
+                                 & = F(u) + C         \\
+                                 & = F(g(x)) + C.
+    \end{align*}
+\end{proof}
+\begin{theorem*}[Substitution with Definite Integrals]
+    Let $u = g(x)$ and $g'$ be continuous over an interval $\left[a, b\right]$, and let $f$ be
+    continuous over the range of $u = g(x)$. Then,
+    \[\int_{a}^{b}f(g(x))g'(x)dx = \int_{g(a)}^{g(b)}f(u)du.\]
+\end{theorem*}
+
+\section*{5.6 | Integrals Involving Exponential and Logarithmic Functions}
+
+\section*{5.7 | Integrals Resulting in Inverse Trigonometric Functions}
+
+\end{document}

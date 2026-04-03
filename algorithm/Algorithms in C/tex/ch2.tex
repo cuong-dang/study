@@ -1,0 +1,32 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, booktabs, enumitem, listings}
+\usepackage{forest}
+
+\everymath{\displaystyle}
+\newtheorem{property}{Property}
+\numberwithin{property}{section}
+
+\title{Algorithms in C}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\setcounter{section}{1}
+\section{Principles of Algorithm Analysis}
+\subsection{Implementation and Empirical Analysis}
+\subsection{Analysis of Algorithms}
+\subsubsection*{Exercises}
+\begin{enumerate}[label=2.\arabic*]
+  \setcounter{enumi}{2}
+  \item We'll count the following operations: assignment, increment, and comparison. For each loop
+        of $N$ iterations, there are $N$ loop body executions, $N$ increments, and $N+1$
+        comparisons. For example, the innermost loop has $N$ increment operations
+        (\texttt{count++}), $N$ increment operations (\texttt{k++}), and $N+1$ comparison operations
+        (\texttt{k < N}). There are a total of 4 init assignment operations. Thus, the grand total
+        number of operation is
+        \[4 + \left(\left(N+N+(N+1)\right) \times N+N+(N+1)\right) \times N+N+(N+1)
+          = 5 + 3N + 3N^2 + 3N^3.\]
+\end{enumerate}
+\end{document}

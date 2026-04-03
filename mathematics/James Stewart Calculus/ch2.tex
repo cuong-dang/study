@@ -1,0 +1,81 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, booktabs, enumitem, multicol}
+
+\everymath{\displaystyle}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem*{proposition*}{Proposition}
+
+\title{James Stewart Calculus}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\setcounter{section}{1}
+\section{Derivatives}
+\subsection{Derivatives and Rates of Change}
+\begin{enumerate}
+  \item
+    \begin{enumerate}
+      \item $\frac{f(x)-f(3)}{x-3}$
+      \item $\lim_{x\to3}\frac{f(x)-f(3)}{x-3}$
+    \end{enumerate}
+    \setcounter{enumi}{12}
+  \item $-24$ ft/s
+    \setcounter{enumi}{14}
+  \item $-\frac{2}{a^3}$
+    \setcounter{enumi}{20}
+  \item $f(2)=3, f'(2)=4$
+    \setcounter{enumi}{28}
+  \item
+    \begin{enumerate}
+      \item $-\frac{3}{5}$
+    \end{enumerate}
+    \setcounter{enumi}{36}
+  \item $f(x)=\sqrt{x}, a=9$
+  \item $f(x)=2^x, a=3$
+  \item $f(x)=x^6, a=2$
+  \item $f(x)=\frac{1}{x}, a=\frac{1}{4}$
+  \item $f(x)=\cos{x}, a=\pi$
+  \item $f(\theta)=\sin{\theta}, a=\frac{\pi}{6}$
+    \setcounter{enumi}{58}
+  \item $f'(0)=\lim_{h\to0}\sin\frac{1}{h}$, which doesn't exist. Proof by contradiction. Suppose
+    that the limit $L$, exists. This means that $\forall\varepsilon>0$, $\exists\delta>0$ such that
+    $0<|h|<\delta\implies\left|\sin\frac{1}{h}-L\right|<\varepsilon$. Choose $\varepsilon=
+    \frac{1}{2}$. $\forall\delta>0$, $\exists n_1$ and $n_2$ such that $h_1=\frac{1}{\frac{\pi}{2}+
+    2\pi n_1}$ and $h_2=\frac{1}{\frac{3\pi}{2}+2\pi n_1}$ and $0<h_1, h_2<\delta$. $\sin{h_1}=1$
+    and $\sin{h_2}=-1$. Then $L$ such that $\left|\sin\frac{1}{h_1}-L\right|<\varepsilon=
+    \frac{1}{2}$ and $\left|\sin\frac{1}{h_2}-L\right|<\varepsilon=\frac{1}{2}$ cannot exist.
+\end{enumerate}
+
+\subsection{The Derivative as a Function}
+\begin{theorem*}
+  If $f$ is differentiable at $a$, then $f$ is continuous at $a$.
+\end{theorem*}
+\begin{proof}
+  To prove that $f$ is continuous at $a$, we have to show that $\lim_{x \to a}f(x)=f(a)$. We do this
+  by showing that the difference $f(x)-f(a)$ approaches 0.
+
+  $f$ is differentiable at $a$, that is, $f'(a)=\lim_{x \to a}\frac{f(x)-f(a)}{x-a}$. We also have,
+  \[f(x)-f(a)=\frac{f(x)-f(a)}{x-a}(x-a)\text{, when $x \neq a.$}\]
+
+  Taking the limit of both sides,
+  \begin{align*}
+    \lim_{x \to a}\left[f(x)-f(a)\right] & = \lim_{x \to a}\frac{f(x)-f(a)}{x-a}(x-a) \\
+    & = \lim_{x \to a}\frac{f(x)-f(a)}{x-a}\lim_{x \to a}(x-a) \\z
+    & = f'(a)\cdot0 = 0.
+  \end{align*}
+  Thus,
+  \begin{align*}
+    \lim_{x \to a}f(x) & = \lim_{x \to a}\left[f(a) + \left(f(x)-f(a)\right)\right] \\
+    & = \lim_{x \to a}f(a) + \lim_{x \to a}(f(x)-f(a)) \\
+    & = f(a) + 0 = f(a).
+  \end{align*}
+  Therefore $f$ is continuous at $a$.
+\end{proof}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \item
+\end{enumerate}
+\end{document}

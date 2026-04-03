@@ -1,0 +1,32 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, enumitem}
+
+\everymath{\displaystyle}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem*{lemma*}{Lemma}
+
+\begin{document}
+
+\section*{6.1 | Areas between Curves}
+\begin{theorem*}[Finding the Area between Two Curves]
+    Let $f(x)$ and $g(x)$ be continuous functions such that $f(x) \ge g(x)$ over an interval
+    $\left[a, b\right]$. Let $R$ denote the region bounded above by the graph of $f(x)$, below by
+    the graph of $g(x)$, and on the left and right by $x = a$ and $x = b$, respectively. Then, the
+    area of $R$ is given by
+    \[A = \int_{a}^{b}[f(x) - g(x)]dx.\]
+\end{theorem*}
+\begin{theorem*}[Finding the Area of a Region between Curves That Cross]
+    Let $f(x)$ and $g(x)$ be continuous functions over an interval $\left[a, b\right]$.
+\end{theorem*}
+\section*{6.2 | Determining Volumes by Slicing}
+\section*{6.3 | Volumes of Revolution: Cylindrical Shells}
+\section*{6.4 | Arc Length of a Curve and Surface Area}
+\begin{theorem*}[Arc Length for $y=f(x)$]
+    Let $f(x)$ be a smooth function over the interval $\left[a, b\right]$. Then the arc length of
+    the portion of the graph of $f(x)$ from the point $(a, f(a))$ to the point $(b, f(b))$ is given
+    by
+    \[\text{Arc Length} = \int_{a}^{b}\sqrt{1+\left[f'(x)\right]^2}dx.\]
+\end{theorem*}
+
+\end{document}

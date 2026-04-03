@@ -1,0 +1,96 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, enumitem}
+
+\begin{document}
+
+\section*{Chapter 5}
+\subsection*{Exercises 5.3}
+
+\begin{enumerate}[label=(\roman*)]
+    \item \begin{proof}
+              For all $a, b > 0$, we have
+              \begin{align*}
+                  (\sqrt{a} - \sqrt{b})^2 & \ge 0                                   \\
+                  a - 2\sqrt{ab} + b      & \ge 0
+                                          & \text{(expand)}                         \\
+                  a + b                   & \ge 2\sqrt{ab}
+                                          & \text{(add $2\sqrt{ab}$ to both sides)} \\
+                  \frac{a+b}{2}           & \ge \sqrt{ab}
+                                          & \text{(divide both sides by 2).}
+              \end{align*}
+          \end{proof}
+    \item \begin{proof}
+              For all positive integers $a$, $b$, and $c$,
+              \begin{align*}
+                  (a-b)^2 + (b-c)^2 + (c-a)^2          & \ge 0                            \\
+                  2(a^2 + b^2 + c^2) - 2(ab + bc + ca) & \ge 0
+                                                       & \text{(expand and group terms)}  \\
+                  2(a^2 + b^2 + c^2)                   & \ge 2(ab + bc + ca)
+                                                       & \text{(move terms)}              \\
+                  a^2 + b^2 + c^2                      & \ge ab + bc + ca
+                                                       & \text{(divide both sides by 2).} \\
+              \end{align*}
+          \end{proof}
+    \item $f$ is a 3-cycle function, e.g., $f^1(x) = f^4(x) = f^7(x) = \ldots$. In general,
+          $f^r = f^n$ if $r \mod 3 = n \mod 3$ for all integers $r, n, 1 \le n \le 3, r > 3$.
+          Therefore, $\displaystyle f^{653}(x) = f^2(x) = -\frac{1-x}{x}$ and
+          $\displaystyle f^{653}(56) = \frac{55}{56}$.
+    \item \begin{enumerate}[label=(\alph*)]
+              \item We want to compare $\sqrt[7]{7!}$ with $\sqrt[8]{8!}$. Examining the difference
+                    between the natural logarithms of both numbers,
+                    \begin{align*}
+                          & \ln{\sqrt[8]{8!}} - \ln{\sqrt[7]{7!}}                         \\
+                        = & \frac{1}{8}\ln{8!} - \frac{1}{7}\ln{7!}                       \\
+                        = & (\frac{1}{8}\ln{7!} + \frac{1}{8}\ln{8}) - \frac{1}{7}\ln{7!} \\
+                        = & \frac{1}{8}\ln{8} - \frac{1}{56}\ln{7!}                       \\
+                        = & \frac{7}{56}\ln{8} - \frac{1}{56}\ln{7!}                      \\
+                        = & \frac{1}{56}\ln{8^7} - \frac{1}{56}\ln{7!}                    \\
+                        = & \frac{1}{56}(\ln{8^7} - \ln{7!}).                             \\
+                    \end{align*}
+                    Since $\ln{8^7} > \ln{7!}$,
+                    $\displaystyle \frac{1}{56}(\ln{8^7} - \ln{7!}) > 0$. Consequently,
+                    $\ln{\sqrt[8]{8!}} - \ln{\sqrt[7]{7!}} > 0$. And thus,
+                    $\sqrt[8]{8!} > \sqrt[7]{7!}$.
+              \item \begin{proof}
+                        \begin{align*}
+                            2\times\sqrt{100000}          & < \sqrt{100001} + \sqrt{100000}                                                                     \\
+                            1                             & < \frac{\sqrt{100001} + \sqrt{100000}}{2\times\sqrt{100000}}                                        \\
+                            \sqrt{100001} - \sqrt{100000} & < \frac{(\sqrt{100001} + \sqrt{100000})\times(\sqrt{100001} - \sqrt{100000})}{2\times\sqrt{100000}} \\
+                            \sqrt{100001} - \sqrt{100000} & < \frac{100001 - 100000}{2\times\sqrt{100000}}                                                      \\
+                            \sqrt{100001} - \sqrt{100000} & < \frac{1}{2\times\sqrt{100000}}.
+                        \end{align*}
+                    \end{proof}
+          \end{enumerate}
+    \item The reasoning is not correct because adding the $\$2$ to the $\$27$ and then comparing
+              them to the total $\$30$ does not make sense. The following equations show the
+              relationships of the amounts.
+              \begin{align*}
+                  \underbrace{10 + 10 + 10}_{\text{what the friends initially paid}} & =
+                  \underbrace{25}_{meal cost} + \underbrace{3}_{change} + \underbrace{2}_{waiter's} \\
+                  \underbrace{9 + 9 + 9}_{\text{what the friends finally paid}}      & =
+                  \underbrace{25}_{meal cost} + \underbrace{2}_{waiter's}.
+              \end{align*}
+              Thus, it does not make sense to add the $\$2$ on the right hand side to the $\$27$ on
+          the left hand side.
+    \item Initially, bottle $A$ has 1 litre of milk, and bottle $B$ has 1 litre of coffee. Suppose
+          the spoonful amount of coffee poured from $B$ to $A$ is $\displaystyle \frac{1}{x}$.
+          Afterwards, if the amounts of coffee and milk are mixed together and $A$, and then poured
+          back into $B$ until $B$ has 1 litre of liquid, then the amount poured back is
+          $\displaystyle \frac{1}{x}$, which contains both coffee and milk. In this mixture, there
+          is $\displaystyle \frac{1}{1+\frac{1}{x}}$ part milk and
+          $\displaystyle \frac{\frac{1}{x}}{1+\frac{1}{x}}$ part coffee. As a result, the final
+          amount of coffee in A is
+          \[
+              \frac{1}{x} - \frac{\frac{1}{x}}{1+\frac{1}{x}}\times\frac{1}{x}
+              = \frac{1}{x+1}.
+          \]
+          The final amout of milk in B is
+          \[
+              \frac{1}{1+\frac{1}{x}}\times\frac{1}{x}
+              = \frac{1}{x+1}.
+          \]
+          Thus, the coffee part in A is equal to the milk part in B.
+\end{enumerate}
+
+\end{document}

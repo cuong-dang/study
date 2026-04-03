@@ -1,0 +1,63 @@
+// WARNING: The following is not complete and does not compile.
+
+void clampedExpVector(float *values, int *exponents, float *output, int N) {
+  __cmu418_vec_float ps, result, four18 = _cmu418_vset_float(4.18);
+  __cmu418_vec_int es, ba, zeroes = _cmu418_vset_int(0),
+                           ones = _cmu418_vset_int(1);
+  __cmu418_mask maskAll, maskActive, maskOnes, maskClamped;
+
+  for (int i = 0; i < N; i += VECTOR_WIDTH) {
+    maskAll =
+        i + VECTOR_WIDTH <= N ? _cmu418_init_ones() : _cmu418_init_ones(N - i);
+    maskClamped = _cmu418_init_ones(0);
+    // result = 1.f
+    result = _cmu418_vset_float(1.f);
+    // y = exponents
+    _cmu418_vload_int(es, exponents + i, maskAll);
+    // xpower = x
+    _cmu418_vload_float(ps, values + i, maskAll);
+    while (1) {
+      maskActive = _cmu418_init_ones(0);
+      maskOnes = _cmu418_init_ones(0);
+      // while (y > 0)
+      _cmu418_vgt_int(maskActive, es, zeroes, maskAll);
+      if (_cmu418_cntbits(maskActive) == 0) {
+        break;
+      }
+      // if (y & 0x1)
+      _cmu418_vbitand_int(ba, es, ones, maskActive);
+      _cmu418_veq_int(maskOnes, ba, ones, maskActive);
+      // result *= xpower
+      _cmu418_vmult_float(result, result, ps, maskOnes);
+      // xpower = xpower * xpower
+      _cmu418_vmult_float(ps, ps, ps, maskActive);
+      // y >>= 1
+      _cmu418_vshiftright_int(es, es, ones, maskActive);
+    }
+    // clamp
+    _cmu418_vgt_float(maskClamped, result, four18, maskAll);
+    _cmu418_vmove_float(result, four18, maskClamped);
+    // store
+    _cmu418_vstore_float(output + i, result, maskAll);
+  }
+}
+
+float arraySumVector(float *values, int N) {
+  float result, y;
+  __cmu418_vec_float x;
+  __cmu418_mask maskAll, maskFirst;
+
+  result = 0;
+  maskAll = _cmu418_init_ones();
+  maskFirst = _cmu418_init_ones(1);
+  for (int i = 0; i < N; i += VECTOR_WIDTH) {
+    _cmu418_vload_float(x, values + i, maskAll);
+    for (int j = VECTOR_WIDTH; j > 1; j >>= 1) {
+      _cmu418_hadd_float(x, x);
+      _cmu418_interleave_float(x, x);
+    }
+    _cmu418_vstore_float(&y, x, maskFirst);
+    result += y;
+  }
+  return result;
+}
