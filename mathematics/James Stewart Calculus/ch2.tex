@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath, amsthm, booktabs, enumitem, multicol}
+\usepackage{amsmath, amsthm, booktabs, enumitem, multicol, amssymb}
 
 \everymath{\displaystyle}
 \newtheorem*{theorem*}{Theorem}
@@ -76,6 +76,49 @@
 \end{proof}
 \subsubsection*{Exercises}
 \begin{enumerate}
+    \setcounter{enumi}{2}
   \item
+    \begin{enumerate}
+      \item II
+      \item IV
+      \item I
+      \item III
+    \end{enumerate}
+    \setcounter{enumi}{12}
+  \item
+    \begin{enumerate}
+      \item The rate of change of the battery charge percentage per hour.
+      \item The battery was charged quickly up to about 80\%, then slowly to 100\%.
+    \end{enumerate}
+    \setcounter{enumi}{57}
+  \item Not differentiable at $n\in\mathbb{Z}$.
+    \[f'(x)=
+      \begin{cases}
+        0 & \text{if } x\notin\mathbb{Z} \\
+        \text{undefined} & \text{if } x\in\mathbb{Z}
+    \end{cases}\]
+  \item
+    \begin{enumerate}
+        \setcounter{enumii}{1}
+      \item All $x\in\mathbb{R}$.
+      \item \[f'(x)=
+          \begin{cases}
+            2x & \text{if } x\ge0 \\
+            -2x & \text{if } x<0 \\
+        \end{cases}\]
+    \end{enumerate}
+    \setcounter{enumi}{60}
+  \item
+    \begin{enumerate}
+      \item We have
+        \begin{align*}
+          f'(-x) & = \lim_{h\to0}\frac{f(-x+h)-f(-x)}{h} \\
+          & = \lim_{h\to0}\frac{f(x+(-h))-f(x)}{h} \text{, as $f$ is even, }\\
+          & = -\lim_{h\to0}\frac{f(x+(-h))-f(x)}{-h} \\
+        \end{align*}
+        Let $k=-h$, $f'(-x)=-\lim_{k\to0}\frac{f(x+k)-f(x)}{k}=-f'(x)$.
+    \end{enumerate}
+    \setcounter{enumi}{64}
+  \item $63^\circ$
 \end{enumerate}
 \end{document}
