@@ -4,8 +4,7 @@
 \usepackage{forest}
 
 \everymath{\displaystyle}
-\newtheorem{property}{Property}
-\numberwithin{property}{section}
+\newtheorem*{statement*}{Statement}
 
 \title{Algorithms in C}
 \author{}
@@ -19,14 +18,30 @@
 \subsection{Analysis of Algorithms}
 \subsubsection*{Exercises}
 \begin{enumerate}[label=2.\arabic*]
-  \setcounter{enumi}{2}
+    \setcounter{enumi}{2}
   \item We'll count the following operations: assignment, increment, and comparison. For each loop
-        of $N$ iterations, there are $N$ loop body executions, $N$ increments, and $N+1$
-        comparisons. For example, the innermost loop has $N$ increment operations
-        (\texttt{count++}), $N$ increment operations (\texttt{k++}), and $N+1$ comparison operations
-        (\texttt{k < N}). There are a total of 4 init assignment operations. Thus, the grand total
-        number of operation is
-        \[4 + \left(\left(N+N+(N+1)\right) \times N+N+(N+1)\right) \times N+N+(N+1)
-          = 5 + 3N + 3N^2 + 3N^3.\]
+    of $N$ iterations, there are $N$ loop body executions, $N$ increments, and $N+1$
+    comparisons. For example, the innermost loop has $N$ increment operations
+    (\texttt{count++}), $N$ increment operations (\texttt{k++}), and $N+1$ comparison operations
+    (\texttt{k < N}). There are a total of 4 init assignment operations. Thus, the grand total
+    number of operation is
+    \[4 + \left(\left(N+N+(N+1)\right) \times N+N+(N+1)\right) \times N+N+(N+1)
+    = 5 + 3N + 3N^2 + 3N^3.\]
 \end{enumerate}
+
+\subsection{Growth of Functions}
+\begin{statement*}
+  $\lceil\lg(N+1)\rceil$ is the number of bits in the binary representation of $N$.
+\end{statement*}
+\begin{proof}
+  Suppose that $k$ is the number of bits requried to represent N. We have,
+  \begin{align*}
+    2^{k-1} \le & N & \le & 2^k-1 \\
+    2^{k-1}+1 \le & N+1 & \le & 2^k \\
+    2^{k-1} < 2^{k-1}+1 \le & N+1 & \le & 2^k \\
+    2^{k-1} < & N+1 & \le & 2^k \\
+    k-1 < & \lg(N+1) & \le & k. \\
+  \end{align*}
+  The last inequality is equivalent to $\lceil\lg(N+1)\rceil=k$.
+\end{proof}
 \end{document}
