@@ -1,0 +1,87 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm, enumitem, multicol}
+
+\everymath{\displaystyle}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem*{definition*}{Definition}
+\newcommand{\vct}[1]{\langle #1 \rangle}
+\newcommand{\vu}{\mathbf{u}}
+\newcommand{\vv}{\mathbf{v}}
+\newcommand{\vw}{\mathbf{w}}
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vn}{\mathbf{n}}
+
+\newcommand{\colvecTwo}[2]{
+  \begin{bmatrix}
+    #1 \\
+    #2
+  \end{bmatrix}
+}
+\newcommand{\colvecThree}[3]{
+  \begin{bmatrix}
+    #1 \\
+    #2 \\
+    #3
+  \end{bmatrix}
+}
+
+\newcommand{\casesTwo}[2]{
+  \begin{cases}
+    #1 \\
+    #2
+  \end{cases}
+}
+\newcommand{\casesThree}[3]{
+  \begin{cases}
+    #1 \\
+    #2 \\
+    #3
+  \end{cases}
+}
+
+\title{Linear Algebra: A Modern Introduction}
+\author{David Poole}
+\date{}
+
+\begin{document}
+\maketitle
+\setcounter{section}{1}
+\section{Systems of Linear Equations}
+
+\subsection{Introduction to Systems of Linear Equations}
+\begin{definition*}
+  A linear equation in the $n$ variables $x_1, x_2, \ldots, x_n$ is an equation that can be writen
+  in the form
+  \[a_1x_1+a_2x_2+\cdots+a_nx_n=b\]
+  where the coefficients $a_1, a_2, \ldots, a_n$ and the constant term $b$ are constants.
+\end{definition*}
+\subsubsection*{Exercises}
+\begin{enumerate}
+    \begin{multicols}{3}
+    \item Yes
+    \item No
+    \item No
+    \item No
+    \item No
+    \item Yes
+    \end{multicols}
+  \item $2x+4y=7$
+  \item $x+y=1, x \ne y$
+  \item $x+y=4, x\ne0, y\ne0$
+  \item $x-100y=0, x>0, y>0$
+    \setcounter{enumi}{38}
+  \item
+    \begin{enumerate}
+      \item $2x+y=3$
+      \item $x=\frac{3}{2}-\frac{1}{2}s, y=s$
+    \end{enumerate}
+    \setcounter{enumi}{40}
+  \item
+    \begin{align*}
+      2t+3s & = 0 \\
+      3t+4s & = 1
+    \end{align*}
+    $x=\frac{1}{3},y=2\frac{1}{2}$
+\end{enumerate}
+\end{document}
