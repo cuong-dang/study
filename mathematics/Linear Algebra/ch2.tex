@@ -94,4 +94,37 @@
       column to the left of any leading entries below it.
   \end{enumerate}
 \end{definition*}
+\begin{definition*}
+  The following \textbf{elementary row operations} can be performed on a matrix:
+  \begin{enumerate}
+    \item Interchange two rows.
+    \item Multiply a row by a nonzero constant.
+    \item Add a multiple of a row to another row.
+  \end{enumerate}
+\end{definition*}
+\begin{definition*}
+  Matrices $A$ and $B$ are \textbf{row equivalent} if there is a sequence of elementary row
+  operations that converts $A$ into $B$.
+\end{definition*}
+\begin{theorem*}
+  Matrices $A$ and $B$ are row equivalent if and only if they can be reduced to the same row echolon
+  form.
+\end{theorem*}
+\begin{proof}
+  If $A$ and $B$ are row equivalent, the further row operations will reduce $B$ (which $A$ can be
+  converted to) to some (same) row echelon form.
+
+  Conversely, if $A$ and $B$ have the same row echelon form $R$, then, via elementary row
+  operations, we can convert $A$ into $R$ and $B$ into $R$. Reversing the latter sequence of
+  operations, we can convert $R$ into $B$, and therefore the sequence $A\to R\to B$ achieves the
+  desired effect.
+\end{proof}
+\begin{definition*}
+  The \textbf{rank} of a matrix is the number of nonzero rows in its row echelon form.
+\end{definition*}
+\begin{theorem*}[The Rank Theorem]
+  Let $A$ be the coefficient matrix of a system of linear equations with $n$ variables. If the system
+  is consistent, then
+  \[\text{numer of free variables}=n-\operatorname{rank}(A).\]
+\end{theorem*}
 \end{document}
