@@ -23,4 +23,29 @@
     \item \textbf{absolte minimum} value of $f$ on $D$ if $f(c)\le f(x)$ for all $x$ in $D$.
   \end{itemize}
 \end{definition*}
+\begin{theorem*}[The Extreme Value Theorem]
+  If $f$ is continuous on a closed interval $[a, b]$, then $f$ attains an absolute maximum value
+  $f(c)$ and an absolute minimum value $f(d)$ at some numbers $c$ and $d$ in $[a, b]$.
+\end{theorem*}
+\begin{theorem*}[Fermat's Theorem]
+  If $f$ has a local maximum or minimum at $c$, and if $f'(c)$ exists, then $f'(c) = 0$.
+\end{theorem*}
+\begin{proof}
+  Suppose, for the sake of definiteness, that $f$ has a local maximum at $c$. Then, according to
+  Definition 2, $f(c)\ge f(x)$ if $x$ is sufficiently close to $c$. This implies that if $h$ is
+  sufficiently close to 0, with $h$ being positive or negative, then
+  \[f(c)\ge f(c+h)\]
+  and therefore
+  \[f(c+h)-f(c)\le0.\]
+  We can divide both sides of an inequality by a positive number. Thus, if $h>0$ and $h$ is
+  sufficiently small, we have
+  \[\frac{f(c+h)-f(c)}{h}\le0.\]
+  Taking the right-hand limit of both sides of this inequality (using Theorem 1.6.2), we get
+  \[\lim_{h\to0^+}\frac{f(c+h)-f(c)}{h}\le\lim_{h\to0^+}0=0.\]
+  $\ldots$
+\end{proof}
+\begin{definition*}
+  A \textbf{critical number} of a function $f$ is a number $c$ in the domain of $f$ such that either
+  $f'(c)=0$ or $f'(c)$ does not exist.
+\end{definition*}
 \end{document}
