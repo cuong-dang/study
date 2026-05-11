@@ -280,5 +280,77 @@
   \item $\colvecThree{0}{4}{0}$
   \item Not intersect.
   \item $a, b, c$ should satisfy $a-2b-c+6=0$.
+    \setcounter{enumi}{52}
+  \item $\colvecTwo{x}{y}=\colvecTwo{0}{2}$
+  \item $\colvecThree{x}{y}{z}=\colvecThree{0}{1}{1}$
+    \setcounter{enumi}{58}
 \end{enumerate}
+
+\subsection{Spanning Sets and Linear Independence}
+\begin{theorem*}
+  A system of linear equations with augmented matrix $[A|\mathbf{b}]$ is consistent if and only if
+  $\mathbf{b}$ is a linear combination of the columns of $A$.
+\end{theorem*}
+\begin{definition*}
+  If $S=\{\mathbf{v_1}, \mathbf{v_2}, \ldots, \mathbf{v_k}\}$ is a set of vectors in $\mathbb{R}^n$,
+  then the set of all linear combinations of $\mathbf{v_1}, \mathbf{v_2}, \ldots, \mathbf{v_k}$ is
+  called the \textbf{span} of $\mathbf{v_1}, \mathbf{v_2}, \ldots, \mathbf{v_k}$ and is denoted by
+  $\operatorname{span}(\mathbf{v_1}, \mathbf{v_2}, \ldots, \mathbf{v_k})$ or
+  $\operatorname{span}(S)$. If $\operatorname{span}(S)=\mathbb{R}^n$, then $S$ is called a
+  \textbf{spanning set} for $\mathbb{R}^n$.
+\end{definition*}
+\begin{theorem*}
+  Vectors $\mathbf{v_1}, \mathbf{v_2}, \ldots, \mathbf{v_k}$ in $\mathbb{R}^n$ are linearly
+  independent if and only if at least one of the vectors can be expressed as a linear combination of
+  the others.
+\end{theorem*}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \item Yes
+  \item No
+  \item No
+  \item Yes
+  \item No
+  \item Yes
+  \item Yes
+  \item Yes
+  \item Any vectors $\colvecTwo{a}{b}$ can be written as $\frac{a+b}{2}\colvecTwo{1}{1}+
+    \frac{a-b}{2}\colvecTwo{1}{-1}$.
+    \setcounter{enumi}{12}
+  \item
+    \begin{enumerate}
+      \item Line $t\colvecTwo{2}{-4}$.
+      \item $2x+y=0$.
+    \end{enumerate}
+    \setcounter{enumi}{14}
+  \item
+    \begin{enumerate}
+      \item Plane $\vx=\mathbf{s}\colvecThree{1}{2}{0}+\mathbf{t}\colvecThree{3}{2}{-1}$.
+      \item $2x-y+4z=0$.
+    \end{enumerate}
+    \setcounter{enumi}{16}
+  \item $a=-3c, b=0$.
+    \setcounter{enumi}{18}
+  \item
+    \begin{align*}
+      \vu & = \vu+0(\vu+\vv)+0(\vu+\vv+\vw) \\
+      \vv & = -\vu+(\vu+\vv)+0(\vu+\vv+\vw) \\
+      \vw & = 0\vu-(\vu+\vv)+(\vu+\vv+\vw)
+    \end{align*}
+    \setcounter{enumi}{21}
+  \item Linearly independent.
+  \item Linearly independent.
+    \setcounter{enumi}{24}
+  \item Linearly dependent
+    \setcounter{enumi}{42}
+  \item
+    \begin{enumerate}
+      \item Yes.
+      \item No.
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Applications}
+\subsection{Iterative Methods for Solving Linear Systems}
+
 \end{document}
