@@ -352,5 +352,20 @@
 
 \subsection{Applications}
 \subsection{Iterative Methods for Solving Linear Systems}
-
+\begin{theorem*}
+  If a system of $n$ linear equations in $n$ variables has a strictly diagonally dominant
+  coefficient matrix, then it has a unique solution and both the Jacobi and the Gauss-Seidel method
+  converge to it.
+\end{theorem*}
+\begin{theorem*}
+  If the Jacobi or the Gauss-Seidel method converges for a system of $n$ linear equations in $n$
+  variables, then it must converge to the solution of the system.
+\end{theorem*}
+\begin{proof}
+  Without loss of generality, let's assume we have a system of equations of 2 variables. With
+  Jacobi's method, at iteration $k$, let's assume we have $x_1=r=f(x_2)$ and $x_2=s=g(x_1)$. Because
+  the method converges, in the next iteration $k+1$, $x_1$ and $x_2$ will have the same values.
+  Thus, $r=f(s)$ and $s=g(r)$. Rearranging these two equations will give us back the original system
+  of equations, thus proving that $r$ and $s$ are the solutions of the system.
+\end{proof}
 \end{document}
