@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm, enumitem, multicol, booktabs}
+
+\everymath{\displaystyle}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem*{definition*}{Definition}
+\newcommand{\vct}[1]{\langle #1 \rangle}
+\newcommand{\vu}{\mathbf{u}}
+\newcommand{\vv}{\mathbf{v}}
+\newcommand{\vw}{\mathbf{w}}
+\newcommand{\vx}{\mathbf{x}}
+\newcommand{\vn}{\mathbf{n}}
+
+\newcommand{\colvecTwo}[2]{
+  \begin{bmatrix}
+    #1 \\
+    #2
+  \end{bmatrix}
+}
+\newcommand{\colvecThree}[3]{
+  \begin{bmatrix}
+    #1 \\
+    #2 \\
+    #3
+  \end{bmatrix}
+}
+
+\newcommand{\casesTwo}[2]{
+  \begin{cases}
+    #1 \\
+    #2
+  \end{cases}
+}
+\newcommand{\casesThree}[3]{
+  \begin{cases}
+    #1 \\
+    #2 \\
+    #3
+  \end{cases}
+}
+
+\title{Linear Algebra: A Modern Introduction}
+\author{David Poole}
+\date{}
+
+\begin{document}
+\maketitle
+\setcounter{section}{2}
+\section{Matrices}
+\subsection{Matrix Operations}
+\begin{definition*}
+  A \textbf{\textit{matrix}} is a rectangular array of numbers called the \textbf{\textit{entries}},
+  or \textbf{\textit{elements,}} of the matrix.
+\end{definition*}
+\end{document}
