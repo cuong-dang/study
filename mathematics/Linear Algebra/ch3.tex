@@ -108,4 +108,43 @@
     \end{bmatrix}
     $
 \end{enumerate}
+
+\subsection{Matrix Algebra}
+\begin{theorem*}
+  $(AB)^T=B^TA^T$
+\end{theorem*}
+\begin{proof}
+  If $A$ is $m\times n$ and $B$ is $n\times r$, then $B^T$ is $r\times n$ and $A^T$ is $n\times m$.
+  Thus, the product $B^TA^T$ is defined and is $r\times m$. Since $AB$ is $m\times r$, $(AB)^T$ is
+  $r\times m$, and so $(AB)^T$ and $B^TA^T$ have the same size. We must now prove that their
+  corresponding entries are equal.
+
+  We denote the $i$th row of a matrix $X$ by $\operatorname{row}_i(X)$ and its $j$th column by $
+  \operatorname{col}_j(X)$. Using these conventions, we see that
+  \begin{align*}
+    [(AB)^T]_{ij} & = (AB)_{ji} \\
+    & = \operatorname{row}_j(A)\cdot\operatorname{col}_i(B) \\
+    & = \operatorname{col}_i(B)\cdot\operatorname{row}_j(A) \\
+    & = \operatorname{row}_i(B)^T\cdot\operatorname{col}_j(A)^T \\
+    & = (B^TA^T)_{ij}.
+  \end{align*}
+\end{proof}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \item $
+    \begin{bmatrix}
+      5 & 4 \\
+      3 & 5
+    \end{bmatrix}
+    $
+    \setcounter{enumi}{4}
+  \item $B=2A_1+A_2$
+    \setcounter{enumi}{8}
+  \item $
+    \begin{bmatrix}
+      x & y \\
+      -5x+2y & -x+y
+    \end{bmatrix}
+    $
+\end{enumerate}
 \end{document}
