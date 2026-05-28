@@ -160,4 +160,79 @@
 \end{enumerate}
 
 \subsection{The Inverse of a Matrix}
+\begin{definition*}
+  If $A$ is an $n\times n$ matrix, an \textbf{\textit{inverse}} of A is an $n\times n$ matrix $A'$
+  with the property that
+  \[AA'=I \text{ and } A'A=I\]
+  where $I=I_n$ is the $n\times n$ identity matrix. If such an $A'$ exists, then $A$ is called
+  \textbf{\textit{invertible.}}
+\end{definition*}
+\begin{theorem*}
+  If $A$ is an invertible matrix, then its inverse is unique.
+\end{theorem*}
+\begin{proof}
+  Suppose that $A$ has two inverses, $A'$ and $A''$. Then
+  \[AA'=I=A'A \text{ and } AA''=I=A''A.\]
+  Thus, $A'=A'I=A'(AA'')=(A'A)A''=IA''=A''$.
+\end{proof}
+\begin{theorem*}
+  If $A$ is an invertible $n\times n$ matrix, then the system of linear equations given by
+  $A\vx=\vb$ has the unique solution $\vx=A^{-1}\vb$.
+\end{theorem*}
+\begin{definition*}
+  An \textbf{\textit{elementary matrix}} is any matrix that can be obtained by performing an
+  elementary row operation on an identity matrix.
+\end{definition*}
+\begin{theorem*}
+  Let $E$ be the elementary matrix obtained by performing an elementary row operation on $I_n$. If
+  the same elementary row operation is performed on an $n\times r$ matrix $A$, the result is the
+  same as the matrix $EA$.
+\end{theorem*}
+\begin{theorem*}[The Fundamental Theorem of Invertible Matrices: Version 1]
+  Let $A$ be an $n\times n$ matrix. The following statements are equivalent:
+  \begin{enumerate}
+    \item $A$ is invertible.
+    \item $A\vx=\vb$ has a unique solution for every $\vb$ in $\mathbb{R}^n$.
+    \item $A\vx=\mathbf{0}$ has only the trivial solution.
+    \item The reduced row echolon form of $A$ is $I_n$.
+    \item $A$ is a product of elementary matrices.
+  \end{enumerate}
+  \begin{theorem*}
+    Let $A$ be a square matrix. If a sequence of elementary row operations reduces $A$ to $I$, then
+    the same sequence of elementary row operations transforms $I$ into $A^{-1}$.
+  \end{theorem*}
+  \begin{proof}
+    If $A$ is row equivalent to $I$, then we can achieve the reduction by left-multiplying by a
+    sequence $E_1, E_2, \ldots, E_k$ of elementary matrices. Therefore, we have $E_k\ldots E_1A=I$.
+    Setting $B=E_k\ldots E_1$ gives $BA=I$. By theorem 3.13, $A$ is invertible and $A^{-1}=B$. Now
+    applying the same sequence of elementary row operations to $I$ is equivalent to
+    left-multiplying $I$ by $E_k\ldots E_1=B$. The result is
+    \[E_k\ldots E_1I=BI=B=A^{-1}.\]
+    Thus, $I$ is transformed into $A^{-1}$ by the same sequence of elementary row operations.
+  \end{proof}
+\end{theorem*}
+\subsubsection*{Exercises}
+\begin{enumerate}
+    \setcounter{enumi}{8}
+  \item $
+    \begin{bmatrix}
+      \frac{a}{a^2+b^2} & \frac{b}{a^2+b^2} \\
+      \frac{-b}{a^2+b^2} & \frac{a}{a^2+b^2}
+    \end{bmatrix}$
+    \setcounter{enumi}{10}
+  \item $\colvecTwo{-5}{9}$
+    \setcounter{enumi}{16}
+  \item
+    \begin{enumerate}
+        \setcounter{enumii}{1}
+      \item $AB=BA$
+    \end{enumerate}
+    \setcounter{enumi}{19}
+  \item $A^{-3}$
+  \item $-A(BA)^2-B$
+  \item $AB^{-2}$
+  \item $(AB)^{-1}BA+A$
+    \setcounter{enumi}{45}
+  \item $(A^{-1})^T=(A^T)^{-1}=A^{-1}$. Thus, $A^{-1}$ is symmetric.
+\end{enumerate}
 \end{document}

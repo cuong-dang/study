@@ -98,5 +98,30 @@
     changes sign at $c$. Applything the first derivative test gives us that $g$ has a local minimum
     or local maximum at $c$. Applying Fermant's Theorem, because $g'(c)$, which equals $f''(c)$
     exists, $g'(c)=f''(c)=0$.
+    \setcounter{enumi}{74}
+  \item Let $a,b\in I$ with $a<b$. We want to show $f(a)<f(b)$. Since $f$ is differentiable on $I$,
+    it is continuous on $I$. We are given that $f'(x)>0$ for all $x\in I, x\ne c,$ where $c$ is a
+    single exceptional point. We consider two cases.
+
+    \textbf{Case 1:} $c\notin(a, b)$
+
+    Then $f'(x)>0$ for every $x\in(a, b)$. By the Mean Value Theorem, there exists some $k\in(a,b)$
+    such that $f(b)-f(a)=f'(k)(b-a)$. Since $b-a>0$ and $f'(k)>0$, $f(b)-f(a)>0$. Hence,
+    $f(a)<f(b)$.
+
+    \textbf{Case 2:} $c\in(a, b)$
+
+    Apply the Mean Value Theorem separately on $[a, c]$ and $[c, b]$. There exist points $k_1\in(a,
+    c), k_2\in(c, b)$, such that $f(c)-f(a)=f'(k_1)(c-1)$ and $f(b)-f(c)=f'(k_2)(b-c)$. Because $k_1
+    \ne c$ and $k_2\ne c$, we have $f'(k_1)>0, f'(k_2)>0$. Also, $c-a>0, b-c>0$. Therefore, $f(c)-
+    f(a)>0, f(b)-f(c)>0$. Adding these qualities gives $f(b)-f(a)>0$. So again, $f(a)<f(b)$.
+
+    Since for every $a<b$ in $I$, we have $f(a)<f(b)$, the function $f$ is increasing on $I$.
+  \item $c\ge\frac{1}{8}$
+\end{enumerate}
+
+\subsection{Limits at Infinity; Horizontal Asymptotes}
+\begin{enumerate}
+  \item
 \end{enumerate}
 \end{document}
