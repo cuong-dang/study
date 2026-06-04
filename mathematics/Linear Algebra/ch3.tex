@@ -13,6 +13,7 @@
 \newcommand{\vn}{\mathbf{n}}
 \newcommand{\va}{\mathbf{a}}
 \newcommand{\vb}{\mathbf{b}}
+\newcommand{\vz}{\mathbf{0}}
 
 \newcommand{\colvecTwo}[2]{
   \begin{bmatrix}
@@ -296,6 +297,32 @@
     \end{bmatrix}$
     \setcounter{enumi}{26}
   \item $\colvecThree{4}{-1}{-2}$
+\end{enumerate}
 
+\subsection{Subspaces, Basis, Dimension, and Rank}
+\begin{definition*}
+  A \textit{\textbf{subspace}} of $\mathbb{R}^n$ is any collection $S$ of vectors in $R^n$ such that:
+  \begin{enumerate}
+    \item The zero vector $\mathbf{0}$ is in $S$.
+    \item If $\vu$ and $\vv$ are in $S$, then $\vu+\vv$ is in $S$. (S is \textit{\textbf{closed
+      under addition.}})
+    \item if $\vu$ is in $S$ and $c$ is a scalar, then $c\vu$ is in $S$. (S is \textit{
+      \textbf{closed under scalar multiplication.}})
+  \end{enumerate}
+\end{definition*}
+\begin{theorem*}
+  Let $\vv_1, \ldots, \vv_k$ be vectors in $\mathbb{R}^n$. Then $\operatorname{span}(\vv_1, \ldots,
+  \vv_k)$ is a subspace of $\mathbb{R}^n$.
+\end{theorem*}
+\subsubsection*{Exercises}
+\begin{enumerate}
+  \item Yes
+  \item No. If $c < 0$, then $c\vv\notin S$.
+  \item Yes
+  \item No. $\colvecTwo{-1}{-3}$ and $\colvecTwo{2}{2}$ are in $S$ but their sum is not.
+  \item Yes
+  \item Yes
+  \item No. $\vz\notin S$.
+  \item No. $\colvecThree{1}{2}{1}$ and $\colvecThree{2}{1}{0}$ are in $S$ but their sum is not.
 \end{enumerate}
 \end{document}
