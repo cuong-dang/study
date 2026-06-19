@@ -1,15 +1,11 @@
-\documentclass{article}
-\usepackage[margin=1in]{geometry}
+\documentclass{article} \usepackage[margin=1in]{geometry}
 \usepackage{amsmath, amsthm, booktabs, enumitem, multicol, amssymb}
 
-\everymath{\displaystyle}
-\newtheorem*{definition*}{Definition}
+\everymath{\displaystyle} \newtheorem*{definition*}{Definition}
 \newtheorem*{proposition*}{Proposition}
 \newtheorem*{theorem*}{Theorem}
 
-\title{James Stewart Calculus}
-\author{}
-\date{}
+\title{James Stewart Calculus} \author{} \date{}
 
 \begin{document}
 \maketitle
@@ -17,116 +13,113 @@
 \section{Integrals}
 \subsection{Areas and Distances}
 \begin{definition*}
-  The \textbf{area} $A$ of the region $S$ that lines under the graph of the continuous function $f$
-  is the limit of the sum of the areas of approximating rectangles:
-  \[A=\lim_{n\to\infty}R_n=\lim_{n\to\infty}[f(x_1)\Delta x+\cdots+f(x_n)\Delta x].\]
+	The \textbf{area} $A$ of the region $S$ that lines under the graph
+	of the continuous function $f$ is the limit of the sum of the areas
+	of approximating rectangles:
+	\[A=\lim_{n\to\infty}R_n=\lim_{n\to\infty}[f(x_1)\Delta
+			x+\cdots+f(x_n)\Delta x].\]
 \end{definition*}
 \subsubsection*{Exercises}
 \begin{enumerate}
-    \setcounter{enumi}{2}
-  \item
-    \begin{enumerate}
-      \item $\frac{17}{21}$; underestimate
-      \item $\frac{319}{420}$
-    \end{enumerate}
-    \setcounter{enumi}{12}
-  \item $L=34.7; U=44.8$
-    \setcounter{enumi}{18}
-  \item 7840
-    \setcounter{enumi}{20}
-  \item $\lim_{n\to\infty}\sum_{i=1}^{n}\frac{2}{n}\frac{2(1+2i/n)}{(1+2i/n)^2+1}$
-    \setcounter{enumi}{24}
-  \item Area under the curve $\tan{x}$ between 0 and $\frac{\pi}{4}$.
+	\setcounter{enumi}{2}
+	\item
+	      \begin{enumerate}
+		      \item $\frac{17}{21}$; underestimate
+		      \item $\frac{319}{420}$
+	      \end{enumerate}
+	      \setcounter{enumi}{12}
+	\item $L=34.7; U=44.8$ \setcounter{enumi}{18}
+	\item 7840 \setcounter{enumi}{20}
+	\item
+	      $\lim_{n\to\infty}\sum_{i=1}^{n}\frac{2}{n}\frac{2(1+2i/n)}{(1+2i/n)^2+1}$
+	      \setcounter{enumi}{24}
+	\item Area under the curve $\tan{x}$ between 0 and $\frac{\pi}{4}$.
 \end{enumerate}
 
 \subsection{The Definite Integral}
 \begin{enumerate}
-  \item -10
-    \setcounter{enumi}{4}
-  \item
-    \begin{enumerate}
-      \item 6
-    \end{enumerate}
-    \setcounter{enumi}{16}
-  \item $\int_{0}^{\pi}\frac{\sin x}{1+x}dx$
-    \setcounter{enumi}{18}
-  \item $\int_{2}^{7}(5x^3-4x)dx$
-    \setcounter{enumi}{20}
-  \item $-9$
-    \setcounter{enumi}{22}
-  \item $\frac{2}{3}$
-    \setcounter{enumi}{28}
-  \item $\lim_{n\to\infty}\sum_{1}^{n}\sqrt{4+\left(1+\frac{2}{n}i\right)^2}\frac{2}{n}$
-    \setcounter{enumi}{32}
-  \item
-    \begin{enumerate}
-      \item 4
-    \end{enumerate}
-    \setcounter{enumi}{40}
-  \item 0
-    \setcounter{enumi}{42}
-  \item 3
-    \setcounter{enumi}{46}
-  \item $\int_{-1}^{5}f(x)dx$
-    \setcounter{enumi}{52}
-  \item 15
-    \setcounter{enumi}{58}
-  \item $0\le\int_{0}^{1}x^3dx\le1$
-    \setcounter{enumi}{60}
-  \item $1\le\int_{\pi/4}^{\pi/3}\tan{x}dx\le\sqrt{3}$
-    \setcounter{enumi}{64}
-  \item $\int_{1}^{3}\sqrt{x^4+1}dx\ge\int_{1}^{3}\sqrt{x^4}dx=\int_{1}^{3}x^2dx=\frac{3^3-1^3}{3}
-    =\frac{26}{3}$
-    \setcounter{enumi}{66}
-  \item $\int_{1}^{2}\sqrt{x}dx$
-    \setcounter{enumi}{70}
-  \item $f$ has an infinite number of jump discontinuities; thus, $f$ is not differentiable.
-    \setcounter{enumi}{72}
-  \item $\int_{0}^{1}x^4dx$
-  \item $\int_{0}^{1}\frac{1}{1+x^2}dx$
-  \item $\frac{1}{2}$
+	\item -10 \setcounter{enumi}{4}
+	\item
+	      \begin{enumerate}
+		      \item 6
+	      \end{enumerate}
+	      \setcounter{enumi}{16}
+	\item $\int_{0}^{\pi}\frac{\sin x}{1+x}dx$ \setcounter{enumi}{18}
+	\item $\int_{2}^{7}(5x^3-4x)dx$ \setcounter{enumi}{20}
+	\item $-9$ \setcounter{enumi}{22}
+	\item $\frac{2}{3}$ \setcounter{enumi}{28}
+	\item
+	      $\lim_{n\to\infty}\sum_{1}^{n}\sqrt{4+\left(1+\frac{2}{n}i\right)^2}\frac{2}{n}$
+	      \setcounter{enumi}{32}
+	\item
+	      \begin{enumerate}
+		      \item 4
+	      \end{enumerate}
+	      \setcounter{enumi}{40}
+	\item 0 \setcounter{enumi}{42}
+	\item 3 \setcounter{enumi}{46}
+	\item $\int_{-1}^{5}f(x)dx$ \setcounter{enumi}{52}
+	\item 15 \setcounter{enumi}{58}
+	\item $0\le\int_{0}^{1}x^3dx\le1$ \setcounter{enumi}{60}
+	\item $1\le\int_{\pi/4}^{\pi/3}\tan{x}dx\le\sqrt{3}$
+	      \setcounter{enumi}{64}
+	\item
+	      $\int_{1}^{3}\sqrt{x^4+1}dx\ge\int_{1}^{3}\sqrt{x^4}dx=\int_{1}^{3}x^2dx=\frac{3^3-1^3}{3}
+		      =\frac{26}{3}$ \setcounter{enumi}{66}
+	\item $\int_{1}^{2}\sqrt{x}dx$ \setcounter{enumi}{70}
+	\item $f$ has an infinite number of jump discontinuities; thus, $f$ is
+	      not differentiable.  \setcounter{enumi}{72}
+	\item $\int_{0}^{1}x^4dx$
+	\item $\int_{0}^{1}\frac{1}{1+x^2}dx$
+	\item $\frac{1}{2}$
 \end{enumerate}
 
 \subsection{The Fundamental Theorem of Calculus}
 \begin{theorem*}[The Fundamental Theorem of Calculus, Part 1]
-  If $f$ is continuous on $[a, b]$, then the function $g$ defined by
-  \[g(x)=\int_{a}^{x}f(t)dt \hspace{1em} a\le x\le b\]
-  is continuous on $[a, b]$ and differentiable on $(a, b)$, and $g'(x)=f(x)$.
+	If $f$ is continuous on $[a, b]$, then the function $g$ defined by
+	\[g(x)=\int_{a}^{x}f(t)dt \hspace{1em} a\le x\le b\] is continuous
+	on $[a, b]$ and differentiable on $(a, b)$, and $g'(x)=f(x)$.
 \end{theorem*}
 \subsubsection*{Exercises}
 \begin{enumerate}
-    \setcounter{enumi}{2}
-  \item
-    \begin{enumerate}
-      \item $g(0)=0,g(1)=2,g(2)=5$
-      \item $(0, 3)$
-      \item $x=3$
-    \end{enumerate}
-    \setcounter{enumi}{6}
-  \item $\sqrt{x+x^3}$
-    \setcounter{enumi}{10}
-  \item $-\sqrt{1+\sec{x}}$
-    \setcounter{enumi}{12}
-  \item $-\frac{1}{x^2}\sin^4\frac{1}{x}$
-    \setcounter{enumi}{14}
-  \item $\frac{9x+6}{1+(3x+2)^3}$
-    \setcounter{enumi}{16}
-  \item $-\frac{1}{2}\tan\sqrt{x}$
-    \setcounter{enumi}{18}
-  \item $\frac{26}{3}$
-    \setcounter{enumi}{20}
-  \item $\frac{52}{3}$
-    \setcounter{enumi}{28}
-  \item $\frac{82}{5}$
-    \setcounter{enumi}{30}
-  \item 1
-    \setcounter{enumi}{36}
-  \item 0
-    \setcounter{enumi}{48}
-  \item $x^{-4}$ is not continuous on the interval $[-2, 1]$.
-    \setcounter{enumi}{52}
-  \item $-\frac{2(4x^2-1)}{4x^2+1}+\frac{3(9x^2-1)}{9x^2+1}$
-    \setcounter{enumi}{54}
-  \item $-\frac{\cos{x}}{2\sqrt{x}}+3x^2\cos{x^6}$
+	\setcounter{enumi}{2}
+	\item
+	      \begin{enumerate}
+		      \item $g(0)=0,g(1)=2,g(2)=5$
+		      \item $(0, 3)$
+		      \item $x=3$
+	      \end{enumerate}
+	      \setcounter{enumi}{6}
+	\item $\sqrt{x+x^3}$ \setcounter{enumi}{10}
+	\item $-\sqrt{1+\sec{x}}$ \setcounter{enumi}{12}
+	\item $-\frac{1}{x^2}\sin^4\frac{1}{x}$ \setcounter{enumi}{14}
+	\item $\frac{9x+6}{1+(3x+2)^3}$ \setcounter{enumi}{16}
+	\item $-\frac{1}{2}\tan\sqrt{x}$ \setcounter{enumi}{18}
+	\item $\frac{26}{3}$ \setcounter{enumi}{20}
+	\item $\frac{52}{3}$ \setcounter{enumi}{28}
+	\item $\frac{82}{5}$ \setcounter{enumi}{30}
+	\item 1 \setcounter{enumi}{36}
+	\item 0 \setcounter{enumi}{48}
+	\item $x^{-4}$ is not continuous on the interval $[-2, 1]$.
+	      \setcounter{enumi}{52}
+	\item $-\frac{2(4x^2-1)}{4x^2+1}+\frac{3(9x^2-1)}{9x^2+1}$
+	      \setcounter{enumi}{54}
+	\item $-\frac{\cos{x}}{2\sqrt{x}}+3x^2\cos{x^6}$
+	      \setcounter{enumi}{56}
+	\item $-\frac{1}{\pi}x+1$
+	\item $(-1,1)$
+	\item $(-4,0)$
+	\item $(-1,1)$
+	\item 29
+	      \setcounter{enumi}{62}
+	\item
+	      \begin{enumerate}
+		      \item $\sqrt{2}+2k\pi$
+	      \end{enumerate}
+	      \setcounter{enumi}{64}
+	\item \begin{enumerate}
+		      \item Max at $x=1,5,9$; min at $x=3,7$
+		      \item 9
+	      \end{enumerate}
 \end{enumerate}
 \end{document}
