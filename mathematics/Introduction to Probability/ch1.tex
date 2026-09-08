@@ -1,0 +1,61 @@
+\documentclass{article} \usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, booktabs, enumitem, multicol, amssymb}
+
+\everymath{\displaystyle} \newtheorem*{definition*}{Definition}
+\newtheorem*{proposition*}{Proposition}
+\newtheorem*{theorem*}{Theorem}
+
+\title{Introduction to Probability} \author{} \date{}
+
+\begin{document}
+\maketitle
+\section{Sample Space and Probability}
+\subsection{Sets}
+\subsection{Probabilistic Models}
+\subsubsection*{Problems}
+\begin{enumerate}
+	\setcounter{enumi}{4}
+	\item $10\%$
+	\item $4/9$
+\end{enumerate}
+\subsubsection*{Problem Set 1}
+\begin{enumerate}
+	\item \begin{enumerate}
+		      \item $A\cup B\cup C$
+		      \item $(A\cap B^c\cap C^c)\cup(A^c\cap B\cap C^c)\cup(A^c\cap B^c\cap C)
+			            \cup(A^c\cap B^c\cap C^c)$
+		      \item $(A\cup B\cup C)^c$
+		      \item $A\cap B\cap C$
+		      \item $(A\cap B^c\cap C^c)\cup(A^c\cap B\cap C^c)\cup(A^c\cap B^c\cap C)$
+		      \item $A\cap B\cap C^c$
+		      \item $A\cup(A^c\cup B^c)$
+	      \end{enumerate}
+	\item \begin{enumerate}
+		      \item $1/8$
+		      \item $1/8$
+		      \item $3/8$
+		      \item $4/8$
+	      \end{enumerate}
+	\item \begin{enumerate}
+		      \item $1/2$
+		      \item $1/8$
+	      \end{enumerate}
+	\item $P(B)=35/36, P(C)=0, P(A\cap D)=41/72$
+	\item \begin{enumerate}
+		      \item $1\%$
+		      \item $8\%$
+		      \item $1\%, 8\%$
+	      \end{enumerate}
+\end{enumerate}
+\subsection{Conditional Probability}
+\subsection{Total Probability Theorem and Bayes' Rule}
+\begin{theorem*}[Total Probability Theorem]
+	Let $A_1,...,A_n$ be disjoint events that form a partition of the sample space (each possible outcome
+	is included in exactly one of the events $A_1,...,A_n$) and assume that $P(A_i)>0$, for all $i$. Then,
+	for any event $B$, we have
+	\begin{align*}
+		P(B) & = P(A_1\cap B)+\cdots+P(A_n\cap B)      \\
+		P(B) & = P(A_1)P(B|A_1)+\cdots+P(A_n)P(B|A_n).
+	\end{align*}
+\end{theorem*}
+\end{document}
