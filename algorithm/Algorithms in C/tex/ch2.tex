@@ -5,6 +5,7 @@
 
 \everymath{\displaystyle}
 \newtheorem*{statement*}{Statement}
+\newtheorem*{definition*}{Definition}
 
 \title{Algorithms in C}
 \author{}
@@ -69,4 +70,10 @@
 		      10^{12}                                & instant                                    & instant                                    & instant       & seconds
 	      \end{tabular}
 \end{enumerate}
+
+\subsection{Big-Oh Notation}
+\begin{definition*}
+	A function $g(N)$ is said to be $O(f(N))$ when there exist constants $c_0$ and $N_0$ such that
+	$g(N)<c_0f(N)$ for all $N>N_0$.
+\end{definition*}
 \end{document}
