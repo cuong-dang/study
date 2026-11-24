@@ -76,4 +76,21 @@
 	A function $g(N)$ is said to be $O(f(N))$ when there exist constants $c_0$ and $N_0$ such that
 	$g(N)<c_0f(N)$ for all $N>N_0$.
 \end{definition*}
+\subsubsection*{Exercises}
+\begin{enumerate}[label=2.\arabic*]
+	\setcounter{enumi}{19}
+	\item We want to show that if a function $f(N)$ is $O(1)$, then $f(N)$ is $O(2)$.
+	      \begin{proof}
+		      $f(N)$ is $O(1)$ means that there exist constants $c_0$ and $N_0$ such that $f(N)<c_0$ for
+		      all $N>N_0$. Let $c_1=\frac{1}{2}c_0$; $c_1$ is a constant. $f(N)<c_0$ for all $N>N_0$
+		      implies that $f(N)<c_1\times2$ for all $N>N_0$. Thus, $f(N)$ is $O(2)$ by definition.
+	      \end{proof}
+	\item \begin{enumerate}
+		      \item $f(N) \to O(f(N))$
+		            \begin{proof}
+			            Choose $c_0=2$, but this is only valid for $f(N)>0$ for all $N>N_0$.
+		            \end{proof}
+		      \item $cO(f(N))\to O(f(N))$
+	      \end{enumerate}
+\end{enumerate}
 \end{document}
